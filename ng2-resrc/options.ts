@@ -1,4 +1,11 @@
 /**
+ * Default resource options.
+ *
+ * @type {ResrcOptions}
+ */
+export const DEFAULT_RESRC_OPTIONS: ResrcOptions = new BaseResrcOptions();
+
+/**
  * Global resource options.
  *
  * To overwrite global options add a provider for [BaseResrcOptions] instance with [ResrcOptions] as a key:
@@ -15,9 +22,9 @@ export abstract class ResrcOptions {
 
     /**
      * Constructs URL relative to _baseUrl_.
-     * 
+     *
      * @param url URL
-     * 
+     *
      * @returns {string} If _baseUrl_ is not set, or _url_ is absolute, then returns unmodified _url_.
      * Otherwise concatenates _baseUrl_ and _url_ separating them by `/` sign.
      */
@@ -43,7 +50,7 @@ export abstract class ResrcOptions {
  */
 export class BaseResrcOptions extends ResrcOptions {
 
-    private _baseUrl?: string;
+    private readonly _baseUrl?: string;
 
     constructor(opts?: ResrcOptions) {
         super();

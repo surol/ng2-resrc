@@ -17,5 +17,5 @@
     "sourceRoot": ".",
     "outFile": "bundles/ng2-resrc.js"
   },
-  "include": ["resrc.ts", "ng2-resrc/**/*"]
+  "include": ["ng2-resrc.ts", "ng2-resrc/**/*"]
 }
