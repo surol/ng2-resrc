@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "ES5",
+    "module": "system",
+    "moduleResolution": "node",
+    "declaration": true,
+    "sourceMap": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "removeComments": false,
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "strictNullChecks": true,
+    "forceConsistentCasingInFileNames": true,
+    "newLine": "LF",
+    "sourceRoot": ".",
+    "outFile": "bundles/ng2-resrc.js"
+  },
+  "include": ["resrc.ts", "ng2-resrc/**/*"]
+}
