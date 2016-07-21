@@ -405,7 +405,7 @@ declare module "ng2-rike/rike" {
 }
 declare module "ng2-rike/decorator" {
     import { DataType } from "ng2-rike/data";
-    import { URLSearchParams, Headers } from "@angular/http";
+    import { URLSearchParams, Headers, RequestMethod } from "@angular/http";
     export const RIKE_OPERATION_PROVIDERS: any[];
     export interface OperationMetadata {
         name?: string;
@@ -417,12 +417,17 @@ declare module "ng2-rike/decorator" {
         };
         withCredentials?: boolean;
     }
+    export interface OperationWithMethodMetadata extends OperationMetadata {
+        method?: string | RequestMethod;
+    }
+    export function RIKE(opts?: OperationWithMethodMetadata): MethodDecorator;
     export function GET(opts?: OperationMetadata): MethodDecorator;
     export function POST(opts?: OperationMetadata): MethodDecorator;
     export function PUT(opts?: OperationMetadata): MethodDecorator;
     export function DELETE(opts?: OperationMetadata): MethodDecorator;
     export function OPTIONS(opts?: OperationMetadata): MethodDecorator;
-    export function Get(opts?: OperationMetadata): MethodDecorator;
+    export function HEAD(opts?: OperationMetadata): MethodDecorator;
+    export function PATCH(opts?: OperationMetadata): MethodDecorator;
 }
 declare module "ng2-rike" {
     export * from "ng2-rike/data";

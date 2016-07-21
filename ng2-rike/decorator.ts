@@ -193,7 +193,7 @@ export interface OperationMetadata {
     withCredentials?: boolean;
 }
 
-export interface OperationWithMethodMetadata extends OperationMethod {
+export interface OperationWithMethodMetadata extends OperationMetadata {
     method?: string | RequestMethod;
 }
 
