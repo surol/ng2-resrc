@@ -1,4 +1,4 @@
-import {Response, RequestOptionsArgs} from "@angular/http";
+import {Response, RequestOptionsArgs, Request, RequestOptions} from "@angular/http";
 
 /**
  * REST-like operations data type.
@@ -7,9 +7,10 @@ import {Response, RequestOptionsArgs} from "@angular/http";
  *
  * Some of the data types may support only request or response operations, but not both.
  *
- * `T` is operation request type, operation response type, or both.
+ * `IN` is operation request type.
+ * `OUT` is operation response type.
  */
-export abstract class DataType<T> {
+export abstract class DataType<IN, OUT> {
 
     /**
      * Reads operation response from HTTP response.
@@ -18,7 +19,7 @@ export abstract class DataType<T> {
      *
      * @returns operation response.
      */
-    abstract readResponse(response: Response): T;
+    abstract readResponse(response: Response): OUT;
 
     //noinspection JSMethodCanBeStatic
     /**
@@ -51,7 +52,11 @@ export abstract class DataType<T> {
      *
      * @return modified HTTP request options that will be used to perform actual request.
      */
-    abstract writeRequest(request: T, options: RequestOptionsArgs): RequestOptionsArgs;
+    abstract writeRequest(request: IN, options: RequestOptionsArgs): RequestOptionsArgs;
+
+    readResponseWith<OUT>(readResponse: (response: Response) => OUT): DataType<IN, OUT> {
+        return new ResponseDataType<IN, OUT>(this, readResponse);
+    }
 
 }
 
@@ -62,40 +67,57 @@ export abstract class DataType<T> {
  *
  * @type {DataType<any>}
  */
-export const JSON_DATA_TYPE: DataType<any> = new JsonDataType<any>();
+export const JSON_DATA_TYPE: DataType<any, any> = new JsonDataType<any>();
 
 /**
  * Returns JSON data type.
  *
  * Sends and receives the data of the given type as JSON over HTTP.
  */
-export const jsonDataType: (<T>() => DataType<T>) = () => JSON_DATA_TYPE;
+export const jsonDataType: (<T>() => DataType<T, T>) = () => JSON_DATA_TYPE;
 
 /**
  * HTTP response data type.
  *
- * This data type can not be used to post requests.
+ * The request type is any. It is used as request body.
  *
- * @type {DataType<Response>}
+ * @type {DataType<any, Response>}
  */
-export const HTTP_RESPONSE_DATA_TYPE: DataType<Response> = new HttpResponseDataType();
+export const HTTP_RESPONSE_DATA_TYPE: DataType<any, Response> = new HttpResponseDataType();
 
-export abstract class RequestBodyType<T> extends DataType<T> {
+export abstract class RequestBodyType<T> extends DataType<T, T> {
 
     abstract readResponse(response: Response): T;
 
     writeRequest(request: T, options: RequestOptionsArgs): RequestOptionsArgs {
-        return {
-            url: options.url,
-            method: options.method,
-            search: options.search,
-            headers: options.headers,
-            body: this.writeBody(request),
-            withCredentials: options.withCredentials
-        };
+        return new RequestOptions(options).merge({body: this.writeBody(request)});
     }
 
     abstract writeBody(request: T): any;
+
+}
+
+class ResponseDataType<IN, OUT> extends DataType<IN, OUT> {
+
+    constructor(private _requestType: DataType<IN, any>, private _readResponse: (response: Response) => OUT) {
+        super();
+    }
+
+    readResponse(response: Response): OUT {
+        return this._readResponse(response);
+    }
+
+    prepareRequest(options: RequestOptionsArgs): RequestOptionsArgs {
+        return this._requestType.prepareRequest(options);
+    }
+
+    writeRequest(request: IN, options: RequestOptionsArgs): RequestOptionsArgs {
+        return this._requestType.writeRequest(request, options);
+    }
+
+    readResponseWith<OUT>(readResponse: (response: Response) => OUT): DataType<IN, OUT> {
+        return new ResponseDataType<IN, OUT>(this._requestType, readResponse);
+    }
 
 }
 
@@ -111,14 +133,14 @@ class JsonDataType<T> extends RequestBodyType<T> {
 
 }
 
-class HttpResponseDataType extends DataType<Response> {
+class HttpResponseDataType extends DataType<any, Response> {
 
     readResponse(response: Response): Response {
         return response;
     }
 
-    writeRequest(request: Response, options: RequestOptionsArgs): RequestOptionsArgs {
-        throw new Error("Unsupported HTTP method: " + options.method);
+    writeRequest(request: any, options: RequestOptionsArgs): RequestOptionsArgs {
+        return new RequestOptions(options).merge({body: request});
     }
 
 }

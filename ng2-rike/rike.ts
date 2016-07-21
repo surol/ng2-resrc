@@ -110,13 +110,13 @@ export class Rike {
     /**
      * Constructs operation target, which operations produce HTTP responses ([HTTP_RESPONSE_DATA_TYPE]).
      *
-     * Note that this data type can not be used to post requests.
+     * Arbitrary data type can be used as a request body.
      *
      * @param target arbitrary target value.
      *
      * @returns {RikeTargetImpl} new operation target.
      */
-    target(target: any): RikeTarget<Response>;
+    target(target: any): RikeTarget<any, Response>;
 
     /**
      * Constructs operations target, which operates on the given data type.
@@ -126,11 +126,15 @@ export class Rike {
      *
      * @return {RikeTargetImpl<T>} new operations target.
      */
-    target<T>(target: any, dataType: DataType<T>): RikeTarget<T>;
+    target<IN, OUT>(target: any, dataType: DataType<IN, OUT>): RikeTarget<IN, OUT>;
 
-    target(target: any, dataType?: DataType<any>): RikeTarget<any> {
+    target(target: any, dataType?: DataType<any, any>): RikeTarget<any, any> {
 
-        const rikeTarget = new RikeTargetImpl<any>(this, this._internals, target, dataType || HTTP_RESPONSE_DATA_TYPE);
+        const rikeTarget = new RikeTargetImpl<any, any>(
+            this,
+            this._internals,
+            target,
+            dataType || HTTP_RESPONSE_DATA_TYPE);
 
         rikeTarget.events.subscribe(
             (event: RikeEvent) => this._events.emit(event),
@@ -147,7 +151,7 @@ export class Rike {
      *
      * @return {RikeTarget<T>} new operations target.
      */
-    json<T>(target: any): RikeTarget<T> {
+    json<T>(target: any): RikeTarget<T, T> {
         return this.target(target, jsonDataType<T>());
     }
 
@@ -192,8 +196,8 @@ export class Rike {
      * @returns {Observable<Response>}
      */
     protected wrapResponse(
-        _target: RikeTarget<any>,
-        _operation: RikeOperation<any>,
+        _target: RikeTarget<any, any>,
+        _operation: RikeOperation<any, any>,
         response: Observable<Response>): Observable<Response> {
         return response;
     }
@@ -209,16 +213,17 @@ export class Rike {
  * Only one operation can be performed on a target at a time. Whenever a new operation on the same target is initiated,
  * the previous one is cancelled.
  *
- * `T` is a data type this target operates over by default.
+ * `IN` is a request type this target's operations accept by default.
+ * `OUT` is a response type this target's operations return by default.
  */
-export interface RikeTarget<T> {
+export abstract class RikeTarget<IN, OUT> {
 
     /**
      * Operation target value.
      *
      * This is the value passed to the [Rike.target] method.
      */
-    readonly target: any;
+    abstract readonly target: any;
 
     /**
      * A currently evaluating operation's name.
@@ -226,52 +231,54 @@ export interface RikeTarget<T> {
      * `undefined` if no operations currently in process, i.e. operation not started, cancelled, or completed, either
      * successfully or with error.
      */
-    readonly currentOperation?: string;
+    abstract readonly currentOperation?: string;
 
     /**
      * An emitter of events for operations performed on this target.
      */
-    readonly events: EventEmitter<RikeEvent>;
+    abstract readonly events: EventEmitter<RikeEvent>;
 
     /**
      * An operations data type to use by default.
      *
      * This is the data type to the [Rike.target] method.
      */
-    readonly dataType: DataType<T>;
+    abstract readonly dataType: DataType<IN, OUT>;
 
     /**
      * Constructs an operation on this target, which produces responses of type `T`.
      *
      * The target data type (_dataType_) passed to the [Rike.target] will be used to encode/decode operation data.
      *
-     * @param operation operation name.
+     * @param name operation name.
      */
-    operation(operation: string): RikeOperation<T>;
+    abstract operation(name: string): RikeOperation<IN, OUT>;
 
     /**
      * Constructs an operation on this target, which produces responses of the given type.
      *
-     * @param operation operation name.
+     * @param name operation name.
      * @param dataType operation data type.
      */
-    operation<T>(operation: string, dataType: DataType<T>): RikeOperation<T>;
+    abstract operation<IN, OUT>(name: string, dataType: DataType<IN, OUT>): RikeOperation<IN, OUT>;
 
     /**
      * Constructs an operations on this target, which operates on the given data type passing it as JSON over HTTP.
      *
-     * @param operation operation name.
+     * @param name operation name.
      *
      * @return {RikeTarget<T>} new operations target.
      */
-    json<T>(operation: string): RikeOperation<T>;
+    json<T>(name: string): RikeOperation<T, T> {
+        return this.operation(name, jsonDataType<T>());
+    }
 
     /**
      * Cancels current operation, if any.
      *
      * @return `true` if operation cancelled, or `false` if there is no operation to cancel.
      */
-    cancel(): boolean;
+    abstract cancel(): boolean;
 
 }
 
@@ -284,19 +291,20 @@ export interface RikeTarget<T> {
  * To initiate operation just call any of the HTTP access methods. Note that operation always belongs to its target
  * and thus two operations could not be initiated simultaneously.
  *
- * `T` is a type of responses this operation produces.
+ * `IN` is a type of requests this operation accepts.
+ * `OUT` is a type of responses this operation produces.
  */
-export interface RikeOperation<T> {
+export abstract class RikeOperation<IN, OUT> {
 
     /**
      * Operation target.
      */
-    readonly target: RikeTarget<any>;
+    abstract readonly target: RikeTarget<any, any>;
 
     /**
      * Operation name.
      */
-    readonly name: string;
+    abstract readonly name: string;
 
     /**
      * Operation data type.
@@ -304,21 +312,47 @@ export interface RikeOperation<T> {
      * This data type is based on the one passed to the [RikeTarget.operation], but also honors the default data type
      * set for target.
      */
-    readonly dataType: DataType<T>;
+    abstract readonly dataType: DataType<IN, OUT>;
 
-    request(request: string | Request, options?: RequestOptionsArgs): Observable<T>;
+    abstract readonly options: RequestOptions;
 
-    get(url: string, options?: RequestOptionsArgs): Observable<T>;
+    abstract withOptions(options: RequestOptionsArgs): this;
 
-    post(url: string, body: any, options?: RequestOptionsArgs): Observable<T>;
+    get url(): string | undefined {
+        return this.options.url;
+    }
 
-    put(url: string, body: any, options?: RequestOptionsArgs): Observable<T>;
+    withUrl(url: string): this {
+        return this.withOptions({url});
+    }
 
-    delete(url: string, options?: RequestOptionsArgs): Observable<T>;
+    get method(): RequestMethod | undefined {
 
-    patch(url: string, body: any, options?: RequestOptionsArgs): Observable<T>;
+        const method = this.options.method;
 
-    head(url: string, options?: RequestOptionsArgs): Observable<T>;
+        return method == null ? undefined : requestMethod(method);
+    }
+
+    withMethod(method: string | RequestMethod): this {
+        return this.withOptions({method});
+    }
+
+    abstract load(url?: string, options?: RequestOptionsArgs): Observable<OUT>;
+
+    abstract send(request: IN, url?: string, options?: RequestOptionsArgs): Observable<OUT>;
+
+    abstract get(url?: string, options?: RequestOptionsArgs): Observable<OUT>;
+
+    abstract post(request: IN, url?: string, options?: RequestOptionsArgs): Observable<OUT>;
+
+    abstract put(request: IN, url?: string, options?: RequestOptionsArgs): Observable<OUT>;
+
+    //noinspection ReservedWordAsName
+    abstract delete(url?: string, options?: RequestOptionsArgs): Observable<OUT>;
+
+    abstract patch(request: IN, url?: string, options?: RequestOptionsArgs): Observable<OUT>;
+
+    abstract head(url?: string, options?: RequestOptionsArgs): Observable<OUT>;
 
 }
 
@@ -327,13 +361,13 @@ interface RikeInternals {
     readonly defaultHttpOptions: RequestOptions;
 
     wrapResponse(
-        target: RikeTarget<any>,
-        operation: RikeOperation<any>,
+        target: RikeTarget<any, any>,
+        operation: RikeOperation<any, any>,
         response: Observable<Response>): Observable<Response>;
 
 }
 
-class RikeTargetImpl<T> implements RikeTarget<T> {
+class RikeTargetImpl<IN, OUT> extends RikeTarget<IN, OUT> {
 
     private readonly _events = new EventEmitter<RikeEvent>();
     private _operation?: RikeOperationEvent;
@@ -345,7 +379,8 @@ class RikeTargetImpl<T> implements RikeTarget<T> {
         private _rike: Rike,
         private _internals: RikeInternals,
         private _target: any,
-        private _dataType: DataType<T>) {
+        private _dataType: DataType<IN, OUT>) {
+        super();
     }
 
     get rike(): Rike {
@@ -368,7 +403,7 @@ class RikeTargetImpl<T> implements RikeTarget<T> {
         return this._internals;
     }
 
-    get dataType(): DataType<T> {
+    get dataType(): DataType<IN, OUT> {
         return this._dataType;
     }
 
@@ -412,20 +447,16 @@ class RikeTargetImpl<T> implements RikeTarget<T> {
         return true;
     }
 
-    operation(operation: string, dataType?: DataType<any>): RikeOperation<any> {
+    operation(name: string, dataType?: DataType<any, any>): RikeOperation<any, any> {
         return new RikeOperationImpl(
             this,
-            operation,
+            name,
             !dataType ? this.dataType : (
-                this.dataType as DataType<any> === HTTP_RESPONSE_DATA_TYPE
-                    ? dataType : new OperationDataType<any>(this.dataType, dataType)));
+                this.dataType as DataType<any, any> === HTTP_RESPONSE_DATA_TYPE
+                    ? dataType : new OperationDataType<any, any>(this.dataType, dataType)));
     }
 
-    json<T>(operation: string): RikeOperation<T> {
-        return this.operation(operation, jsonDataType<T>());
-    }
-
-    startOperation(operation: RikeOperation<any>): void {
+    startOperation(operation: RikeOperation<any, any>): void {
 
         const event = new RikeOperationEvent(this.target, operation.name);
 
@@ -434,10 +465,10 @@ class RikeTargetImpl<T> implements RikeTarget<T> {
         this._operation = event;
     }
 
-    wrapResponse<T>(operation: RikeOperation<T>, response: Observable<Response>): Observable<T> {
+    wrapResponse<IN, OUT>(operation: RikeOperation<IN, OUT>, response: Observable<Response>): Observable<OUT> {
         response = this.internals.wrapResponse(this, operation, response);
         this._response = response;
-        return new Observable<T>((responseObserver: Observer<T>) => {
+        return new Observable<OUT>((responseObserver: Observer<OUT>) => {
             if (this._response !== response) {
                 return;// Another request already initiated
             }
@@ -481,13 +512,13 @@ class RikeTargetImpl<T> implements RikeTarget<T> {
 
 }
 
-class OperationDataType<T> extends DataType<T> {
+class OperationDataType<IN, OUT> extends DataType<IN, OUT> {
 
-    constructor(private _targetDataType: DataType<any>, private _dataType: DataType<T>) {
+    constructor(private _targetDataType: DataType<any, any>, private _dataType: DataType<IN, OUT>) {
         super();
     }
 
-    readResponse(response: Response): T {
+    readResponse(response: Response): OUT {
         return this._dataType.readResponse(response);
     }
 
@@ -496,25 +527,29 @@ class OperationDataType<T> extends DataType<T> {
         return this._dataType.prepareRequest(options);
     }
 
-    writeRequest(request: T, options: RequestOptionsArgs): RequestOptionsArgs {
+    writeRequest(request: IN, options: RequestOptionsArgs): RequestOptionsArgs {
         return this._dataType.writeRequest(request, options);
     }
 
 }
 
-class RikeOperationImpl<T> implements RikeOperation<T> {
+class RikeOperationImpl<IN, OUT> extends RikeOperation<IN, OUT> {
+
+    private _options: RequestOptions;
 
     constructor(
-        private _target: RikeTargetImpl<any>,
+        private _target: RikeTargetImpl<any, any>,
         private _name: string,
-        private _dataType: DataType<T>) {
+        private _dataType: DataType<IN, OUT>) {
+        super();
+        this._options = _target.internals.defaultHttpOptions.merge();
     }
 
     get rike(): Rike {
         return this.target.rike;
     }
 
-    get target(): RikeTargetImpl<any> {
+    get target(): RikeTargetImpl<any, any> {
         return this._target;
     }
 
@@ -522,53 +557,68 @@ class RikeOperationImpl<T> implements RikeOperation<T> {
         return this._name;
     }
 
-    get dataType(): DataType<T> {
+    get dataType(): DataType<IN, OUT> {
         return this._dataType;
     }
 
-    request(request: string | Request, options?: RequestOptionsArgs): Observable<T> {
+    withOptions(options: RequestOptionsArgs): this {
+        this._options = this._options.merge(options);
+        return this;
+    }
+
+    get options(): RequestOptions {
+        return this._options;
+    }
+
+    load(url?: string, options?: RequestOptionsArgs): Observable<OUT> {
         try {
             this.startOperation();
-
-            if (typeof request === "string") {
-                options = this.target.internals.defaultHttpOptions.merge(options || {url: request});
-                options = this.httpOptions(requestMethod(options.method), request, options);
-            }
-
-            return this.wrapResponse(this.rike.request(request, options));
+            options = this.requestOptions(undefined, url, options);
+            return this.wrapResponse(this.rike.request(this.requestUrl(url, options), options));
         } catch (e) {
             this.target.events.error(new RikeErrorEvent(this.target, this.name, e));
             throw e;
         }
     }
 
-    get(url: string, options?: RequestOptionsArgs): Observable<T> {
+    send(request: IN, url?: string, options?: RequestOptionsArgs): Observable<OUT> {
         try {
             this.startOperation();
-            options = this.httpOptions(RequestMethod.Get, url, options);
-            return this.wrapResponse(this.rike.get(url, options));
+            options = this.writeRequest(request, this.requestOptions(undefined, url, options));
+            return this.wrapResponse(this.rike.request(this.requestUrl(url, options), options));
         } catch (e) {
             this.target.events.error(new RikeErrorEvent(this.target, this.name, e));
             throw e;
         }
     }
 
-    post(url: string, data: T, options?: RequestOptionsArgs): Observable<T> {
+    get(url?: string, options?: RequestOptionsArgs): Observable<OUT> {
         try {
             this.startOperation();
-            options = this.writeRequest(data, this.httpOptions(RequestMethod.Post, url, options));
-            return this.wrapResponse(this.rike.post(url, options.body, options));
+            options = this.requestOptions(RequestMethod.Get, url, options);
+            return this.wrapResponse(this.rike.get(this.requestUrl(url, options), options));
         } catch (e) {
             this.target.events.error(new RikeErrorEvent(this.target, this.name, e));
             throw e;
         }
     }
 
-    put(url: string, data: T, options?: RequestOptionsArgs): Observable<T> {
+    post(request: IN, url?: string, options?: RequestOptionsArgs): Observable<OUT> {
         try {
             this.startOperation();
-            options = this.writeRequest(data, this.httpOptions(RequestMethod.Put, url, options));
-            return this.wrapResponse(this.rike.put(url, options.body, options));
+            options = this.writeRequest(request, this.requestOptions(RequestMethod.Post, url, options));
+            return this.wrapResponse(this.rike.post(this.requestUrl(url, options), options.body, options));
+        } catch (e) {
+            this.target.events.error(new RikeErrorEvent(this.target, this.name, e));
+            throw e;
+        }
+    }
+
+    put(request: IN, url?: string, options?: RequestOptionsArgs): Observable<OUT> {
+        try {
+            this.startOperation();
+            options = this.writeRequest(request, this.requestOptions(RequestMethod.Put, url, options));
+            return this.wrapResponse(this.rike.put(this.requestUrl(url, options), options.body, options));
         } catch (e) {
             this.target.events.error(new RikeErrorEvent(this.target, this.name, e));
             throw e;
@@ -576,33 +626,33 @@ class RikeOperationImpl<T> implements RikeOperation<T> {
     }
 
     //noinspection ReservedWordAsName
-    delete(url: string, options?: RequestOptionsArgs): Observable<T> {
+    delete(url?: string, options?: RequestOptionsArgs): Observable<OUT> {
         try {
             this.startOperation();
-            options = this.httpOptions(RequestMethod.Delete, url, options);
-            return this.wrapResponse(this.rike.delete(url, options));
+            options = this.requestOptions(RequestMethod.Delete, url, options);
+            return this.wrapResponse(this.rike.delete(this.requestUrl(url, options), options));
         } catch (e) {
             this.target.events.error(new RikeErrorEvent(this.target, this.name, e));
             throw e;
         }
     }
 
-    patch(url: string, data: T, options?: RequestOptionsArgs): Observable<T> {
+    patch(request: IN, url?: string, options?: RequestOptionsArgs): Observable<OUT> {
         try {
             this.startOperation();
-            options = this.writeRequest(data, this.httpOptions(RequestMethod.Patch, url, options));
-            return this.wrapResponse(this.rike.patch(url, options.body, options));
+            options = this.writeRequest(request, this.requestOptions(RequestMethod.Patch, url, options));
+            return this.wrapResponse(this.rike.patch(this.requestUrl(url, options), options.body, options));
         } catch (e) {
             this.target.events.error(new RikeErrorEvent(this.target, this.name, e));
             throw e;
         }
     }
 
-    head(url: string, options?: RequestOptionsArgs): Observable<T> {
+    head(url?: string, options?: RequestOptionsArgs): Observable<OUT> {
         try {
             this.startOperation();
-            options = this.httpOptions(RequestMethod.Head, url, options);
-            return this.wrapResponse(this.rike.head(url, options));
+            options = this.requestOptions(RequestMethod.Head, url, options);
+            return this.wrapResponse(this.rike.head(this.requestUrl(url, options), options));
         } catch (e) {
             this.target.events.error(new RikeErrorEvent(this.target, this.name, e));
             throw e;
@@ -613,32 +663,33 @@ class RikeOperationImpl<T> implements RikeOperation<T> {
         this.target.startOperation(this);
     }
 
-    private httpOptions(method: RequestMethod, url: string, options?: RequestOptionsArgs): RequestOptionsArgs {
-        if (!options) {
-            options = {
-                url,
-                method
-            };
-        } else {
-            options = {
-                url,
-                method,
-                search: options.search,
-                headers: options.headers,
-                body: options.body,
-                withCredentials: options.withCredentials
-            };
+    //noinspection JSMethodCanBeStatic
+    private requestUrl(url: string | undefined, options: RequestOptionsArgs): string {
+        if (url != null) {
+            return url;
         }
-
-        return this.dataType.prepareRequest(options);
+        if (options.url != null) {
+            return options.url;
+        }
+        throw new Error("Request URL not specified");
     }
 
-    private writeRequest(request: T, options: RequestOptionsArgs): RequestOptionsArgs {
+    private requestOptions(method?: RequestMethod, url?: string, options?: RequestOptionsArgs): RequestOptionsArgs {
+        if (!options) {
+            options = {url, method};
+        } else {
+            options = new RequestOptions(options).merge({url, method});
+        }
+
+        return this.dataType.prepareRequest(this.options.merge(options));
+    }
+
+    private writeRequest(request: IN, options: RequestOptionsArgs): RequestOptionsArgs {
         options = this.dataType.writeRequest(request, options);
         return options;
     }
 
-    private wrapResponse(response: Observable<Response>): Observable<T> {
+    private wrapResponse(response: Observable<Response>): Observable<OUT> {
         return this.target.wrapResponse(this, response);
     }
 
