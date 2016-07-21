@@ -1,5 +1,7 @@
 import {Rike} from "./ng2-rike/rike";
+import {RIKE_OPERATION_PROVIDERS} from "./ng2-rike/decorator";
 export * from './ng2-rike/data';
+export * from './ng2-rike/decorator';
 export * from './ng2-rike/event';
 export * from './ng2-rike/options';
 export * from './ng2-rike/rike';
@@ -13,5 +15,6 @@ export * from './ng2-rike/rike';
  * @type {any[]}
  */
 export const RIKE_PROVIDERS: any[] = [
-    Rike
+    Rike,
+    RIKE_OPERATION_PROVIDERS,
 ];

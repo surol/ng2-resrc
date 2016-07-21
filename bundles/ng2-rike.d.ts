@@ -136,9 +136,10 @@ declare module "ng2-rike/data" {
      *
      * Some of the data types may support only request or response operations, but not both.
      *
-     * `T` is operation request type, operation response type, or both.
+     * `IN` is operation request type.
+     * `OUT` is operation response type.
      */
-    export abstract class DataType<T> {
+    export abstract class DataType<IN, OUT> {
         /**
          * Reads operation response from HTTP response.
          *
@@ -146,7 +147,7 @@ declare module "ng2-rike/data" {
          *
          * @returns operation response.
          */
-        abstract readResponse(response: Response): T;
+        abstract readResponse(response: Response): OUT;
         /**
          * Prepares HTTP request.
          *
@@ -174,7 +175,8 @@ declare module "ng2-rike/data" {
          *
          * @return modified HTTP request options that will be used to perform actual request.
          */
-        abstract writeRequest(request: T, options: RequestOptionsArgs): RequestOptionsArgs;
+        abstract writeRequest(request: IN, options: RequestOptionsArgs): RequestOptionsArgs;
+        readResponseWith<OUT>(readResponse: (response: Response) => OUT): DataType<IN, OUT>;
     }
     /**
      * JSON data type.
@@ -183,22 +185,22 @@ declare module "ng2-rike/data" {
      *
      * @type {DataType<any>}
      */
-    export const JSON_DATA_TYPE: DataType<any>;
+    export const JSON_DATA_TYPE: DataType<any, any>;
     /**
      * Returns JSON data type.
      *
      * Sends and receives the data of the given type as JSON over HTTP.
      */
-    export const jsonDataType: (<T>() => DataType<T>);
+    export const jsonDataType: (<T>() => DataType<T, T>);
     /**
      * HTTP response data type.
      *
-     * This data type can not be used to post requests.
+     * The request type is any. It is used as request body.
      *
-     * @type {DataType<Response>}
+     * @type {DataType<any, Response>}
      */
-    export const HTTP_RESPONSE_DATA_TYPE: DataType<Response>;
-    export abstract class RequestBodyType<T> extends DataType<T> {
+    export const HTTP_RESPONSE_DATA_TYPE: DataType<any, Response>;
+    export abstract class RequestBodyType<T> extends DataType<T, T> {
         abstract readResponse(response: Response): T;
         writeRequest(request: T, options: RequestOptionsArgs): RequestOptionsArgs;
         abstract writeBody(request: T): any;
@@ -249,13 +251,13 @@ declare module "ng2-rike/rike" {
         /**
          * Constructs operation target, which operations produce HTTP responses ([HTTP_RESPONSE_DATA_TYPE]).
          *
-         * Note that this data type can not be used to post requests.
+         * Arbitrary data type can be used as a request body.
          *
          * @param target arbitrary target value.
          *
          * @returns {RikeTargetImpl} new operation target.
          */
-        target(target: any): RikeTarget<Response>;
+        target(target: any): RikeTarget<any, Response>;
         /**
          * Constructs operations target, which operates on the given data type.
          *
@@ -264,7 +266,7 @@ declare module "ng2-rike/rike" {
          *
          * @return {RikeTargetImpl<T>} new operations target.
          */
-        target<T>(target: any, dataType: DataType<T>): RikeTarget<T>;
+        target<IN, OUT>(target: any, dataType: DataType<IN, OUT>): RikeTarget<IN, OUT>;
         /**
          * Constructs operations target, which operates on the given data type passing it as JSON over HTTP.
          *
@@ -272,7 +274,7 @@ declare module "ng2-rike/rike" {
          *
          * @return {RikeTarget<T>} new operations target.
          */
-        json<T>(target: any): RikeTarget<T>;
+        json<T>(target: any): RikeTarget<T, T>;
         /**
          * Updates HTTP request options accordingly to global _options_.
          *
@@ -290,7 +292,7 @@ declare module "ng2-rike/rike" {
          * @param response
          * @returns {Observable<Response>}
          */
-        protected wrapResponse(_target: RikeTarget<any>, _operation: RikeOperation<any>, response: Observable<Response>): Observable<Response>;
+        protected wrapResponse(_target: RikeTarget<any, any>, _operation: RikeOperation<any, any>, response: Observable<Response>): Observable<Response>;
     }
     /**
      * REST-like operations target.
@@ -301,61 +303,62 @@ declare module "ng2-rike/rike" {
      * Only one operation can be performed on a target at a time. Whenever a new operation on the same target is initiated,
      * the previous one is cancelled.
      *
-     * `T` is a data type this target operates over by default.
+     * `IN` is a request type this target's operations accept by default.
+     * `OUT` is a response type this target's operations return by default.
      */
-    export interface RikeTarget<T> {
+    export abstract class RikeTarget<IN, OUT> {
         /**
          * Operation target value.
          *
          * This is the value passed to the [Rike.target] method.
          */
-        readonly target: any;
+        readonly abstract target: any;
         /**
          * A currently evaluating operation's name.
          *
          * `undefined` if no operations currently in process, i.e. operation not started, cancelled, or completed, either
          * successfully or with error.
          */
-        readonly currentOperation?: string;
+        readonly abstract currentOperation?: string;
         /**
          * An emitter of events for operations performed on this target.
          */
-        readonly events: EventEmitter<RikeEvent>;
+        readonly abstract events: EventEmitter<RikeEvent>;
         /**
          * An operations data type to use by default.
          *
          * This is the data type to the [Rike.target] method.
          */
-        readonly dataType: DataType<T>;
+        readonly abstract dataType: DataType<IN, OUT>;
         /**
          * Constructs an operation on this target, which produces responses of type `T`.
          *
          * The target data type (_dataType_) passed to the [Rike.target] will be used to encode/decode operation data.
          *
-         * @param operation operation name.
+         * @param name operation name.
          */
-        operation(operation: string): RikeOperation<T>;
+        abstract operation(name: string): RikeOperation<IN, OUT>;
         /**
          * Constructs an operation on this target, which produces responses of the given type.
          *
-         * @param operation operation name.
+         * @param name operation name.
          * @param dataType operation data type.
          */
-        operation<T>(operation: string, dataType: DataType<T>): RikeOperation<T>;
+        abstract operation<IN, OUT>(name: string, dataType: DataType<IN, OUT>): RikeOperation<IN, OUT>;
         /**
          * Constructs an operations on this target, which operates on the given data type passing it as JSON over HTTP.
          *
-         * @param operation operation name.
+         * @param name operation name.
          *
          * @return {RikeTarget<T>} new operations target.
          */
-        json<T>(operation: string): RikeOperation<T>;
+        json<T>(name: string): RikeOperation<T, T>;
         /**
          * Cancels current operation, if any.
          *
          * @return `true` if operation cancelled, or `false` if there is no operation to cancel.
          */
-        cancel(): boolean;
+        abstract cancel(): boolean;
     }
     /**
      * REST-like resource operation.
@@ -365,35 +368,65 @@ declare module "ng2-rike/rike" {
      * To initiate operation just call any of the HTTP access methods. Note that operation always belongs to its target
      * and thus two operations could not be initiated simultaneously.
      *
-     * `T` is a type of responses this operation produces.
+     * `IN` is a type of requests this operation accepts.
+     * `OUT` is a type of responses this operation produces.
      */
-    export interface RikeOperation<T> {
+    export abstract class RikeOperation<IN, OUT> {
         /**
          * Operation target.
          */
-        readonly target: RikeTarget<any>;
+        readonly abstract target: RikeTarget<any, any>;
         /**
          * Operation name.
          */
-        readonly name: string;
+        readonly abstract name: string;
         /**
          * Operation data type.
          *
          * This data type is based on the one passed to the [RikeTarget.operation], but also honors the default data type
          * set for target.
          */
-        readonly dataType: DataType<T>;
-        request(request: string | Request, options?: RequestOptionsArgs): Observable<T>;
-        get(url: string, options?: RequestOptionsArgs): Observable<T>;
-        post(url: string, body: any, options?: RequestOptionsArgs): Observable<T>;
-        put(url: string, body: any, options?: RequestOptionsArgs): Observable<T>;
-        delete(url: string, options?: RequestOptionsArgs): Observable<T>;
-        patch(url: string, body: any, options?: RequestOptionsArgs): Observable<T>;
-        head(url: string, options?: RequestOptionsArgs): Observable<T>;
+        readonly abstract dataType: DataType<IN, OUT>;
+        readonly abstract options: RequestOptions;
+        abstract withOptions(options?: RequestOptionsArgs): this;
+        readonly url: string | undefined;
+        withUrl(url: string): this;
+        readonly method: RequestMethod | undefined;
+        withMethod(method: string | RequestMethod): this;
+        abstract load(url?: string, options?: RequestOptionsArgs): Observable<OUT>;
+        abstract send(request: IN, url?: string, options?: RequestOptionsArgs): Observable<OUT>;
+        abstract get(url?: string, options?: RequestOptionsArgs): Observable<OUT>;
+        abstract post(request: IN, url?: string, options?: RequestOptionsArgs): Observable<OUT>;
+        abstract put(request: IN, url?: string, options?: RequestOptionsArgs): Observable<OUT>;
+        abstract delete(url?: string, options?: RequestOptionsArgs): Observable<OUT>;
+        abstract patch(request: IN, url?: string, options?: RequestOptionsArgs): Observable<OUT>;
+        abstract head(url?: string, options?: RequestOptionsArgs): Observable<OUT>;
     }
+}
+declare module "ng2-rike/decorator" {
+    import { DataType } from "ng2-rike/data";
+    import { URLSearchParams, Headers } from "@angular/http";
+    export const RIKE_OPERATION_PROVIDERS: any[];
+    export interface OperationMetadata {
+        name?: string;
+        dataType?: DataType<any, any>;
+        url?: string;
+        search?: string | URLSearchParams;
+        headers?: Headers | {
+            [key: string]: any;
+        };
+        withCredentials?: boolean;
+    }
+    export function GET(opts?: OperationMetadata): MethodDecorator;
+    export function POST(opts?: OperationMetadata): MethodDecorator;
+    export function PUT(opts?: OperationMetadata): MethodDecorator;
+    export function DELETE(opts?: OperationMetadata): MethodDecorator;
+    export function OPTIONS(opts?: OperationMetadata): MethodDecorator;
+    export function Get(opts?: OperationMetadata): MethodDecorator;
 }
 declare module "ng2-rike" {
     export * from "ng2-rike/data";
+    export * from "ng2-rike/decorator";
     export * from "ng2-rike/event";
     export * from "ng2-rike/options";
     export * from "ng2-rike/rike";

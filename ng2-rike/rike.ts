@@ -316,7 +316,7 @@ export abstract class RikeOperation<IN, OUT> {
 
     abstract readonly options: RequestOptions;
 
-    abstract withOptions(options: RequestOptionsArgs): this;
+    abstract withOptions(options?: RequestOptionsArgs): this;
 
     get url(): string | undefined {
         return this.options.url;
@@ -561,8 +561,10 @@ class RikeOperationImpl<IN, OUT> extends RikeOperation<IN, OUT> {
         return this._dataType;
     }
 
-    withOptions(options: RequestOptionsArgs): this {
-        this._options = this._options.merge(options);
+    withOptions(options?: RequestOptionsArgs): this {
+        if (options) {
+            this._options = this._options.merge(options);
+        }
         return this;
     }
 

@@ -276,12 +276,16 @@ System.register("ng2-rike/options", [], function(exports_2, context_2) {
         }
     }
 });
-System.register("ng2-rike/data", [], function(exports_3, context_3) {
+System.register("ng2-rike/data", ["@angular/http"], function(exports_3, context_3) {
     "use strict";
     var __moduleName = context_3 && context_3.id;
-    var DataType, JSON_DATA_TYPE, jsonDataType, HTTP_RESPONSE_DATA_TYPE, RequestBodyType, JsonDataType, HttpResponseDataType;
+    var http_1;
+    var DataType, JSON_DATA_TYPE, jsonDataType, HTTP_RESPONSE_DATA_TYPE, RequestBodyType, ResponseDataType, JsonDataType, HttpResponseDataType;
     return {
-        setters:[],
+        setters:[
+            function (http_1_1) {
+                http_1 = http_1_1;
+            }],
         execute: function() {
             /**
              * REST-like operations data type.
@@ -290,7 +294,8 @@ System.register("ng2-rike/data", [], function(exports_3, context_3) {
              *
              * Some of the data types may support only request or response operations, but not both.
              *
-             * `T` is operation request type, operation response type, or both.
+             * `IN` is operation request type.
+             * `OUT` is operation response type.
              */
             DataType = (function () {
                 function DataType() {
@@ -312,6 +317,9 @@ System.register("ng2-rike/data", [], function(exports_3, context_3) {
                 DataType.prototype.prepareRequest = function (options) {
                     return options;
                 };
+                DataType.prototype.readResponseWith = function (readResponse) {
+                    return new ResponseDataType(this, readResponse);
+                };
                 return DataType;
             }());
             exports_3("DataType", DataType);
@@ -332,9 +340,9 @@ System.register("ng2-rike/data", [], function(exports_3, context_3) {
             /**
              * HTTP response data type.
              *
-             * This data type can not be used to post requests.
+             * The request type is any. It is used as request body.
              *
-             * @type {DataType<Response>}
+             * @type {DataType<any, Response>}
              */
             exports_3("HTTP_RESPONSE_DATA_TYPE", HTTP_RESPONSE_DATA_TYPE = new HttpResponseDataType());
             RequestBodyType = (function (_super) {
@@ -343,18 +351,32 @@ System.register("ng2-rike/data", [], function(exports_3, context_3) {
                     _super.apply(this, arguments);
                 }
                 RequestBodyType.prototype.writeRequest = function (request, options) {
-                    return {
-                        url: options.url,
-                        method: options.method,
-                        search: options.search,
-                        headers: options.headers,
-                        body: this.writeBody(request),
-                        withCredentials: options.withCredentials
-                    };
+                    return new http_1.RequestOptions(options).merge({ body: this.writeBody(request) });
                 };
                 return RequestBodyType;
             }(DataType));
             exports_3("RequestBodyType", RequestBodyType);
+            ResponseDataType = (function (_super) {
+                __extends(ResponseDataType, _super);
+                function ResponseDataType(_requestType, _readResponse) {
+                    _super.call(this);
+                    this._requestType = _requestType;
+                    this._readResponse = _readResponse;
+                }
+                ResponseDataType.prototype.readResponse = function (response) {
+                    return this._readResponse(response);
+                };
+                ResponseDataType.prototype.prepareRequest = function (options) {
+                    return this._requestType.prepareRequest(options);
+                };
+                ResponseDataType.prototype.writeRequest = function (request, options) {
+                    return this._requestType.writeRequest(request, options);
+                };
+                ResponseDataType.prototype.readResponseWith = function (readResponse) {
+                    return new ResponseDataType(this._requestType, readResponse);
+                };
+                return ResponseDataType;
+            }(DataType));
             JsonDataType = (function (_super) {
                 __extends(JsonDataType, _super);
                 function JsonDataType() {
@@ -377,7 +399,7 @@ System.register("ng2-rike/data", [], function(exports_3, context_3) {
                     return response;
                 };
                 HttpResponseDataType.prototype.writeRequest = function (request, options) {
-                    throw new Error("Unsupported HTTP method: " + options.method);
+                    return new http_1.RequestOptions(options).merge({ body: request });
                 };
                 return HttpResponseDataType;
             }(DataType));
@@ -387,11 +409,11 @@ System.register("ng2-rike/data", [], function(exports_3, context_3) {
 System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "ng2-rike/event", "ng2-rike/options", "ng2-rike/data"], function(exports_4, context_4) {
     "use strict";
     var __moduleName = context_4 && context_4.id;
-    var core_1, http_1, Rx_1, event_1, options_1, data_1;
-    var REQUEST_METHODS, Rike, RikeTargetImpl, OperationDataType, RikeOperationImpl;
+    var core_1, http_2, Rx_1, event_1, options_1, data_1;
+    var REQUEST_METHODS, Rike, RikeTarget, RikeOperation, RikeTargetImpl, OperationDataType, RikeOperationImpl;
     function requestMethod(method) {
         if (!method) {
-            return http_1.RequestMethod.Get;
+            return http_2.RequestMethod.Get;
         }
         if (typeof method !== "string") {
             return method;
@@ -408,8 +430,8 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
             function (core_1_1) {
                 core_1 = core_1_1;
             },
-            function (http_1_1) {
-                http_1 = http_1_1;
+            function (http_2_1) {
+                http_2 = http_2_1;
             },
             function (Rx_1_1) {
                 Rx_1 = Rx_1_1;
@@ -425,13 +447,13 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
             }],
         execute: function() {
             REQUEST_METHODS = {
-                "GET": http_1.RequestMethod.Get,
-                "POST": http_1.RequestMethod.Post,
-                "PUT": http_1.RequestMethod.Put,
-                "DELETE": http_1.RequestMethod.Delete,
-                "OPTIONS": http_1.RequestMethod.Options,
-                "HEAD": http_1.RequestMethod.Head,
-                "PATCH": http_1.RequestMethod.Patch,
+                "GET": http_2.RequestMethod.Get,
+                "POST": http_2.RequestMethod.Post,
+                "PUT": http_2.RequestMethod.Put,
+                "DELETE": http_2.RequestMethod.Delete,
+                "OPTIONS": http_2.RequestMethod.Options,
+                "HEAD": http_2.RequestMethod.Head,
+                "PATCH": http_2.RequestMethod.Patch,
             };
             /**
              * REST-like resource operations service.
@@ -561,13 +583,82 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                 Rike = __decorate([
                     core_1.Injectable(),
                     __param(2, core_1.Optional()), 
-                    __metadata('design:paramtypes', [http_1.Http, http_1.RequestOptions, options_1.RikeOptions])
+                    __metadata('design:paramtypes', [http_2.Http, http_2.RequestOptions, options_1.RikeOptions])
                 ], Rike);
                 return Rike;
             }());
             exports_4("Rike", Rike);
-            RikeTargetImpl = (function () {
+            /**
+             * REST-like operations target.
+             *
+             * Operation targets are created using [Rike.target] method. The actual operations should be created first with
+             * _operation_ method.
+             *
+             * Only one operation can be performed on a target at a time. Whenever a new operation on the same target is initiated,
+             * the previous one is cancelled.
+             *
+             * `IN` is a request type this target's operations accept by default.
+             * `OUT` is a response type this target's operations return by default.
+             */
+            RikeTarget = (function () {
+                function RikeTarget() {
+                }
+                /**
+                 * Constructs an operations on this target, which operates on the given data type passing it as JSON over HTTP.
+                 *
+                 * @param name operation name.
+                 *
+                 * @return {RikeTarget<T>} new operations target.
+                 */
+                RikeTarget.prototype.json = function (name) {
+                    return this.operation(name, data_1.jsonDataType());
+                };
+                return RikeTarget;
+            }());
+            exports_4("RikeTarget", RikeTarget);
+            //noinspection ReservedWordAsName
+            /**
+             * REST-like resource operation.
+             *
+             * It basically mimics the `Http` service interface, but also honors global Rike options, and emits events.
+             *
+             * To initiate operation just call any of the HTTP access methods. Note that operation always belongs to its target
+             * and thus two operations could not be initiated simultaneously.
+             *
+             * `IN` is a type of requests this operation accepts.
+             * `OUT` is a type of responses this operation produces.
+             */
+            RikeOperation = (function () {
+                function RikeOperation() {
+                }
+                Object.defineProperty(RikeOperation.prototype, "url", {
+                    get: function () {
+                        return this.options.url;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                RikeOperation.prototype.withUrl = function (url) {
+                    return this.withOptions({ url: url });
+                };
+                Object.defineProperty(RikeOperation.prototype, "method", {
+                    get: function () {
+                        var method = this.options.method;
+                        return method == null ? undefined : requestMethod(method);
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                RikeOperation.prototype.withMethod = function (method) {
+                    return this.withOptions({ method: method });
+                };
+                return RikeOperation;
+            }());
+            exports_4("RikeOperation", RikeOperation);
+            RikeTargetImpl = (function (_super) {
+                __extends(RikeTargetImpl, _super);
                 function RikeTargetImpl(_rike, _internals, _target, _dataType) {
+                    _super.call(this);
                     this._rike = _rike;
                     this._internals = _internals;
                     this._target = _target;
@@ -654,12 +745,9 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                     }
                     return true;
                 };
-                RikeTargetImpl.prototype.operation = function (operation, dataType) {
-                    return new RikeOperationImpl(this, operation, !dataType ? this.dataType : (this.dataType === data_1.HTTP_RESPONSE_DATA_TYPE
+                RikeTargetImpl.prototype.operation = function (name, dataType) {
+                    return new RikeOperationImpl(this, name, !dataType ? this.dataType : (this.dataType === data_1.HTTP_RESPONSE_DATA_TYPE
                         ? dataType : new OperationDataType(this.dataType, dataType)));
-                };
-                RikeTargetImpl.prototype.json = function (operation) {
-                    return this.operation(operation, data_1.jsonDataType());
                 };
                 RikeTargetImpl.prototype.startOperation = function (operation) {
                     var event = new event_1.RikeOperationEvent(this.target, operation.name);
@@ -712,7 +800,7 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                     });
                 };
                 return RikeTargetImpl;
-            }());
+            }(RikeTarget));
             OperationDataType = (function (_super) {
                 __extends(OperationDataType, _super);
                 function OperationDataType(_targetDataType, _dataType) {
@@ -732,11 +820,14 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                 };
                 return OperationDataType;
             }(data_1.DataType));
-            RikeOperationImpl = (function () {
+            RikeOperationImpl = (function (_super) {
+                __extends(RikeOperationImpl, _super);
                 function RikeOperationImpl(_target, _name, _dataType) {
+                    _super.call(this);
                     this._target = _target;
                     this._name = _name;
                     this._dataType = _dataType;
+                    this._options = _target.internals.defaultHttpOptions.merge();
                 }
                 Object.defineProperty(RikeOperationImpl.prototype, "rike", {
                     get: function () {
@@ -766,14 +857,35 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                     enumerable: true,
                     configurable: true
                 });
-                RikeOperationImpl.prototype.request = function (request, options) {
+                RikeOperationImpl.prototype.withOptions = function (options) {
+                    if (options) {
+                        this._options = this._options.merge(options);
+                    }
+                    return this;
+                };
+                Object.defineProperty(RikeOperationImpl.prototype, "options", {
+                    get: function () {
+                        return this._options;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                RikeOperationImpl.prototype.load = function (url, options) {
                     try {
                         this.startOperation();
-                        if (typeof request === "string") {
-                            options = this.target.internals.defaultHttpOptions.merge(options || { url: request });
-                            options = this.httpOptions(requestMethod(options.method), request, options);
-                        }
-                        return this.wrapResponse(this.rike.request(request, options));
+                        options = this.requestOptions(undefined, url, options);
+                        return this.wrapResponse(this.rike.request(this.requestUrl(url, options), options));
+                    }
+                    catch (e) {
+                        this.target.events.error(new event_1.RikeErrorEvent(this.target, this.name, e));
+                        throw e;
+                    }
+                };
+                RikeOperationImpl.prototype.send = function (request, url, options) {
+                    try {
+                        this.startOperation();
+                        options = this.writeRequest(request, this.requestOptions(undefined, url, options));
+                        return this.wrapResponse(this.rike.request(this.requestUrl(url, options), options));
                     }
                     catch (e) {
                         this.target.events.error(new event_1.RikeErrorEvent(this.target, this.name, e));
@@ -783,30 +895,30 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                 RikeOperationImpl.prototype.get = function (url, options) {
                     try {
                         this.startOperation();
-                        options = this.httpOptions(http_1.RequestMethod.Get, url, options);
-                        return this.wrapResponse(this.rike.get(url, options));
+                        options = this.requestOptions(http_2.RequestMethod.Get, url, options);
+                        return this.wrapResponse(this.rike.get(this.requestUrl(url, options), options));
                     }
                     catch (e) {
                         this.target.events.error(new event_1.RikeErrorEvent(this.target, this.name, e));
                         throw e;
                     }
                 };
-                RikeOperationImpl.prototype.post = function (url, data, options) {
+                RikeOperationImpl.prototype.post = function (request, url, options) {
                     try {
                         this.startOperation();
-                        options = this.writeRequest(data, this.httpOptions(http_1.RequestMethod.Post, url, options));
-                        return this.wrapResponse(this.rike.post(url, options.body, options));
+                        options = this.writeRequest(request, this.requestOptions(http_2.RequestMethod.Post, url, options));
+                        return this.wrapResponse(this.rike.post(this.requestUrl(url, options), options.body, options));
                     }
                     catch (e) {
                         this.target.events.error(new event_1.RikeErrorEvent(this.target, this.name, e));
                         throw e;
                     }
                 };
-                RikeOperationImpl.prototype.put = function (url, data, options) {
+                RikeOperationImpl.prototype.put = function (request, url, options) {
                     try {
                         this.startOperation();
-                        options = this.writeRequest(data, this.httpOptions(http_1.RequestMethod.Put, url, options));
-                        return this.wrapResponse(this.rike.put(url, options.body, options));
+                        options = this.writeRequest(request, this.requestOptions(http_2.RequestMethod.Put, url, options));
+                        return this.wrapResponse(this.rike.put(this.requestUrl(url, options), options.body, options));
                     }
                     catch (e) {
                         this.target.events.error(new event_1.RikeErrorEvent(this.target, this.name, e));
@@ -817,19 +929,19 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                 RikeOperationImpl.prototype.delete = function (url, options) {
                     try {
                         this.startOperation();
-                        options = this.httpOptions(http_1.RequestMethod.Delete, url, options);
-                        return this.wrapResponse(this.rike.delete(url, options));
+                        options = this.requestOptions(http_2.RequestMethod.Delete, url, options);
+                        return this.wrapResponse(this.rike.delete(this.requestUrl(url, options), options));
                     }
                     catch (e) {
                         this.target.events.error(new event_1.RikeErrorEvent(this.target, this.name, e));
                         throw e;
                     }
                 };
-                RikeOperationImpl.prototype.patch = function (url, data, options) {
+                RikeOperationImpl.prototype.patch = function (request, url, options) {
                     try {
                         this.startOperation();
-                        options = this.writeRequest(data, this.httpOptions(http_1.RequestMethod.Patch, url, options));
-                        return this.wrapResponse(this.rike.patch(url, options.body, options));
+                        options = this.writeRequest(request, this.requestOptions(http_2.RequestMethod.Patch, url, options));
+                        return this.wrapResponse(this.rike.patch(this.requestUrl(url, options), options.body, options));
                     }
                     catch (e) {
                         this.target.events.error(new event_1.RikeErrorEvent(this.target, this.name, e));
@@ -839,8 +951,8 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                 RikeOperationImpl.prototype.head = function (url, options) {
                     try {
                         this.startOperation();
-                        options = this.httpOptions(http_1.RequestMethod.Head, url, options);
-                        return this.wrapResponse(this.rike.head(url, options));
+                        options = this.requestOptions(http_2.RequestMethod.Head, url, options);
+                        return this.wrapResponse(this.rike.head(this.requestUrl(url, options), options));
                     }
                     catch (e) {
                         this.target.events.error(new event_1.RikeErrorEvent(this.target, this.name, e));
@@ -850,24 +962,24 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                 RikeOperationImpl.prototype.startOperation = function () {
                     this.target.startOperation(this);
                 };
-                RikeOperationImpl.prototype.httpOptions = function (method, url, options) {
+                //noinspection JSMethodCanBeStatic
+                RikeOperationImpl.prototype.requestUrl = function (url, options) {
+                    if (url != null) {
+                        return url;
+                    }
+                    if (options.url != null) {
+                        return options.url;
+                    }
+                    throw new Error("Request URL not specified");
+                };
+                RikeOperationImpl.prototype.requestOptions = function (method, url, options) {
                     if (!options) {
-                        options = {
-                            url: url,
-                            method: method
-                        };
+                        options = { url: url, method: method };
                     }
                     else {
-                        options = {
-                            url: url,
-                            method: method,
-                            search: options.search,
-                            headers: options.headers,
-                            body: options.body,
-                            withCredentials: options.withCredentials
-                        };
+                        options = new http_2.RequestOptions(options).merge({ url: url, method: method });
                     }
-                    return this.dataType.prepareRequest(options);
+                    return this.dataType.prepareRequest(this.options.merge(options));
                 };
                 RikeOperationImpl.prototype.writeRequest = function (request, options) {
                     options = this.dataType.writeRequest(request, options);
@@ -877,14 +989,284 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                     return this.target.wrapResponse(this, response);
                 };
                 return RikeOperationImpl;
-            }());
+            }(RikeOperation));
         }
     }
 });
-System.register("ng2-rike", ["ng2-rike/rike", "ng2-rike/data", "ng2-rike/event", "ng2-rike/options"], function(exports_5, context_5) {
+System.register("ng2-rike/decorator", ["ng2-rike/rike", "@angular/http"], function(exports_5, context_5) {
     "use strict";
     var __moduleName = context_5 && context_5.id;
-    var rike_1;
+    var rike_1, http_3;
+    var InjectableTarget, InjectableOperation, injectableTarget, injectableOperation, RIKE_OPERATION_PROVIDERS;
+    function operation() {
+        if (!injectableOperation) {
+            throw new Error("Rike is not initialized yet");
+        }
+        return injectableOperation;
+    }
+    function opDecorator(method, opts) {
+        return function (target, propertyKey, descriptor) {
+            var originalMethod = descriptor.value;
+            descriptor.value = function () {
+                var args = [];
+                for (var _i = 0; _i < arguments.length; _i++) {
+                    args[_i - 0] = arguments[_i];
+                }
+                var op = operation();
+                var name = opts && opts.name || propertyKey.toString();
+                var dataType = opts && opts.dataType;
+                op.pushOperation(this, name, dataType);
+                try {
+                    if (opts) {
+                        op.withOptions({
+                            method: opts.method,
+                            url: opts.url,
+                            search: opts.search,
+                            headers: opts.headers && new http_3.Headers(opts.headers),
+                            withCredentials: opts.withCredentials,
+                        });
+                        if (method != null) {
+                            op.withMethod(method);
+                        }
+                    }
+                    return originalMethod.apply(this, args);
+                }
+                finally {
+                    op.popOperation();
+                }
+            };
+            return descriptor;
+        };
+    }
+    function RIKE(opts) {
+        return opDecorator(undefined, opts);
+    }
+    exports_5("RIKE", RIKE);
+    function GET(opts) {
+        return opDecorator(http_3.RequestMethod.Get, opts);
+    }
+    exports_5("GET", GET);
+    function POST(opts) {
+        return opDecorator(http_3.RequestMethod.Post, opts);
+    }
+    exports_5("POST", POST);
+    function PUT(opts) {
+        return opDecorator(http_3.RequestMethod.Put, opts);
+    }
+    exports_5("PUT", PUT);
+    function DELETE(opts) {
+        return opDecorator(http_3.RequestMethod.Delete, opts);
+    }
+    exports_5("DELETE", DELETE);
+    function OPTIONS(opts) {
+        return opDecorator(http_3.RequestMethod.Options, opts);
+    }
+    exports_5("OPTIONS", OPTIONS);
+    function HEAD(opts) {
+        return opDecorator(http_3.RequestMethod.Head, opts);
+    }
+    exports_5("HEAD", HEAD);
+    function PATCH(opts) {
+        return opDecorator(http_3.RequestMethod.Patch, opts);
+    }
+    exports_5("PATCH", PATCH);
+    return {
+        setters:[
+            function (rike_1_1) {
+                rike_1 = rike_1_1;
+            },
+            function (http_3_1) {
+                http_3 = http_3_1;
+            }],
+        execute: function() {
+            InjectableTarget = (function (_super) {
+                __extends(InjectableTarget, _super);
+                function InjectableTarget(_rike) {
+                    _super.call(this);
+                    this._rike = _rike;
+                    this._stack = [];
+                }
+                Object.defineProperty(InjectableTarget.prototype, "target", {
+                    get: function () {
+                        return this.wrapped.target;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                Object.defineProperty(InjectableTarget.prototype, "currentOperation", {
+                    get: function () {
+                        return this.wrapped.currentOperation;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                Object.defineProperty(InjectableTarget.prototype, "events", {
+                    get: function () {
+                        return this.wrapped.events;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                Object.defineProperty(InjectableTarget.prototype, "dataType", {
+                    get: function () {
+                        return this.wrapped.dataType;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                InjectableTarget.prototype.operation = function (name, dataType) {
+                    if (!dataType) {
+                        return this.wrapped.operation(name);
+                    }
+                    return this.wrapped.operation(name, dataType);
+                };
+                InjectableTarget.prototype.cancel = function () {
+                    return this.wrapped.cancel();
+                };
+                Object.defineProperty(InjectableTarget.prototype, "wrapped", {
+                    get: function () {
+                        if (!this._wrapped) {
+                            throw new Error("No current operations target");
+                        }
+                        return this._wrapped;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                InjectableTarget.prototype.pushTarget = function (target, dataType) {
+                    if (this._wrapped) {
+                        this._stack.push(this._wrapped);
+                        if (this._wrapped.target === target) {
+                            return;
+                        }
+                    }
+                    if (dataType) {
+                        this._wrapped = this._rike.target(target, dataType);
+                    }
+                    else {
+                        this._wrapped = this._rike.target(target);
+                    }
+                };
+                InjectableTarget.prototype.popTarget = function () {
+                    this._wrapped = this._stack.pop();
+                };
+                return InjectableTarget;
+            }(rike_1.RikeTarget));
+            InjectableOperation = (function (_super) {
+                __extends(InjectableOperation, _super);
+                function InjectableOperation(_target) {
+                    _super.call(this);
+                    this._target = _target;
+                    this._stack = [];
+                }
+                Object.defineProperty(InjectableOperation.prototype, "target", {
+                    get: function () {
+                        return this._target;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                Object.defineProperty(InjectableOperation.prototype, "name", {
+                    get: function () {
+                        return this.wrapped.name;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                Object.defineProperty(InjectableOperation.prototype, "dataType", {
+                    get: function () {
+                        return this.wrapped.dataType;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                Object.defineProperty(InjectableOperation.prototype, "options", {
+                    get: function () {
+                        return this.wrapped.options;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                InjectableOperation.prototype.withOptions = function (options) {
+                    this.wrapped.withOptions(options);
+                    return this;
+                };
+                InjectableOperation.prototype.load = function (url, options) {
+                    return this.wrapped.load(url, options);
+                };
+                InjectableOperation.prototype.send = function (request, url, options) {
+                    return this.wrapped.send(request, url, options);
+                };
+                InjectableOperation.prototype.get = function (url, options) {
+                    return this.wrapped.get(url, options);
+                };
+                InjectableOperation.prototype.post = function (request, url, options) {
+                    return this.wrapped.post(request, url, options);
+                };
+                InjectableOperation.prototype.put = function (request, url, options) {
+                    return this.wrapped.put(request, url, options);
+                };
+                //noinspection ReservedWordAsName
+                InjectableOperation.prototype.delete = function (url, options) {
+                    return this.wrapped.delete(url, options);
+                };
+                InjectableOperation.prototype.patch = function (request, url, options) {
+                    return this.wrapped.patch(request, url, options);
+                };
+                InjectableOperation.prototype.head = function (url, options) {
+                    return this.wrapped.head(url, options);
+                };
+                Object.defineProperty(InjectableOperation.prototype, "wrapped", {
+                    get: function () {
+                        if (!this._wrapped) {
+                            throw new Error("No current operation");
+                        }
+                        return this._wrapped;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                InjectableOperation.prototype.pushOperation = function (target, name, dataType) {
+                    this._target.pushTarget(target);
+                    if (this._wrapped) {
+                        this._stack.push(this._wrapped);
+                    }
+                    if (dataType) {
+                        this._wrapped = this._target.operation(name, dataType);
+                    }
+                    else {
+                        this._wrapped = this._target.operation(name);
+                    }
+                };
+                InjectableOperation.prototype.popOperation = function () {
+                    try {
+                        this._wrapped = this._stack.pop();
+                    }
+                    finally {
+                        this._target.popTarget();
+                    }
+                };
+                return InjectableOperation;
+            }(rike_1.RikeOperation));
+            exports_5("RIKE_OPERATION_PROVIDERS", RIKE_OPERATION_PROVIDERS = [
+                {
+                    provide: InjectableTarget,
+                    useFactory: function (rike) { return injectableTarget = new InjectableTarget(rike); },
+                    deps: [rike_1.Rike],
+                },
+                {
+                    provide: InjectableOperation,
+                    useFactory: function (target) { return injectableOperation = new InjectableOperation(target); },
+                    deps: [InjectableTarget],
+                }
+            ]);
+        }
+    }
+});
+System.register("ng2-rike", ["ng2-rike/rike", "ng2-rike/decorator", "ng2-rike/data", "ng2-rike/event", "ng2-rike/options"], function(exports_6, context_6) {
+    "use strict";
+    var __moduleName = context_6 && context_6.id;
+    var rike_2, decorator_1;
     var RIKE_PROVIDERS;
     var exportedNames_1 = {
         'RIKE_PROVIDERS': true
@@ -894,13 +1276,17 @@ System.register("ng2-rike", ["ng2-rike/rike", "ng2-rike/data", "ng2-rike/event",
         for(var n in m) {
             if (n !== "default"&& !exportedNames_1.hasOwnProperty(n)) exports[n] = m[n];
         }
-        exports_5(exports);
+        exports_6(exports);
     }
     return {
         setters:[
-            function (rike_1_1) {
-                rike_1 = rike_1_1;
-                exportStar_1(rike_1_1);
+            function (rike_2_1) {
+                rike_2 = rike_2_1;
+                exportStar_1(rike_2_1);
+            },
+            function (decorator_1_1) {
+                decorator_1 = decorator_1_1;
+                exportStar_1(decorator_1_1);
             },
             function (data_2_1) {
                 exportStar_1(data_2_1);
@@ -920,8 +1306,9 @@ System.register("ng2-rike", ["ng2-rike/rike", "ng2-rike/data", "ng2-rike/event",
              *
              * @type {any[]}
              */
-            exports_5("RIKE_PROVIDERS", RIKE_PROVIDERS = [
-                rike_1.Rike
+            exports_6("RIKE_PROVIDERS", RIKE_PROVIDERS = [
+                rike_2.Rike,
+                decorator_1.RIKE_OPERATION_PROVIDERS,
             ]);
         }
     }
