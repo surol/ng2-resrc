@@ -8,14 +8,14 @@ export abstract class RikeEvent {
     /**
      * Operation target.
      *
-     * This is the value passed to the [Resrc.target] method.
+     * This is the value passed to the [Rike.target] method.
      */
     abstract readonly target: any;
 
     /**
      * Operation name.
      *
-     * This is the value passed to the [ResrcTarget.operation] method
+     * This is the value passed to the [RikeTarget.operation] method
      */
     abstract readonly operation: string;
 

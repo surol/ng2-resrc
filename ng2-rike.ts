@@ -1,4 +1,5 @@
 import {Rike} from "./ng2-rike/rike";
+export * from './ng2-rike/data';
 export * from './ng2-rike/event';
 export * from './ng2-rike/options';
 export * from './ng2-rike/rike';
