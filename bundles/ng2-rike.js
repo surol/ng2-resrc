@@ -15,217 +15,217 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
-System.register("ng2-resrc/event", [], function(exports_1, context_1) {
+System.register("ng2-rike/event", [], function(exports_1, context_1) {
     "use strict";
     var __moduleName = context_1 && context_1.id;
-    var ResrcEvent, ResrcOperationEvent, ResrcSuccessEvent, ResrcErrorEvent, ResrcCancelEvent;
+    var RikeEvent, RikeOperationEvent, RikeSuccessEvent, RikeErrorEvent, RikeCancelEvent;
     return {
         setters:[],
         execute: function() {
             /**
              * Basic REST-like resource access event.
              *
-             * Such events are emitted by [operations on REST-like resources][ResrcOperation.event].
+             * Such events are emitted by [operations on REST-like resources][RikeOperation.events].
              */
-            ResrcEvent = (function () {
-                function ResrcEvent() {
+            RikeEvent = (function () {
+                function RikeEvent() {
                 }
-                return ResrcEvent;
+                return RikeEvent;
             }());
-            exports_1("ResrcEvent", ResrcEvent);
+            exports_1("RikeEvent", RikeEvent);
             /**
              * An event emitted when operation on a REST-like resource is started.
              */
-            ResrcOperationEvent = (function (_super) {
-                __extends(ResrcOperationEvent, _super);
-                function ResrcOperationEvent(_target, _operation) {
+            RikeOperationEvent = (function (_super) {
+                __extends(RikeOperationEvent, _super);
+                function RikeOperationEvent(_target, _operation) {
                     _super.call(this);
                     this._target = _target;
                     this._operation = _operation;
                 }
-                Object.defineProperty(ResrcOperationEvent.prototype, "target", {
+                Object.defineProperty(RikeOperationEvent.prototype, "target", {
                     get: function () {
                         return this._target;
                     },
                     enumerable: true,
                     configurable: true
                 });
-                Object.defineProperty(ResrcOperationEvent.prototype, "operation", {
+                Object.defineProperty(RikeOperationEvent.prototype, "operation", {
                     get: function () {
                         return this._operation;
                     },
                     enumerable: true,
                     configurable: true
                 });
-                Object.defineProperty(ResrcOperationEvent.prototype, "complete", {
+                Object.defineProperty(RikeOperationEvent.prototype, "complete", {
                     get: function () {
                         return false;
                     },
                     enumerable: true,
                     configurable: true
                 });
-                Object.defineProperty(ResrcOperationEvent.prototype, "error", {
+                Object.defineProperty(RikeOperationEvent.prototype, "error", {
                     get: function () {
                         return undefined;
                     },
                     enumerable: true,
                     configurable: true
                 });
-                Object.defineProperty(ResrcOperationEvent.prototype, "result", {
+                Object.defineProperty(RikeOperationEvent.prototype, "result", {
                     get: function () {
                         return undefined;
                     },
                     enumerable: true,
                     configurable: true
                 });
-                return ResrcOperationEvent;
-            }(ResrcEvent));
-            exports_1("ResrcOperationEvent", ResrcOperationEvent);
+                return RikeOperationEvent;
+            }(RikeEvent));
+            exports_1("RikeOperationEvent", RikeOperationEvent);
             /**
              * An event emitted when operation on a REST-like resource is successfully completed.
              */
-            ResrcSuccessEvent = (function (_super) {
-                __extends(ResrcSuccessEvent, _super);
-                function ResrcSuccessEvent(_target, _operation, _result) {
+            RikeSuccessEvent = (function (_super) {
+                __extends(RikeSuccessEvent, _super);
+                function RikeSuccessEvent(_target, _operation, _result) {
                     _super.call(this);
                     this._target = _target;
                     this._operation = _operation;
                     this._result = _result;
                 }
-                Object.defineProperty(ResrcSuccessEvent.prototype, "target", {
+                Object.defineProperty(RikeSuccessEvent.prototype, "target", {
                     get: function () {
                         return this._target;
                     },
                     enumerable: true,
                     configurable: true
                 });
-                Object.defineProperty(ResrcSuccessEvent.prototype, "operation", {
+                Object.defineProperty(RikeSuccessEvent.prototype, "operation", {
                     get: function () {
                         return this._operation;
                     },
                     enumerable: true,
                     configurable: true
                 });
-                Object.defineProperty(ResrcSuccessEvent.prototype, "complete", {
+                Object.defineProperty(RikeSuccessEvent.prototype, "complete", {
                     get: function () {
                         return true;
                     },
                     enumerable: true,
                     configurable: true
                 });
-                Object.defineProperty(ResrcSuccessEvent.prototype, "error", {
+                Object.defineProperty(RikeSuccessEvent.prototype, "error", {
                     get: function () {
                         return undefined;
                     },
                     enumerable: true,
                     configurable: true
                 });
-                Object.defineProperty(ResrcSuccessEvent.prototype, "result", {
+                Object.defineProperty(RikeSuccessEvent.prototype, "result", {
                     get: function () {
                         return this._result;
                     },
                     enumerable: true,
                     configurable: true
                 });
-                return ResrcSuccessEvent;
-            }(ResrcEvent));
-            exports_1("ResrcSuccessEvent", ResrcSuccessEvent);
+                return RikeSuccessEvent;
+            }(RikeEvent));
+            exports_1("RikeSuccessEvent", RikeSuccessEvent);
             /**
              * An event emitted when operation on a REST-like resource is failed.
              *
              * An object of this type is also reported as error when some internal exception occurs.
              */
-            ResrcErrorEvent = (function (_super) {
-                __extends(ResrcErrorEvent, _super);
-                function ResrcErrorEvent(_target, _operation, _error) {
+            RikeErrorEvent = (function (_super) {
+                __extends(RikeErrorEvent, _super);
+                function RikeErrorEvent(_target, _operation, _error) {
                     _super.call(this);
                     this._target = _target;
                     this._operation = _operation;
                     this._error = _error;
                 }
-                Object.defineProperty(ResrcErrorEvent.prototype, "target", {
+                Object.defineProperty(RikeErrorEvent.prototype, "target", {
                     get: function () {
                         return this._target;
                     },
                     enumerable: true,
                     configurable: true
                 });
-                Object.defineProperty(ResrcErrorEvent.prototype, "operation", {
+                Object.defineProperty(RikeErrorEvent.prototype, "operation", {
                     get: function () {
                         return this._operation;
                     },
                     enumerable: true,
                     configurable: true
                 });
-                Object.defineProperty(ResrcErrorEvent.prototype, "complete", {
+                Object.defineProperty(RikeErrorEvent.prototype, "complete", {
                     get: function () {
                         return true;
                     },
                     enumerable: true,
                     configurable: true
                 });
-                Object.defineProperty(ResrcErrorEvent.prototype, "error", {
+                Object.defineProperty(RikeErrorEvent.prototype, "error", {
                     get: function () {
                         return this._error;
                     },
                     enumerable: true,
                     configurable: true
                 });
-                Object.defineProperty(ResrcErrorEvent.prototype, "result", {
+                Object.defineProperty(RikeErrorEvent.prototype, "result", {
                     get: function () {
                         return undefined;
                     },
                     enumerable: true,
                     configurable: true
                 });
-                return ResrcErrorEvent;
-            }(ResrcEvent));
-            exports_1("ResrcErrorEvent", ResrcErrorEvent);
+                return RikeErrorEvent;
+            }(RikeEvent));
+            exports_1("RikeErrorEvent", RikeErrorEvent);
             /**
              * An event emitted when operation on a REST-like resource is cancelled.
              */
-            ResrcCancelEvent = (function (_super) {
-                __extends(ResrcCancelEvent, _super);
-                function ResrcCancelEvent(target, operation, _cause) {
+            RikeCancelEvent = (function (_super) {
+                __extends(RikeCancelEvent, _super);
+                function RikeCancelEvent(target, operation, _cause) {
                     _super.call(this, target, operation, _cause || "cancel");
                     this._cause = _cause;
                 }
-                Object.defineProperty(ResrcCancelEvent.prototype, "cause", {
+                Object.defineProperty(RikeCancelEvent.prototype, "cause", {
                     get: function () {
                         return this._cause;
                     },
                     enumerable: true,
                     configurable: true
                 });
-                return ResrcCancelEvent;
-            }(ResrcErrorEvent));
-            exports_1("ResrcCancelEvent", ResrcCancelEvent);
+                return RikeCancelEvent;
+            }(RikeErrorEvent));
+            exports_1("RikeCancelEvent", RikeCancelEvent);
         }
     }
 });
-System.register("ng2-resrc/options", [], function(exports_2, context_2) {
+System.register("ng2-rike/options", [], function(exports_2, context_2) {
     "use strict";
     var __moduleName = context_2 && context_2.id;
-    var DEFAULT_RESRC_OPTIONS, ResrcOptions, BaseResrcOptions;
+    var DEFAULT_RIKE_OPTIONS, RikeOptions, BaseRikeOptions;
     return {
         setters:[],
         execute: function() {
             /**
              * Default resource options.
              *
-             * @type {ResrcOptions}
+             * @type {RikeOptions}
              */
-            exports_2("DEFAULT_RESRC_OPTIONS", DEFAULT_RESRC_OPTIONS = new BaseResrcOptions());
+            exports_2("DEFAULT_RIKE_OPTIONS", DEFAULT_RIKE_OPTIONS = new BaseRikeOptions());
             /**
              * Global resource options.
              *
-             * To overwrite global options add a provider for [BaseResrcOptions] instance with [ResrcOptions] as a key:
+             * To overwrite global options add a provider for [BaseRikeOptions] instance with [RikeOptions] as a key:
              * ```ts
-             * bootstrap(AppComponent, {provide: ResrcOptions, new BaseResrcOptions({baseDir: "/rest"})});
+             * bootstrap(AppComponent, {provide: RikeOptions, new BaseRikeOptions({baseDir: "/rike"})});
              * ```
              */
-            ResrcOptions = (function () {
-                function ResrcOptions() {
+            RikeOptions = (function () {
+                function RikeOptions() {
                 }
                 /**
                  * Constructs URL relative to _baseUrl_.
@@ -235,7 +235,7 @@ System.register("ng2-resrc/options", [], function(exports_2, context_2) {
                  * @returns {string} If _baseUrl_ is not set, or _url_ is absolute, then returns unmodified _url_.
                  * Otherwise concatenates _baseUrl_ and _url_ separating them by `/` sign.
                  */
-                ResrcOptions.prototype.relativeUrl = function (url) {
+                RikeOptions.prototype.relativeUrl = function (url) {
                     if (this.baseUrl == null) {
                         return url;
                     }
@@ -247,40 +247,40 @@ System.register("ng2-resrc/options", [], function(exports_2, context_2) {
                     }
                     return this.baseUrl + "/";
                 };
-                return ResrcOptions;
+                return RikeOptions;
             }());
-            exports_2("ResrcOptions", ResrcOptions);
+            exports_2("RikeOptions", RikeOptions);
             /**
-             * Basic [global resource options][ResrcOptions] implementation.
+             * Basic [global resource options][RikeOptions] implementation.
              *
              * Can be used to override the global resource options.
              */
-            BaseResrcOptions = (function (_super) {
-                __extends(BaseResrcOptions, _super);
-                function BaseResrcOptions(opts) {
+            BaseRikeOptions = (function (_super) {
+                __extends(BaseRikeOptions, _super);
+                function BaseRikeOptions(opts) {
                     _super.call(this);
                     if (opts) {
                         this._baseUrl = opts.baseUrl;
                     }
                 }
-                Object.defineProperty(BaseResrcOptions.prototype, "baseUrl", {
+                Object.defineProperty(BaseRikeOptions.prototype, "baseUrl", {
                     get: function () {
                         return this._baseUrl;
                     },
                     enumerable: true,
                     configurable: true
                 });
-                return BaseResrcOptions;
-            }(ResrcOptions));
-            exports_2("BaseResrcOptions", BaseResrcOptions);
+                return BaseRikeOptions;
+            }(RikeOptions));
+            exports_2("BaseRikeOptions", BaseRikeOptions);
         }
     }
 });
-System.register("ng2-resrc/resrc", ["@angular/core", "@angular/http", "rxjs/Rx", "ng2-resrc/event", "ng2-resrc/options"], function(exports_3, context_3) {
+System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "ng2-rike/event", "ng2-rike/options"], function(exports_3, context_3) {
     "use strict";
     var __moduleName = context_3 && context_3.id;
     var core_1, http_1, Rx_1, event_1, options_1;
-    var Resrc, ResrcTargetImpl, ResrcOperationImpl;
+    var Rike, RikeTargetImpl, RikeOperationImpl;
     return {
         setters:[
             function (core_1_1) {
@@ -304,25 +304,25 @@ System.register("ng2-resrc/resrc", ["@angular/core", "@angular/http", "rxjs/Rx",
              *
              * This service can be injected to other services or components.
              *
-             * It basically mimics the `Http` interface, but also honors [global options][ResrcOptions].
+             * It basically mimics the `Http` interface, but also honors [global Rike options][RikeOptions].
              *
              * It can also be used to perform operations on particular targets.
              */
-            Resrc = (function () {
-                function Resrc(_http, _options) {
+            Rike = (function () {
+                function Rike(_http, _options) {
                     var _this = this;
                     this._http = _http;
                     this._events = new core_1.EventEmitter();
                     this._internals = {
                         wrapResponse: function (target, operation, response) { return _this.wrapResponse(target, operation, response); }
                     };
-                    this._options = _options || options_1.DEFAULT_RESRC_OPTIONS;
+                    this._options = _options || options_1.DEFAULT_RIKE_OPTIONS;
                 }
-                Object.defineProperty(Resrc.prototype, "options", {
+                Object.defineProperty(Rike.prototype, "options", {
                     /**
                      * Global REST-like resource access options.
                      *
-                     * @returns {ResrcOptions} either pre-configured, or [default][DEFAULT_RESRC_OPTIONS] options.
+                     * @returns {RikeOptions} either pre-configured, or [default][DEFAULT_RIKE_OPTIONS] options.
                      */
                     get: function () {
                         return this._options;
@@ -330,11 +330,11 @@ System.register("ng2-resrc/resrc", ["@angular/core", "@angular/http", "rxjs/Rx",
                     enumerable: true,
                     configurable: true
                 });
-                Object.defineProperty(Resrc.prototype, "events", {
+                Object.defineProperty(Rike.prototype, "events", {
                     /**
                      * All REST-like resource operation events emitter.
                      *
-                     * @returns {EventEmitter<ResrcEvent>}
+                     * @returns {EventEmitter<RikeEvent>}
                      */
                     get: function () {
                         return this._events;
@@ -342,30 +342,30 @@ System.register("ng2-resrc/resrc", ["@angular/core", "@angular/http", "rxjs/Rx",
                     enumerable: true,
                     configurable: true
                 });
-                Resrc.prototype.request = function (request, options) {
+                Rike.prototype.request = function (request, options) {
                     options = this.updateRequestOptions(options);
                     if (typeof request === "string") {
                         request = this.options.relativeUrl(request);
                     }
                     return this._http.request(request, options);
                 };
-                Resrc.prototype.get = function (url, options) {
+                Rike.prototype.get = function (url, options) {
                     return this._http.get(this.options.relativeUrl(url), this.updateRequestOptions(options));
                 };
-                Resrc.prototype.post = function (url, body, options) {
+                Rike.prototype.post = function (url, body, options) {
                     return this._http.post(this.options.relativeUrl(url), body, this.updateRequestOptions(options));
                 };
-                Resrc.prototype.put = function (url, body, options) {
+                Rike.prototype.put = function (url, body, options) {
                     return this._http.put(this.options.relativeUrl(url), body, this.updateRequestOptions(options));
                 };
                 //noinspection ReservedWordAsName
-                Resrc.prototype.delete = function (url, options) {
+                Rike.prototype.delete = function (url, options) {
                     return this._http.delete(this.options.relativeUrl(url), this.updateRequestOptions(options));
                 };
-                Resrc.prototype.patch = function (url, body, options) {
+                Rike.prototype.patch = function (url, body, options) {
                     return this._http.patch(this.options.relativeUrl(url), body, this.updateRequestOptions(options));
                 };
-                Resrc.prototype.head = function (url, options) {
+                Rike.prototype.head = function (url, options) {
                     return this._http.head(this.options.relativeUrl(url), this.updateRequestOptions(options));
                 };
                 /**
@@ -373,11 +373,11 @@ System.register("ng2-resrc/resrc", ["@angular/core", "@angular/http", "rxjs/Rx",
                  *
                  * @param target arbitrary target value.
                  *
-                 * @returns {ResrcTargetImpl} new operation target.
+                 * @returns {RikeTargetImpl} new operation target.
                  */
-                Resrc.prototype.target = function (target) {
+                Rike.prototype.target = function (target) {
                     var _this = this;
-                    var targetResrc = new ResrcTargetImpl(this, this._internals, target);
+                    var targetResrc = new RikeTargetImpl(this, this._internals, target);
                     targetResrc.events.subscribe(function (event) { return _this._events.emit(event); }, function (error) { return _this._events.error(error); }, function () { return _this._events.complete(); });
                     return targetResrc;
                 };
@@ -389,7 +389,7 @@ System.register("ng2-resrc/resrc", ["@angular/core", "@angular/http", "rxjs/Rx",
                  * @returns {RequestOptionsArgs} either new HTTP options instance, or the _options_ argument if no modifications
                  * done.
                  */
-                Resrc.prototype.updateRequestOptions = function (options) {
+                Rike.prototype.updateRequestOptions = function (options) {
                     if (!options) {
                         return options;
                     }
@@ -417,63 +417,63 @@ System.register("ng2-resrc/resrc", ["@angular/core", "@angular/http", "rxjs/Rx",
                  * @param response
                  * @returns {Observable<Response>}
                  */
-                Resrc.prototype.wrapResponse = function (_target, _operation, response) {
+                Rike.prototype.wrapResponse = function (_target, _operation, response) {
                     return response;
                 };
-                Resrc = __decorate([
+                Rike = __decorate([
                     core_1.Injectable(),
                     __param(1, core_1.Optional()), 
-                    __metadata('design:paramtypes', [http_1.Http, options_1.ResrcOptions])
-                ], Resrc);
-                return Resrc;
+                    __metadata('design:paramtypes', [http_1.Http, options_1.RikeOptions])
+                ], Rike);
+                return Rike;
             }());
-            exports_3("Resrc", Resrc);
-            ResrcTargetImpl = (function () {
-                function ResrcTargetImpl(_resrc, _internals, _target) {
-                    this._resrc = _resrc;
+            exports_3("Rike", Rike);
+            RikeTargetImpl = (function () {
+                function RikeTargetImpl(_rike, _internals, _target) {
+                    this._rike = _rike;
                     this._internals = _internals;
                     this._target = _target;
                     this._events = new core_1.EventEmitter();
                 }
-                Object.defineProperty(ResrcTargetImpl.prototype, "resrc", {
+                Object.defineProperty(RikeTargetImpl.prototype, "rike", {
                     get: function () {
-                        return this._resrc;
+                        return this._rike;
                     },
                     enumerable: true,
                     configurable: true
                 });
-                Object.defineProperty(ResrcTargetImpl.prototype, "target", {
+                Object.defineProperty(RikeTargetImpl.prototype, "target", {
                     get: function () {
                         return this._target;
                     },
                     enumerable: true,
                     configurable: true
                 });
-                Object.defineProperty(ResrcTargetImpl.prototype, "currentOperation", {
+                Object.defineProperty(RikeTargetImpl.prototype, "currentOperation", {
                     get: function () {
                         return this._operation && this._operation.operation;
                     },
                     enumerable: true,
                     configurable: true
                 });
-                Object.defineProperty(ResrcTargetImpl.prototype, "events", {
+                Object.defineProperty(RikeTargetImpl.prototype, "events", {
                     get: function () {
                         return this._events;
                     },
                     enumerable: true,
                     configurable: true
                 });
-                Object.defineProperty(ResrcTargetImpl.prototype, "internal", {
+                Object.defineProperty(RikeTargetImpl.prototype, "internal", {
                     get: function () {
                         return this._internals;
                     },
                     enumerable: true,
                     configurable: true
                 });
-                ResrcTargetImpl.prototype.cancel = function () {
+                RikeTargetImpl.prototype.cancel = function () {
                     return this._cancel();
                 };
-                ResrcTargetImpl.prototype._cancel = function (cause) {
+                RikeTargetImpl.prototype._cancel = function (cause) {
                     if (!this._operation) {
                         return false;
                     }
@@ -481,12 +481,12 @@ System.register("ng2-resrc/resrc", ["@angular/core", "@angular/http", "rxjs/Rx",
                     try {
                         if (this._observer) {
                             try {
-                                var cancel = new event_1.ResrcCancelEvent(this.target, this._operation.operation, cause);
+                                var cancel = new event_1.RikeCancelEvent(this.target, this._operation.operation, cause);
                                 this._observer.error(cancel);
                                 this._events.error(cancel);
                             }
                             catch (e) {
-                                this._events.error(new event_1.ResrcErrorEvent(this.target, this._operation.operation, e));
+                                this._events.error(new event_1.RikeErrorEvent(this.target, this._operation.operation, e));
                                 throw e;
                             }
                             finally {
@@ -508,22 +508,22 @@ System.register("ng2-resrc/resrc", ["@angular/core", "@angular/http", "rxjs/Rx",
                     }
                     return true;
                 };
-                ResrcTargetImpl.prototype.operation = function (operation) {
-                    return new ResrcOperationImpl(this, operation);
+                RikeTargetImpl.prototype.operation = function (operation) {
+                    return new RikeOperationImpl(this, operation);
                 };
-                ResrcTargetImpl.prototype.startOperation = function (operation) {
-                    var event = new event_1.ResrcOperationEvent(this.target, operation.name);
+                RikeTargetImpl.prototype.startOperation = function (operation) {
+                    var event = new event_1.RikeOperationEvent(this.target, operation.name);
                     this._cancel(event);
                     try {
                         this._events.emit(event);
                         this._operation = event;
                     }
                     catch (e) {
-                        this._events.error(new event_1.ResrcErrorEvent(this.target, operation.name, e));
+                        this._events.error(new event_1.RikeErrorEvent(this.target, operation.name, e));
                         throw e;
                     }
                 };
-                ResrcTargetImpl.prototype.wrapResponse = function (operation, response) {
+                RikeTargetImpl.prototype.wrapResponse = function (operation, response) {
                     var _this = this;
                     response = this.internal.wrapResponse(this, operation, response);
                     this._response = response;
@@ -535,26 +535,26 @@ System.register("ng2-resrc/resrc", ["@angular/core", "@angular/http", "rxjs/Rx",
                         _this._subscr = response.subscribe(function (response) {
                             try {
                                 responseObserver.next(response);
-                                _this._events.emit(new event_1.ResrcSuccessEvent(_this.target, operation.name, response));
+                                _this._events.emit(new event_1.RikeSuccessEvent(_this.target, operation.name, response));
                             }
                             catch (e) {
-                                _this._events.error(new event_1.ResrcErrorEvent(_this.target, operation.name, e));
+                                _this._events.error(new event_1.RikeErrorEvent(_this.target, operation.name, e));
                             }
                         }, function (error) {
                             console.error("[" + _this.target + "] " + operation + " failed", error);
                             try {
                                 responseObserver.error(error);
-                                _this._events.emit(new event_1.ResrcErrorEvent(_this.target, operation.name, error));
+                                _this._events.emit(new event_1.RikeErrorEvent(_this.target, operation.name, error));
                             }
                             catch (e) {
-                                _this._events.error(new event_1.ResrcErrorEvent(_this.target, operation.name, e));
+                                _this._events.error(new event_1.RikeErrorEvent(_this.target, operation.name, e));
                             }
                         }, function () {
                             try {
                                 responseObserver.complete();
                             }
                             catch (e) {
-                                _this._events.error(new event_1.ResrcErrorEvent(_this.target, operation.name, e));
+                                _this._events.error(new event_1.RikeErrorEvent(_this.target, operation.name, e));
                             }
                             finally {
                                 if (_this._subscr) {
@@ -566,81 +566,81 @@ System.register("ng2-resrc/resrc", ["@angular/core", "@angular/http", "rxjs/Rx",
                         });
                     });
                 };
-                return ResrcTargetImpl;
+                return RikeTargetImpl;
             }());
-            ResrcOperationImpl = (function () {
-                function ResrcOperationImpl(_target, _name) {
+            RikeOperationImpl = (function () {
+                function RikeOperationImpl(_target, _name) {
                     this._target = _target;
                     this._name = _name;
                 }
-                Object.defineProperty(ResrcOperationImpl.prototype, "resrc", {
+                Object.defineProperty(RikeOperationImpl.prototype, "rike", {
                     get: function () {
-                        return this.target.resrc;
+                        return this.target.rike;
                     },
                     enumerable: true,
                     configurable: true
                 });
-                Object.defineProperty(ResrcOperationImpl.prototype, "target", {
+                Object.defineProperty(RikeOperationImpl.prototype, "target", {
                     get: function () {
                         return this._target;
                     },
                     enumerable: true,
                     configurable: true
                 });
-                Object.defineProperty(ResrcOperationImpl.prototype, "name", {
+                Object.defineProperty(RikeOperationImpl.prototype, "name", {
                     get: function () {
                         return this._name;
                     },
                     enumerable: true,
                     configurable: true
                 });
-                ResrcOperationImpl.prototype.request = function (request, options) {
+                RikeOperationImpl.prototype.request = function (request, options) {
                     this.startOperation();
-                    return this.wrapResponse(this.resrc.request(request, options));
+                    return this.wrapResponse(this.rike.request(request, options));
                 };
-                ResrcOperationImpl.prototype.get = function (url, options) {
+                RikeOperationImpl.prototype.get = function (url, options) {
                     this.startOperation();
-                    return this.wrapResponse(this.resrc.get(url, options));
+                    return this.wrapResponse(this.rike.get(url, options));
                 };
-                ResrcOperationImpl.prototype.post = function (url, body, options) {
+                RikeOperationImpl.prototype.post = function (url, body, options) {
                     this.startOperation();
-                    return this.wrapResponse(this.resrc.post(url, body, options));
+                    return this.wrapResponse(this.rike.post(url, body, options));
                 };
-                ResrcOperationImpl.prototype.put = function (url, body, options) {
+                RikeOperationImpl.prototype.put = function (url, body, options) {
                     this.startOperation();
-                    return this.wrapResponse(this.resrc.put(url, body, options));
+                    return this.wrapResponse(this.rike.put(url, body, options));
                 };
                 //noinspection ReservedWordAsName
-                ResrcOperationImpl.prototype.delete = function (url, options) {
+                RikeOperationImpl.prototype.delete = function (url, options) {
                     this.startOperation();
-                    return this.wrapResponse(this.resrc.delete(url, options));
+                    return this.wrapResponse(this.rike.delete(url, options));
                 };
-                ResrcOperationImpl.prototype.patch = function (url, body, options) {
+                RikeOperationImpl.prototype.patch = function (url, body, options) {
                     this.startOperation();
-                    return this.wrapResponse(this.resrc.patch(url, body, options));
+                    return this.wrapResponse(this.rike.patch(url, body, options));
                 };
-                ResrcOperationImpl.prototype.head = function (url, options) {
+                RikeOperationImpl.prototype.head = function (url, options) {
                     this.startOperation();
-                    return this.wrapResponse(this.resrc.head(url, options));
+                    return this.wrapResponse(this.rike.head(url, options));
                 };
-                ResrcOperationImpl.prototype.startOperation = function () {
+                RikeOperationImpl.prototype.startOperation = function () {
                     this.target.startOperation(this);
                 };
-                ResrcOperationImpl.prototype.wrapResponse = function (response) {
+                RikeOperationImpl.prototype.wrapResponse = function (response) {
                     return this.target.wrapResponse(this, response);
                 };
-                return ResrcOperationImpl;
+                return RikeOperationImpl;
             }());
         }
     }
 });
-System.register("ng2-resrc", ["ng2-resrc/resrc", "ng2-resrc/event", "ng2-resrc/options"], function(exports_4, context_4) {
+System.register("ng2-rike", ["ng2-rike/rike", "ng2-rike/event", "ng2-rike/options"], function(exports_4, context_4) {
     "use strict";
     var __moduleName = context_4 && context_4.id;
-    var resrc_1;
-    var RESRC_PROVIDERS;
+    var rike_1;
+    var RIKE_PROVIDERS;
     var exportedNames_1 = {
-        'RESRC_PROVIDERS': true
+        'RIKE_PROVIDERS': true
     };
     function exportStar_1(m) {
         var exports = {};
@@ -651,9 +651,9 @@ System.register("ng2-resrc", ["ng2-resrc/resrc", "ng2-resrc/event", "ng2-resrc/o
     }
     return {
         setters:[
-            function (resrc_1_1) {
-                resrc_1 = resrc_1_1;
-                exportStar_1(resrc_1_1);
+            function (rike_1_1) {
+                rike_1 = rike_1_1;
+                exportStar_1(rike_1_1);
             },
             function (event_2_1) {
                 exportStar_1(event_2_1);
@@ -665,15 +665,15 @@ System.register("ng2-resrc", ["ng2-resrc/resrc", "ng2-resrc/event", "ng2-resrc/o
             /**
              * Provides a basic set of providers to use REST-like services in application.
              *
-             * The RESRC_PROVIDERS should be included either in a component's injector, or in the root injector when bootstrapping
+             * The `RIKE_PROVIDERS` should be included either in a component's injector, or in the root injector when bootstrapping
              * an application.
              *
              * @type {any[]}
              */
-            exports_4("RESRC_PROVIDERS", RESRC_PROVIDERS = [
-                resrc_1.Resrc
+            exports_4("RIKE_PROVIDERS", RIKE_PROVIDERS = [
+                rike_1.Rike
             ]);
         }
     }
 });
-//# sourceMappingURL=ng2-resrc.js.map
+//# sourceMappingURL=ng2-rike.js.map

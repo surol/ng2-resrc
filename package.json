@@ -1,13 +1,13 @@
 {
-  "name": "ng2-resrc",
+  "name": "ng2-rike",
   "version": "0.0.1-dev",
   "description": "REST-like API for Angular2",
   "license": "MIT",
   "author": "ruslan.lopatin@gmail.com",
-  "homepage": "https://github.com/surol/ng2-resrc",
+  "homepage": "https://github.com/surol/ng2-rike",
   "repository": {
     "type": "git",
-    "url": "git@github.com:surol/ng2-resrc.git"
+    "url": "git@github.com:surol/ng2-rike.git"
   },
   "dependencies": {
     "@angular/common": "2.0.0-rc.4",

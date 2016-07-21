@@ -1,46 +1,46 @@
 import {Injectable, Optional, EventEmitter} from "@angular/core";
 import {Request, RequestOptionsArgs, Response, Http} from "@angular/http";
 import {Observable, Observer, Subscription} from "rxjs/Rx";
-import {ResrcEvent, ResrcErrorEvent, ResrcSuccessEvent, ResrcOperationEvent, ResrcCancelEvent} from "./event";
-import {ResrcOptions, DEFAULT_RESRC_OPTIONS} from "./options";
+import {RikeEvent, RikeErrorEvent, RikeSuccessEvent, RikeOperationEvent, RikeCancelEvent} from "./event";
+import {RikeOptions, DEFAULT_RIKE_OPTIONS} from "./options";
 
 /**
  * REST-like resource operations service.
  *
  * This service can be injected to other services or components.
  *
- * It basically mimics the `Http` interface, but also honors [global options][ResrcOptions].
+ * It basically mimics the `Http` interface, but also honors [global Rike options][RikeOptions].
  *
  * It can also be used to perform operations on particular targets.
  */
 @Injectable()
-export class Resrc {
+export class Rike {
 
-    private readonly _options: ResrcOptions;
-    private readonly _events = new EventEmitter<ResrcEvent>();
-    private readonly _internals: ResrcInternals = {
+    private readonly _options: RikeOptions;
+    private readonly _events = new EventEmitter<RikeEvent>();
+    private readonly _internals: RikeInternals = {
         wrapResponse: (target, operation, response) => this.wrapResponse(target, operation, response)
     };
 
-    constructor(private _http: Http, @Optional() _options?: ResrcOptions) {
-        this._options = _options || DEFAULT_RESRC_OPTIONS;
+    constructor(private _http: Http, @Optional() _options?: RikeOptions) {
+        this._options = _options || DEFAULT_RIKE_OPTIONS;
     }
 
     /**
      * Global REST-like resource access options.
      *
-     * @returns {ResrcOptions} either pre-configured, or [default][DEFAULT_RESRC_OPTIONS] options.
+     * @returns {RikeOptions} either pre-configured, or [default][DEFAULT_RIKE_OPTIONS] options.
      */
-    get options(): ResrcOptions {
+    get options(): RikeOptions {
         return this._options;
     }
 
     /**
      * All REST-like resource operation events emitter.
      *
-     * @returns {EventEmitter<ResrcEvent>}
+     * @returns {EventEmitter<RikeEvent>}
      */
-    get events(): EventEmitter<ResrcEvent> {
+    get events(): EventEmitter<RikeEvent> {
         return this._events;
     }
 
@@ -82,14 +82,14 @@ export class Resrc {
      *
      * @param target arbitrary target value.
      *
-     * @returns {ResrcTargetImpl} new operation target.
+     * @returns {RikeTargetImpl} new operation target.
      */
-    target(target: any): ResrcTarget {
+    target(target: any): RikeTarget {
 
-        const targetResrc = new ResrcTargetImpl(this, this._internals, target);
+        const targetResrc = new RikeTargetImpl(this, this._internals, target);
 
         targetResrc.events.subscribe(
-            (event: ResrcEvent) => this._events.emit(event),
+            (event: RikeEvent) => this._events.emit(event),
             (error: any) => this._events.error(error),
             () => this._events.complete());
 
@@ -137,8 +137,8 @@ export class Resrc {
      * @returns {Observable<Response>}
      */
     protected wrapResponse(
-        _target: ResrcTarget,
-        _operation: ResrcOperation,
+        _target: RikeTarget,
+        _operation: RikeOperation,
         response: Observable<Response>): Observable<Response> {
         return response;
     }
@@ -148,18 +148,18 @@ export class Resrc {
 /**
  * REST-like operations target.
  *
- * Operation targets are created using [Resrc.target] method. The actual operations should be created first with
+ * Operation targets are created using [Rike.target] method. The actual operations should be created first with
  * _operation_ method.
  *
  * Only one operation can be performed on a target at a time. Whenever a new operation on the same target is initiated,
  * the previous one is cancelled.
  */
-export interface ResrcTarget {
+export interface RikeTarget {
 
     /**
      * Operation target value.
      *
-     * This is the value passed to the [Resrc.target] method.
+     * This is the value passed to the [Rike.target] method.
      */
     readonly target: any;
 
@@ -174,14 +174,14 @@ export interface ResrcTarget {
     /**
      * An emitter of events for operations performed on this target.
      */
-    readonly events: EventEmitter<ResrcEvent>;
+    readonly events: EventEmitter<RikeEvent>;
 
     /**
      * Creates an operation on this target.
      *
      * @param operation operation name.
      */
-    operation(operation: string): ResrcOperation;
+    operation(operation: string): RikeOperation;
 
     /**
      * Cancels current operation, if any.
@@ -196,18 +196,17 @@ export interface ResrcTarget {
 /**
  * REST-like resource operation.
  *
- * It basically mimics the `Http` service interface, but also honors global REST-like resource access options, and emits
- * events.
+ * It basically mimics the `Http` service interface, but also honors global Rike options, and emits events.
  *
  * To initiate operation just call any of the HTTP access methods. Note that operation always belongs to its target
  * and thus two operations could not be initiated simultaneously.
  */
-export interface ResrcOperation {
+export interface RikeOperation {
 
     /**
      * Operation target.
      */
-    readonly target: ResrcTarget;
+    readonly target: RikeTarget;
 
     /**
      * Operation name.
@@ -230,25 +229,25 @@ export interface ResrcOperation {
 
 }
 
-interface ResrcInternals {
+interface RikeInternals {
 
-    wrapResponse(target: ResrcTarget, operation: ResrcOperation, response: Observable<Response>): Observable<Response>;
+    wrapResponse(target: RikeTarget, operation: RikeOperation, response: Observable<Response>): Observable<Response>;
 
 }
 
-class ResrcTargetImpl implements ResrcTarget {
+class RikeTargetImpl implements RikeTarget {
 
-    private readonly _events = new EventEmitter<ResrcEvent>();
-    private _operation?: ResrcOperationEvent;
+    private readonly _events = new EventEmitter<RikeEvent>();
+    private _operation?: RikeOperationEvent;
     private _response?: Observable<Response>;
     private _observer?: Observer<Response>;
     private _subscr?: Subscription;
 
-    constructor(private _resrc: Resrc, private _internals: ResrcInternals, private _target: any) {
+    constructor(private _rike: Rike, private _internals: RikeInternals, private _target: any) {
     }
 
-    get resrc(): Resrc {
-        return this._resrc;
+    get rike(): Rike {
+        return this._rike;
     }
 
     get target(): any {
@@ -259,11 +258,11 @@ class ResrcTargetImpl implements ResrcTarget {
         return this._operation && this._operation.operation;
     }
 
-    get events(): EventEmitter<ResrcEvent> {
+    get events(): EventEmitter<RikeEvent> {
         return this._events;
     }
 
-    get internal(): ResrcInternals {
+    get internal(): RikeInternals {
         return this._internals;
     }
 
@@ -271,7 +270,7 @@ class ResrcTargetImpl implements ResrcTarget {
         return this._cancel();
     }
 
-    private _cancel(cause?: ResrcOperationEvent): boolean {
+    private _cancel(cause?: RikeOperationEvent): boolean {
         if (!this._operation) {
             return false;
         }
@@ -281,12 +280,12 @@ class ResrcTargetImpl implements ResrcTarget {
             if (this._observer) {
                 try {
 
-                    const cancel = new ResrcCancelEvent(this.target, this._operation.operation, cause);
+                    const cancel = new RikeCancelEvent(this.target, this._operation.operation, cause);
 
                     this._observer.error(cancel);
                     this._events.error(cancel);
                 } catch (e) {
-                    this._events.error(new ResrcErrorEvent(this.target, this._operation.operation, e));
+                    this._events.error(new RikeErrorEvent(this.target, this._operation.operation, e));
                     throw e;
                 } finally {
                     this._operation = undefined;
@@ -307,25 +306,25 @@ class ResrcTargetImpl implements ResrcTarget {
         return true;
     }
 
-    operation(operation: string): ResrcOperation {
-        return new ResrcOperationImpl(this, operation);
+    operation(operation: string): RikeOperation {
+        return new RikeOperationImpl(this, operation);
     }
 
-    startOperation(operation: ResrcOperation): void {
+    startOperation(operation: RikeOperation): void {
 
-        const event = new ResrcOperationEvent(this.target, operation.name);
+        const event = new RikeOperationEvent(this.target, operation.name);
 
         this._cancel(event);
         try {
             this._events.emit(event);
             this._operation = event;
         } catch (e) {
-            this._events.error(new ResrcErrorEvent(this.target, operation.name, e));
+            this._events.error(new RikeErrorEvent(this.target, operation.name, e));
             throw e;
         }
     }
 
-    wrapResponse(operation: ResrcOperation, response: Observable<Response>): Observable<Response> {
+    wrapResponse(operation: RikeOperation, response: Observable<Response>): Observable<Response> {
         response = this.internal.wrapResponse(this, operation, response);
         this._response = response;
         return new Observable<Response>((responseObserver: Observer<Response>) => {
@@ -337,25 +336,25 @@ class ResrcTargetImpl implements ResrcTarget {
                 response => {
                     try {
                         responseObserver.next(response);
-                        this._events.emit(new ResrcSuccessEvent(this.target, operation.name, response));
+                        this._events.emit(new RikeSuccessEvent(this.target, operation.name, response));
                     } catch (e) {
-                        this._events.error(new ResrcErrorEvent(this.target, operation.name, e));
+                        this._events.error(new RikeErrorEvent(this.target, operation.name, e));
                     }
                 },
                 error => {
                     console.error("[" + this.target + "] " + operation + " failed", error);
                     try {
                         responseObserver.error(error);
-                        this._events.emit(new ResrcErrorEvent(this.target, operation.name, error));
+                        this._events.emit(new RikeErrorEvent(this.target, operation.name, error));
                     } catch (e) {
-                        this._events.error(new ResrcErrorEvent(this.target, operation.name, e));
+                        this._events.error(new RikeErrorEvent(this.target, operation.name, e));
                     }
                 },
                 () => {
                     try {
                         responseObserver.complete();
                     } catch (e) {
-                        this._events.error(new ResrcErrorEvent(this.target, operation.name, e));
+                        this._events.error(new RikeErrorEvent(this.target, operation.name, e));
                     } finally {
                         if (this._subscr) {
                             this._subscr.unsubscribe();
@@ -369,16 +368,16 @@ class ResrcTargetImpl implements ResrcTarget {
 
 }
 
-class ResrcOperationImpl implements ResrcOperation {
+class RikeOperationImpl implements RikeOperation {
 
-    constructor(private _target: ResrcTargetImpl, private _name: string) {
+    constructor(private _target: RikeTargetImpl, private _name: string) {
     }
 
-    get resrc(): Resrc {
-        return this.target.resrc;
+    get rike(): Rike {
+        return this.target.rike;
     }
 
-    get target(): ResrcTargetImpl {
+    get target(): RikeTargetImpl {
         return this._target;
     }
 
@@ -388,38 +387,38 @@ class ResrcOperationImpl implements ResrcOperation {
 
     request(request: string | Request, options?: RequestOptionsArgs): Observable<Response> {
         this.startOperation();
-        return this.wrapResponse(this.resrc.request(request, options));
+        return this.wrapResponse(this.rike.request(request, options));
     }
 
     get(url: string, options?: RequestOptionsArgs): Observable<Response> {
         this.startOperation();
-        return this.wrapResponse(this.resrc.get(url, options));
+        return this.wrapResponse(this.rike.get(url, options));
     }
 
     post(url: string, body: any, options?: RequestOptionsArgs): Observable<Response> {
         this.startOperation();
-        return this.wrapResponse(this.resrc.post(url, body, options));
+        return this.wrapResponse(this.rike.post(url, body, options));
     }
 
     put(url: string, body: any, options?: RequestOptionsArgs): Observable<Response> {
         this.startOperation();
-        return this.wrapResponse(this.resrc.put(url, body, options));
+        return this.wrapResponse(this.rike.put(url, body, options));
     }
 
     //noinspection ReservedWordAsName
     delete(url: string, options?: RequestOptionsArgs): Observable<Response> {
         this.startOperation();
-        return this.wrapResponse(this.resrc.delete(url, options));
+        return this.wrapResponse(this.rike.delete(url, options));
     }
 
     patch(url: string, body: any, options?: RequestOptionsArgs): Observable<Response> {
         this.startOperation();
-        return this.wrapResponse(this.resrc.patch(url, body, options));
+        return this.wrapResponse(this.rike.patch(url, body, options));
     }
 
     head(url: string, options?: RequestOptionsArgs): Observable<Response> {
         this.startOperation();
-        return this.wrapResponse(this.resrc.head(url, options));
+        return this.wrapResponse(this.rike.head(url, options));
     }
 
     private startOperation() {

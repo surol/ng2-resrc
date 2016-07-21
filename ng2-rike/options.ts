@@ -1,19 +1,19 @@
 /**
  * Default resource options.
  *
- * @type {ResrcOptions}
+ * @type {RikeOptions}
  */
-export const DEFAULT_RESRC_OPTIONS: ResrcOptions = new BaseResrcOptions();
+export const DEFAULT_RIKE_OPTIONS: RikeOptions = new BaseRikeOptions();
 
 /**
  * Global resource options.
  *
- * To overwrite global options add a provider for [BaseResrcOptions] instance with [ResrcOptions] as a key:
+ * To overwrite global options add a provider for [BaseRikeOptions] instance with [RikeOptions] as a key:
  * ```ts
- * bootstrap(AppComponent, {provide: ResrcOptions, new BaseResrcOptions({baseDir: "/rest"})});
+ * bootstrap(AppComponent, {provide: RikeOptions, new BaseRikeOptions({baseDir: "/rike"})});
  * ```
  */
-export abstract class ResrcOptions {
+export abstract class RikeOptions {
 
     /**
      * Base URL of all relative URLs
@@ -44,15 +44,15 @@ export abstract class ResrcOptions {
 }
 
 /**
- * Basic [global resource options][ResrcOptions] implementation.
+ * Basic [global resource options][RikeOptions] implementation.
  *
  * Can be used to override the global resource options.
  */
-export class BaseResrcOptions extends ResrcOptions {
+export class BaseRikeOptions extends RikeOptions {
 
-    private readonly _baseUrl?: string;
+    private _baseUrl?: string;
 
-    constructor(opts?: ResrcOptions) {
+    constructor(opts?: RikeOptions) {
         super();
         if (opts) {
             this._baseUrl = opts.baseUrl;

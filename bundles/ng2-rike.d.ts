@@ -1,10 +1,10 @@
-declare module "ng2-resrc/event" {
+declare module "ng2-rike/event" {
     /**
      * Basic REST-like resource access event.
      *
-     * Such events are emitted by [operations on REST-like resources][ResrcOperation.event].
+     * Such events are emitted by [operations on REST-like resources][RikeOperation.events].
      */
-    export abstract class ResrcEvent {
+    export abstract class RikeEvent {
         /**
          * Operation target.
          *
@@ -37,7 +37,7 @@ declare module "ng2-resrc/event" {
     /**
      * An event emitted when operation on a REST-like resource is started.
      */
-    export class ResrcOperationEvent extends ResrcEvent {
+    export class RikeOperationEvent extends RikeEvent {
         private _target;
         private _operation;
         constructor(_target: any, _operation: string);
@@ -50,7 +50,7 @@ declare module "ng2-resrc/event" {
     /**
      * An event emitted when operation on a REST-like resource is successfully completed.
      */
-    export class ResrcSuccessEvent extends ResrcEvent {
+    export class RikeSuccessEvent extends RikeEvent {
         private _target;
         private _operation;
         private _result;
@@ -66,7 +66,7 @@ declare module "ng2-resrc/event" {
      *
      * An object of this type is also reported as error when some internal exception occurs.
      */
-    export class ResrcErrorEvent extends ResrcEvent {
+    export class RikeErrorEvent extends RikeEvent {
         private _target;
         private _operation;
         private _error;
@@ -80,28 +80,28 @@ declare module "ng2-resrc/event" {
     /**
      * An event emitted when operation on a REST-like resource is cancelled.
      */
-    export class ResrcCancelEvent extends ResrcErrorEvent {
+    export class RikeCancelEvent extends RikeErrorEvent {
         private _cause?;
-        constructor(target: any, operation: string, _cause?: ResrcOperationEvent);
-        readonly cause: ResrcOperationEvent | undefined;
+        constructor(target: any, operation: string, _cause?: RikeOperationEvent);
+        readonly cause: RikeOperationEvent | undefined;
     }
 }
-declare module "ng2-resrc/options" {
+declare module "ng2-rike/options" {
     /**
      * Default resource options.
      *
-     * @type {ResrcOptions}
+     * @type {RikeOptions}
      */
-    export const DEFAULT_RESRC_OPTIONS: ResrcOptions;
+    export const DEFAULT_RIKE_OPTIONS: RikeOptions;
     /**
      * Global resource options.
      *
-     * To overwrite global options add a provider for [BaseResrcOptions] instance with [ResrcOptions] as a key:
+     * To overwrite global options add a provider for [BaseRikeOptions] instance with [RikeOptions] as a key:
      * ```ts
-     * bootstrap(AppComponent, {provide: ResrcOptions, new BaseResrcOptions({baseDir: "/rest"})});
+     * bootstrap(AppComponent, {provide: RikeOptions, new BaseRikeOptions({baseDir: "/rike"})});
      * ```
      */
-    export abstract class ResrcOptions {
+    export abstract class RikeOptions {
         /**
          * Base URL of all relative URLs
          */
@@ -117,49 +117,49 @@ declare module "ng2-resrc/options" {
         relativeUrl(url: string): string;
     }
     /**
-     * Basic [global resource options][ResrcOptions] implementation.
+     * Basic [global resource options][RikeOptions] implementation.
      *
      * Can be used to override the global resource options.
      */
-    export class BaseResrcOptions extends ResrcOptions {
-        private readonly _baseUrl?;
-        constructor(opts?: ResrcOptions);
+    export class BaseRikeOptions extends RikeOptions {
+        private _baseUrl?;
+        constructor(opts?: RikeOptions);
         readonly baseUrl: string | undefined;
     }
 }
-declare module "ng2-resrc/resrc" {
+declare module "ng2-rike/rike" {
     import { EventEmitter } from "@angular/core";
     import { Request, RequestOptionsArgs, Response, Http } from "@angular/http";
     import { Observable } from "rxjs/Rx";
-    import { ResrcEvent } from "ng2-resrc/event";
-    import { ResrcOptions } from "ng2-resrc/options";
+    import { RikeEvent } from "ng2-rike/event";
+    import { RikeOptions } from "ng2-rike/options";
     /**
      * REST-like resource operations service.
      *
      * This service can be injected to other services or components.
      *
-     * It basically mimics the `Http` interface, but also honors [global options][ResrcOptions].
+     * It basically mimics the `Http` interface, but also honors [global Rike options][RikeOptions].
      *
      * It can also be used to perform operations on particular targets.
      */
-    export class Resrc {
+    export class Rike {
         private _http;
         private readonly _options;
         private readonly _events;
         private readonly _internals;
-        constructor(_http: Http, _options?: ResrcOptions);
+        constructor(_http: Http, _options?: RikeOptions);
         /**
          * Global REST-like resource access options.
          *
-         * @returns {ResrcOptions} either pre-configured, or [default][DEFAULT_RESRC_OPTIONS] options.
+         * @returns {RikeOptions} either pre-configured, or [default][DEFAULT_RIKE_OPTIONS] options.
          */
-        readonly options: ResrcOptions;
+        readonly options: RikeOptions;
         /**
          * All REST-like resource operation events emitter.
          *
-         * @returns {EventEmitter<ResrcEvent>}
+         * @returns {EventEmitter<RikeEvent>}
          */
-        readonly events: EventEmitter<ResrcEvent>;
+        readonly events: EventEmitter<RikeEvent>;
         request(request: string | Request, options?: RequestOptionsArgs): Observable<Response>;
         get(url: string, options?: RequestOptionsArgs): Observable<Response>;
         post(url: string, body: any, options?: RequestOptionsArgs): Observable<Response>;
@@ -172,9 +172,9 @@ declare module "ng2-resrc/resrc" {
          *
          * @param target arbitrary target value.
          *
-         * @returns {ResrcTargetImpl} new operation target.
+         * @returns {RikeTargetImpl} new operation target.
          */
-        target(target: any): ResrcTarget;
+        target(target: any): RikeTarget;
         /**
          * Updates HTTP request options accordingly to global _options_.
          *
@@ -192,22 +192,22 @@ declare module "ng2-resrc/resrc" {
          * @param response
          * @returns {Observable<Response>}
          */
-        protected wrapResponse(_target: ResrcTarget, _operation: ResrcOperation, response: Observable<Response>): Observable<Response>;
+        protected wrapResponse(_target: RikeTarget, _operation: RikeOperation, response: Observable<Response>): Observable<Response>;
     }
     /**
      * REST-like operations target.
      *
-     * Operation targets are created using [Resrc.target] method. The actual operations should be created first with
+     * Operation targets are created using [Rike.target] method. The actual operations should be created first with
      * _operation_ method.
      *
      * Only one operation can be performed on a target at a time. Whenever a new operation on the same target is initiated,
      * the previous one is cancelled.
      */
-    export interface ResrcTarget {
+    export interface RikeTarget {
         /**
          * Operation target value.
          *
-         * This is the value passed to the [Resrc.target] method.
+         * This is the value passed to the [Rike.target] method.
          */
         readonly target: any;
         /**
@@ -220,13 +220,13 @@ declare module "ng2-resrc/resrc" {
         /**
          * An emitter of events for operations performed on this target.
          */
-        readonly events: EventEmitter<ResrcEvent>;
+        readonly events: EventEmitter<RikeEvent>;
         /**
          * Creates an operation on this target.
          *
          * @param operation operation name.
          */
-        operation(operation: string): ResrcOperation;
+        operation(operation: string): RikeOperation;
         /**
          * Cancels current operation, if any.
          *
@@ -237,17 +237,16 @@ declare module "ng2-resrc/resrc" {
     /**
      * REST-like resource operation.
      *
-     * It basically mimics the `Http` service interface, but also honors global REST-like resource access options, and emits
-     * events.
+     * It basically mimics the `Http` service interface, but also honors global Rike options, and emits events.
      *
      * To initiate operation just call any of the HTTP access methods. Note that operation always belongs to its target
      * and thus two operations could not be initiated simultaneously.
      */
-    export interface ResrcOperation {
+    export interface RikeOperation {
         /**
          * Operation target.
          */
-        readonly target: ResrcTarget;
+        readonly target: RikeTarget;
         /**
          * Operation name.
          */
@@ -261,17 +260,17 @@ declare module "ng2-resrc/resrc" {
         head(url: string, options?: RequestOptionsArgs): Observable<Response>;
     }
 }
-declare module "ng2-resrc" {
-    export * from "ng2-resrc/event";
-    export * from "ng2-resrc/options";
-    export * from "ng2-resrc/resrc";
+declare module "ng2-rike" {
+    export * from "ng2-rike/event";
+    export * from "ng2-rike/options";
+    export * from "ng2-rike/rike";
     /**
      * Provides a basic set of providers to use REST-like services in application.
      *
-     * The RESRC_PROVIDERS should be included either in a component's injector, or in the root injector when bootstrapping
+     * The `RIKE_PROVIDERS` should be included either in a component's injector, or in the root injector when bootstrapping
      * an application.
      *
      * @type {any[]}
      */
-    export const RESRC_PROVIDERS: any[];
+    export const RIKE_PROVIDERS: any[];
 }

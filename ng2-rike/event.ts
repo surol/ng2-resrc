@@ -1,9 +1,9 @@
 /**
  * Basic REST-like resource access event.
  *
- * Such events are emitted by [operations on REST-like resources][ResrcOperation.event].
+ * Such events are emitted by [operations on REST-like resources][RikeOperation.events].
  */
-export abstract class ResrcEvent {
+export abstract class RikeEvent {
 
     /**
      * Operation target.
@@ -43,7 +43,7 @@ export abstract class ResrcEvent {
 /**
  * An event emitted when operation on a REST-like resource is started.
  */
-export class ResrcOperationEvent extends ResrcEvent {
+export class RikeOperationEvent extends RikeEvent {
 
     constructor(private _target: any, private _operation: string) {
         super();
@@ -74,7 +74,7 @@ export class ResrcOperationEvent extends ResrcEvent {
 /**
  * An event emitted when operation on a REST-like resource is successfully completed.
  */
-export class ResrcSuccessEvent extends ResrcEvent {
+export class RikeSuccessEvent extends RikeEvent {
 
     constructor(private _target: any, private _operation: string, private _result: any) {
         super();
@@ -107,7 +107,7 @@ export class ResrcSuccessEvent extends ResrcEvent {
  *
  * An object of this type is also reported as error when some internal exception occurs.
  */
-export class ResrcErrorEvent extends ResrcEvent {
+export class RikeErrorEvent extends RikeEvent {
 
     constructor(private _target: any, private _operation: string, private _error: any) {
         super();
@@ -138,13 +138,13 @@ export class ResrcErrorEvent extends ResrcEvent {
 /**
  * An event emitted when operation on a REST-like resource is cancelled.
  */
-export class ResrcCancelEvent extends ResrcErrorEvent {
+export class RikeCancelEvent extends RikeErrorEvent {
 
-    constructor(target: any, operation: string, private _cause?: ResrcOperationEvent) {
+    constructor(target: any, operation: string, private _cause?: RikeOperationEvent) {
         super(target, operation, _cause || "cancel");
     }
 
-    get cause(): ResrcOperationEvent | undefined {
+    get cause(): RikeOperationEvent | undefined {
         return this._cause;
     }
 

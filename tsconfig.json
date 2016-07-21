@@ -15,7 +15,7 @@
     "forceConsistentCasingInFileNames": true,
     "newLine": "LF",
     "sourceRoot": ".",
-    "outFile": "bundles/ng2-resrc.js"
+    "outFile": "bundles/ng2-rike.js"
   },
-  "include": ["ng2-resrc.ts", "ng2-resrc/**/*"]
+  "include": ["ng2-rike.ts", "ng2-rike/**/*"]
 }
