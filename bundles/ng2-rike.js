@@ -44,7 +44,7 @@ System.register("ng2-rike/event", [], function(exports_1, context_1) {
                 RikeEventSource.provide = function (_a) {
                     var useClass = _a.useClass, useValue = _a.useValue, useExisting = _a.useExisting, useFactory = _a.useFactory, deps = _a.deps;
                     return {
-                        "provide": RikeEventSource,
+                        provide: RikeEventSource,
                         multi: true,
                         useClass: useClass,
                         useValue: useValue,
@@ -1011,48 +1011,45 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
         }
     }
 });
-System.register("ng2-rike/decorator", ["ng2-rike/rike", "@angular/http"], function(exports_5, context_5) {
+System.register("ng2-rike/resource", ["@angular/http", "ng2-rike/event"], function(exports_5, context_5) {
     "use strict";
     var __moduleName = context_5 && context_5.id;
-    var rike_1, http_3;
-    var InjectableTarget, InjectableOperation, injectableTarget, injectableOperation, RIKE_OPERATION_PROVIDERS;
-    function operation() {
-        if (!injectableOperation) {
-            throw new Error("Rike is not initialized yet");
-        }
-        return injectableOperation;
-    }
+    var http_3, event_2;
+    var Resource, RikeResource;
     function opDecorator(method, meta) {
-        return function (target, propertyKey, descriptor) {
-            var originalMethod = descriptor.value;
-            descriptor.value = function () {
-                var args = [];
-                for (var _i = 0; _i < arguments.length; _i++) {
-                    args[_i - 0] = arguments[_i];
-                }
-                var op = operation();
-                var name = meta && meta.name || propertyKey.toString();
-                var dataType = meta && meta.dataType;
-                op.pushOperation(this, name, dataType);
-                try {
+        return function (target, key) {
+            var desc = Object.getOwnPropertyDescriptor(this, key);
+            if (delete this[key]) {
+                var getter = function () {
+                    var resource = this;
+                    var operation = resource.rikeTarget.operation(meta && meta.name || key.toString());
                     if (meta) {
-                        op.withOptions({
+                        operation.withOptions({
                             url: meta.url,
                             search: meta.search,
                             headers: meta.headers && new http_3.Headers(meta.headers),
                             withCredentials: meta.withCredentials,
                         });
-                        if (method != null) {
-                            op.withMethod(method);
-                        }
                     }
-                    return originalMethod.apply(this, args);
-                }
-                finally {
-                    op.popOperation();
-                }
-            };
-            return descriptor;
+                    if (method != null) {
+                        operation.withMethod(method);
+                    }
+                    switch (operation.method) {
+                        case http_3.RequestMethod.Post:
+                        case http_3.RequestMethod.Put:
+                        case http_3.RequestMethod.Patch:
+                            return function (request) { return operation.send(request); };
+                        default:
+                            return function () { return operation.load(); };
+                    }
+                };
+                Object.defineProperty(target, key, {
+                    get: getter,
+                    writable: desc && desc.writable || false,
+                    enumerable: desc && desc.enumerable || true,
+                    configurable: desc && desc.configurable || true,
+                });
+            }
         };
     }
     function RIKE(meta) {
@@ -1089,201 +1086,57 @@ System.register("ng2-rike/decorator", ["ng2-rike/rike", "@angular/http"], functi
     exports_5("PATCH", PATCH);
     return {
         setters:[
-            function (rike_1_1) {
-                rike_1 = rike_1_1;
-            },
             function (http_3_1) {
                 http_3 = http_3_1;
+            },
+            function (event_2_1) {
+                event_2 = event_2_1;
             }],
         execute: function() {
-            InjectableTarget = (function (_super) {
-                __extends(InjectableTarget, _super);
-                function InjectableTarget(_rike) {
-                    _super.call(this);
+            Resource = (function () {
+                function Resource() {
+                }
+                Resource.provide = function (_a) {
+                    var provide = _a.provide, useClass = _a.useClass, useValue = _a.useValue, useExisting = _a.useExisting, useFactory = _a.useFactory, deps = _a.deps;
+                    return [
+                        {
+                            provide: provide || Resource,
+                            useClass: useClass,
+                            useValue: useValue,
+                            useExisting: useExisting,
+                            useFactory: useFactory,
+                            deps: deps,
+                        },
+                        event_2.RikeEventSource.provide({
+                            useFactory: function (resource) { return resource.rikeTarget; },
+                            deps: [Resource],
+                        })
+                    ];
+                };
+                return Resource;
+            }());
+            exports_5("Resource", Resource);
+            RikeResource = (function () {
+                function RikeResource(_rike) {
                     this._rike = _rike;
-                    this._stack = [];
                 }
-                Object.defineProperty(InjectableTarget.prototype, "target", {
+                Object.defineProperty(RikeResource.prototype, "rikeTarget", {
                     get: function () {
-                        return this.wrapped.target;
+                        return this._rikeTarget || (this._rikeTarget = this._rike.target(this, this.getDataType()));
                     },
                     enumerable: true,
                     configurable: true
                 });
-                Object.defineProperty(InjectableTarget.prototype, "currentOperation", {
-                    get: function () {
-                        return this.wrapped.currentOperation;
-                    },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(InjectableTarget.prototype, "rikeEvents", {
-                    get: function () {
-                        return this.wrapped.rikeEvents;
-                    },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(InjectableTarget.prototype, "dataType", {
-                    get: function () {
-                        return this.wrapped.dataType;
-                    },
-                    enumerable: true,
-                    configurable: true
-                });
-                InjectableTarget.prototype.operation = function (name, dataType) {
-                    if (!dataType) {
-                        return this.wrapped.operation(name);
-                    }
-                    return this.wrapped.operation(name, dataType);
-                };
-                InjectableTarget.prototype.cancel = function () {
-                    return this.wrapped.cancel();
-                };
-                Object.defineProperty(InjectableTarget.prototype, "wrapped", {
-                    get: function () {
-                        if (!this._wrapped) {
-                            throw new Error("No current operations target");
-                        }
-                        return this._wrapped;
-                    },
-                    enumerable: true,
-                    configurable: true
-                });
-                InjectableTarget.prototype.pushTarget = function (target, dataType) {
-                    if (this._wrapped) {
-                        this._stack.push(this._wrapped);
-                        if (this._wrapped.target === target) {
-                            return;
-                        }
-                    }
-                    if (dataType) {
-                        this._wrapped = this._rike.target(target, dataType);
-                    }
-                    else {
-                        this._wrapped = this._rike.target(target);
-                    }
-                };
-                InjectableTarget.prototype.popTarget = function () {
-                    this._wrapped = this._stack.pop();
-                };
-                return InjectableTarget;
-            }(rike_1.RikeTarget));
-            InjectableOperation = (function (_super) {
-                __extends(InjectableOperation, _super);
-                function InjectableOperation(_target) {
-                    _super.call(this);
-                    this._target = _target;
-                    this._stack = [];
-                }
-                Object.defineProperty(InjectableOperation.prototype, "target", {
-                    get: function () {
-                        return this._target;
-                    },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(InjectableOperation.prototype, "name", {
-                    get: function () {
-                        return this.wrapped.name;
-                    },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(InjectableOperation.prototype, "dataType", {
-                    get: function () {
-                        return this.wrapped.dataType;
-                    },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(InjectableOperation.prototype, "options", {
-                    get: function () {
-                        return this.wrapped.options;
-                    },
-                    enumerable: true,
-                    configurable: true
-                });
-                InjectableOperation.prototype.withOptions = function (options) {
-                    this.wrapped.withOptions(options);
-                    return this;
-                };
-                InjectableOperation.prototype.load = function (url, options) {
-                    return this.wrapped.load(url, options);
-                };
-                InjectableOperation.prototype.send = function (request, url, options) {
-                    return this.wrapped.send(request, url, options);
-                };
-                InjectableOperation.prototype.get = function (url, options) {
-                    return this.wrapped.get(url, options);
-                };
-                InjectableOperation.prototype.post = function (request, url, options) {
-                    return this.wrapped.post(request, url, options);
-                };
-                InjectableOperation.prototype.put = function (request, url, options) {
-                    return this.wrapped.put(request, url, options);
-                };
-                //noinspection ReservedWordAsName
-                InjectableOperation.prototype.delete = function (url, options) {
-                    return this.wrapped.delete(url, options);
-                };
-                InjectableOperation.prototype.patch = function (request, url, options) {
-                    return this.wrapped.patch(request, url, options);
-                };
-                InjectableOperation.prototype.head = function (url, options) {
-                    return this.wrapped.head(url, options);
-                };
-                Object.defineProperty(InjectableOperation.prototype, "wrapped", {
-                    get: function () {
-                        if (!this._wrapped) {
-                            throw new Error("No current operation");
-                        }
-                        return this._wrapped;
-                    },
-                    enumerable: true,
-                    configurable: true
-                });
-                InjectableOperation.prototype.pushOperation = function (target, name, dataType) {
-                    this._target.pushTarget(target);
-                    if (this._wrapped) {
-                        this._stack.push(this._wrapped);
-                    }
-                    if (dataType) {
-                        this._wrapped = this._target.operation(name, dataType);
-                    }
-                    else {
-                        this._wrapped = this._target.operation(name);
-                    }
-                };
-                InjectableOperation.prototype.popOperation = function () {
-                    try {
-                        this._wrapped = this._stack.pop();
-                    }
-                    finally {
-                        this._target.popTarget();
-                    }
-                };
-                return InjectableOperation;
-            }(rike_1.RikeOperation));
-            exports_5("RIKE_OPERATION_PROVIDERS", RIKE_OPERATION_PROVIDERS = [
-                {
-                    provide: InjectableTarget,
-                    useFactory: function (rike) { return injectableTarget = new InjectableTarget(rike); },
-                    deps: [rike_1.Rike],
-                },
-                {
-                    provide: InjectableOperation,
-                    useFactory: function (target) { return injectableOperation = new InjectableOperation(target); },
-                    deps: [InjectableTarget],
-                }
-            ]);
+                return RikeResource;
+            }());
+            exports_5("RikeResource", RikeResource);
         }
     }
 });
-System.register("ng2-rike", ["ng2-rike/rike", "ng2-rike/event", "ng2-rike/decorator", "ng2-rike/data", "ng2-rike/options"], function(exports_6, context_6) {
+System.register("ng2-rike", ["ng2-rike/rike", "ng2-rike/event", "ng2-rike/resource", "ng2-rike/data", "ng2-rike/options"], function(exports_6, context_6) {
     "use strict";
     var __moduleName = context_6 && context_6.id;
-    var rike_2, event_2, decorator_1;
+    var rike_1, event_3, resource_1;
     var RIKE_PROVIDERS;
     var exportedNames_1 = {
         'RIKE_PROVIDERS': true
@@ -1297,17 +1150,17 @@ System.register("ng2-rike", ["ng2-rike/rike", "ng2-rike/event", "ng2-rike/decora
     }
     return {
         setters:[
-            function (rike_2_1) {
-                rike_2 = rike_2_1;
-                exportStar_1(rike_2_1);
+            function (rike_1_1) {
+                rike_1 = rike_1_1;
+                exportStar_1(rike_1_1);
             },
-            function (event_2_1) {
-                event_2 = event_2_1;
-                exportStar_1(event_2_1);
+            function (event_3_1) {
+                event_3 = event_3_1;
+                exportStar_1(event_3_1);
             },
-            function (decorator_1_1) {
-                decorator_1 = decorator_1_1;
-                exportStar_1(decorator_1_1);
+            function (resource_1_1) {
+                resource_1 = resource_1_1;
+                exportStar_1(resource_1_1);
             },
             function (data_2_1) {
                 exportStar_1(data_2_1);
@@ -1325,9 +1178,9 @@ System.register("ng2-rike", ["ng2-rike/rike", "ng2-rike/event", "ng2-rike/decora
              * @type {any[]}
              */
             exports_6("RIKE_PROVIDERS", RIKE_PROVIDERS = [
-                rike_2.Rike,
-                event_2.RikeEventSource.provide({ useExisting: rike_2.Rike }),
-                decorator_1.RIKE_OPERATION_PROVIDERS,
+                rike_1.Rike,
+                event_3.RikeEventSource.provide({ useExisting: rike_1.Rike }),
+                resource_1.RIKE_OPERATION_PROVIDERS,
             ]);
         }
     }

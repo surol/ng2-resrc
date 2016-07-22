@@ -28,7 +28,7 @@ export abstract class RikeEventSource {
         multi?: boolean;
     }): any {
         return {
-            "provide": RikeEventSource,
+            provide: RikeEventSource,
             multi: true,
             useClass,
             useValue,

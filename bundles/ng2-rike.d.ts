@@ -426,10 +426,29 @@ declare module "ng2-rike/rike" {
         abstract head(url?: string, options?: RequestOptionsArgs): Observable<OUT>;
     }
 }
-declare module "ng2-rike/decorator" {
-    import { DataType } from "ng2-rike/data";
+declare module "ng2-rike/resource" {
+    import { Type } from "@angular/core";
     import { URLSearchParams, Headers, RequestMethod } from "@angular/http";
-    export const RIKE_OPERATION_PROVIDERS: any[];
+    import { DataType } from "ng2-rike/data";
+    import { RikeTarget, Rike } from "ng2-rike/rike";
+    export abstract class Resource<IN, OUT> {
+        static provide({provide, useClass, useValue, useExisting, useFactory, deps}: {
+            provide: any;
+            useClass?: Type;
+            useValue?: any;
+            useExisting?: any;
+            useFactory?: Function;
+            deps?: Object[];
+            multi?: boolean;
+        }): any;
+        readonly abstract rikeTarget: RikeTarget<IN, OUT>;
+    }
+    export interface LoadFn<OUT> {
+        (): OUT;
+    }
+    export interface SendFn<IN, OUT> {
+        (request: IN): OUT;
+    }
     export interface OperationMetadata {
         name?: string;
         dataType?: DataType<any, any>;
@@ -443,18 +462,25 @@ declare module "ng2-rike/decorator" {
     export interface OperationWithMethodMetadata extends OperationMetadata {
         method?: string | RequestMethod;
     }
-    export function RIKE(meta?: OperationWithMethodMetadata): MethodDecorator;
-    export function GET(meta?: OperationMetadata): MethodDecorator;
-    export function POST(meta?: OperationMetadata): MethodDecorator;
-    export function PUT(meta?: OperationMetadata): MethodDecorator;
-    export function DELETE(meta?: OperationMetadata): MethodDecorator;
-    export function OPTIONS(meta?: OperationMetadata): MethodDecorator;
-    export function HEAD(opts?: OperationMetadata): MethodDecorator;
-    export function PATCH(opts?: OperationMetadata): MethodDecorator;
+    export function RIKE(meta?: OperationWithMethodMetadata): PropertyDecorator;
+    export function GET(meta?: OperationMetadata): PropertyDecorator;
+    export function POST(meta?: OperationMetadata): PropertyDecorator;
+    export function PUT(meta?: OperationMetadata): PropertyDecorator;
+    export function DELETE(meta?: OperationMetadata): PropertyDecorator;
+    export function OPTIONS(meta?: OperationMetadata): PropertyDecorator;
+    export function HEAD(opts?: OperationMetadata): PropertyDecorator;
+    export function PATCH(opts?: OperationMetadata): PropertyDecorator;
+    export abstract class RikeResource<IN, OUT> implements Resource<IN, OUT> {
+        protected _rike: Rike;
+        private _rikeTarget?;
+        constructor(_rike: Rike);
+        abstract getDataType(): DataType<IN, OUT>;
+        readonly rikeTarget: RikeTarget<IN, OUT>;
+    }
 }
 declare module "ng2-rike" {
     export * from "ng2-rike/data";
-    export * from "ng2-rike/decorator";
+    export * from "ng2-rike/resource";
     export * from "ng2-rike/event";
     export * from "ng2-rike/options";
     export * from "ng2-rike/rike";
