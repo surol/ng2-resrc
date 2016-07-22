@@ -11,11 +11,11 @@ export const DEFAULT_RIKE_OPTIONS: RikeOptions = new BaseRikeOptions();
  * @param baseUrl base URL.
  * @param url URL.
  *
- * @returns {string} If `baseUrl` is not specified, or `url` is absolute, then returns unmodified `url`.
+ * @returns {string} If `baseUrl` is not specified, or empty string, or `url` is absolute, then returns unmodified `url`.
  * Otherwise concatenates `baseUrl` and `url` separating them by `/` sign.
  */
 export function relativeUrl(baseUrl: string | undefined, url: string): string {
-    if (baseUrl == null) {
+    if (!baseUrl) {
         return url;
     }
     if (url[0] === "/") {
@@ -47,8 +47,7 @@ export abstract class RikeOptions {
      *
      * @param url URL
      *
-     * @returns {string} If `baseUrl` is not set, or `url` is absolute, then returns unmodified `url`.
-     * Otherwise concatenates `baseUrl` and `url` separating them by `/` sign.
+     * @returns {string} resolved URL.
      */
     relativeUrl(url: string): string {
         return relativeUrl(this.baseUrl, url);
