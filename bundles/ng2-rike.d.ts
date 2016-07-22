@@ -117,6 +117,16 @@ declare module "ng2-rike/options" {
      */
     export const DEFAULT_RIKE_OPTIONS: RikeOptions;
     /**
+     * Constructs URL relative to base URL.
+     *
+     * @param baseUrl base URL.
+     * @param url URL.
+     *
+     * @returns {string} If `baseUrl` is not specified, or `url` is absolute, then returns unmodified `url`.
+     * Otherwise concatenates `baseUrl` and `url` separating them by `/` sign.
+     */
+    export function relativeUrl(baseUrl: string | undefined, url: string): string;
+    /**
      * Global resource options.
      *
      * To overwrite global options add a provider for [BaseRikeOptions] instance with [RikeOptions] as a key:
@@ -130,12 +140,12 @@ declare module "ng2-rike/options" {
          */
         readonly abstract baseUrl?: string;
         /**
-         * Constructs URL relative to _baseUrl_.
+         * Constructs URL relative to `baseUrl`.
          *
          * @param url URL
          *
-         * @returns {string} If _baseUrl_ is not set, or _url_ is absolute, then returns unmodified _url_.
-         * Otherwise concatenates _baseUrl_ and _url_ separating them by `/` sign.
+         * @returns {string} If `baseUrl` is not set, or `url` is absolute, then returns unmodified `url`.
+         * Otherwise concatenates `baseUrl` and `url` separating them by `/` sign.
          */
         relativeUrl(url: string): string;
     }
@@ -353,6 +363,18 @@ declare module "ng2-rike/rike" {
          * This is the data type to the [Rike.target] method.
          */
         readonly abstract dataType: DataType<IN, OUT>;
+        /**
+         * Base URL to use by operations.
+         */
+        readonly abstract baseUrl?: string;
+        /**
+         * Assigns base URL to use by operations.
+         *
+         * This URL can be absolute, or relative to the one specified in the [global options][RikeOptions.baseUrl].
+         *
+         * @param url new base URL or `undefined` to reset it.
+         */
+        abstract withBaseUrl(url?: string): this;
         /**
          * Constructs an operation on this target, which produces responses of type `T`.
          *

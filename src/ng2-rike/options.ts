@@ -6,6 +6,28 @@
 export const DEFAULT_RIKE_OPTIONS: RikeOptions = new BaseRikeOptions();
 
 /**
+ * Constructs URL relative to base URL.
+ *
+ * @param baseUrl base URL.
+ * @param url URL.
+ *
+ * @returns {string} If `baseUrl` is not specified, or `url` is absolute, then returns unmodified `url`.
+ * Otherwise concatenates `baseUrl` and `url` separating them by `/` sign.
+ */
+export function relativeUrl(baseUrl: string | undefined, url: string): string {
+    if (baseUrl == null) {
+        return url;
+    }
+    if (url[0] === "/") {
+        return url;// Absolute URL
+    }
+    if (url.match(/^(\w*:)?\/\//)) {
+        return url;// Full URL
+    }
+    return baseUrl + "/";
+}
+
+/**
  * Global resource options.
  *
  * To overwrite global options add a provider for [BaseRikeOptions] instance with [RikeOptions] as a key:
@@ -21,24 +43,15 @@ export abstract class RikeOptions {
     abstract readonly baseUrl?: string;
 
     /**
-     * Constructs URL relative to _baseUrl_.
+     * Constructs URL relative to `baseUrl`.
      *
      * @param url URL
      *
-     * @returns {string} If _baseUrl_ is not set, or _url_ is absolute, then returns unmodified _url_.
-     * Otherwise concatenates _baseUrl_ and _url_ separating them by `/` sign.
+     * @returns {string} If `baseUrl` is not set, or `url` is absolute, then returns unmodified `url`.
+     * Otherwise concatenates `baseUrl` and `url` separating them by `/` sign.
      */
     relativeUrl(url: string): string {
-        if (this.baseUrl == null) {
-            return url;
-        }
-        if (url[0] === "/") {
-            return url;// Absolute URL
-        }
-        if (url.match(/^(\w*:)?\/\//)) {
-            return url;// Full URL
-        }
-        return this.baseUrl + "/";
+        return relativeUrl(this.baseUrl, url);
     }
 
 }

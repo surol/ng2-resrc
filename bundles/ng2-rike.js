@@ -228,6 +228,28 @@ System.register("ng2-rike/options", [], function(exports_2, context_2) {
     "use strict";
     var __moduleName = context_2 && context_2.id;
     var DEFAULT_RIKE_OPTIONS, RikeOptions, BaseRikeOptions;
+    /**
+     * Constructs URL relative to base URL.
+     *
+     * @param baseUrl base URL.
+     * @param url URL.
+     *
+     * @returns {string} If `baseUrl` is not specified, or `url` is absolute, then returns unmodified `url`.
+     * Otherwise concatenates `baseUrl` and `url` separating them by `/` sign.
+     */
+    function relativeUrl(baseUrl, url) {
+        if (baseUrl == null) {
+            return url;
+        }
+        if (url[0] === "/") {
+            return url; // Absolute URL
+        }
+        if (url.match(/^(\w*:)?\/\//)) {
+            return url; // Full URL
+        }
+        return baseUrl + "/";
+    }
+    exports_2("relativeUrl", relativeUrl);
     return {
         setters:[],
         execute: function() {
@@ -249,24 +271,15 @@ System.register("ng2-rike/options", [], function(exports_2, context_2) {
                 function RikeOptions() {
                 }
                 /**
-                 * Constructs URL relative to _baseUrl_.
+                 * Constructs URL relative to `baseUrl`.
                  *
                  * @param url URL
                  *
-                 * @returns {string} If _baseUrl_ is not set, or _url_ is absolute, then returns unmodified _url_.
-                 * Otherwise concatenates _baseUrl_ and _url_ separating them by `/` sign.
+                 * @returns {string} If `baseUrl` is not set, or `url` is absolute, then returns unmodified `url`.
+                 * Otherwise concatenates `baseUrl` and `url` separating them by `/` sign.
                  */
                 RikeOptions.prototype.relativeUrl = function (url) {
-                    if (this.baseUrl == null) {
-                        return url;
-                    }
-                    if (url[0] === "/") {
-                        return url; // Absolute URL
-                    }
-                    if (url.match(/^(\w*:)?\/\//)) {
-                        return url; // Full URL
-                    }
-                    return this.baseUrl + "/";
+                    return relativeUrl(this.baseUrl, url);
                 };
                 return RikeOptions;
             }());
@@ -725,6 +738,17 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                     enumerable: true,
                     configurable: true
                 });
+                Object.defineProperty(RikeTargetImpl.prototype, "baseUrl", {
+                    get: function () {
+                        return this._baseUrl;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                RikeTargetImpl.prototype.withBaseUrl = function (url) {
+                    this._baseUrl = url;
+                    return this;
+                };
                 RikeTargetImpl.prototype.cancel = function () {
                     return this._cancel();
                 };
@@ -892,7 +916,7 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                     try {
                         this.startOperation();
                         options = this.requestOptions(undefined, url, options);
-                        return this.wrapResponse(this.rike.request(this.requestUrl(url, options), options));
+                        return this.wrapResponse(this.rike.request(this.requestUrl(options), options));
                     }
                     catch (e) {
                         this.target.rikeEvents.error(new event_1.RikeErrorEvent(this, e));
@@ -903,7 +927,7 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                     try {
                         this.startOperation();
                         options = this.writeRequest(request, this.requestOptions(undefined, url, options));
-                        return this.wrapResponse(this.rike.request(this.requestUrl(url, options), options));
+                        return this.wrapResponse(this.rike.request(this.requestUrl(options), options));
                     }
                     catch (e) {
                         this.target.rikeEvents.error(new event_1.RikeErrorEvent(this, e));
@@ -914,7 +938,7 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                     try {
                         this.startOperation();
                         options = this.requestOptions(http_2.RequestMethod.Get, url, options);
-                        return this.wrapResponse(this.rike.get(this.requestUrl(url, options), options));
+                        return this.wrapResponse(this.rike.get(this.requestUrl(options), options));
                     }
                     catch (e) {
                         this.target.rikeEvents.error(new event_1.RikeErrorEvent(this, e));
@@ -925,7 +949,7 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                     try {
                         this.startOperation();
                         options = this.writeRequest(request, this.requestOptions(http_2.RequestMethod.Post, url, options));
-                        return this.wrapResponse(this.rike.post(this.requestUrl(url, options), options.body, options));
+                        return this.wrapResponse(this.rike.post(this.requestUrl(options), options.body, options));
                     }
                     catch (e) {
                         this.target.rikeEvents.error(new event_1.RikeErrorEvent(this, e));
@@ -936,7 +960,7 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                     try {
                         this.startOperation();
                         options = this.writeRequest(request, this.requestOptions(http_2.RequestMethod.Put, url, options));
-                        return this.wrapResponse(this.rike.put(this.requestUrl(url, options), options.body, options));
+                        return this.wrapResponse(this.rike.put(this.requestUrl(options), options.body, options));
                     }
                     catch (e) {
                         this.target.rikeEvents.error(new event_1.RikeErrorEvent(this, e));
@@ -948,7 +972,7 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                     try {
                         this.startOperation();
                         options = this.requestOptions(http_2.RequestMethod.Delete, url, options);
-                        return this.wrapResponse(this.rike.delete(this.requestUrl(url, options), options));
+                        return this.wrapResponse(this.rike.delete(this.requestUrl(options), options));
                     }
                     catch (e) {
                         this.target.rikeEvents.error(new event_1.RikeErrorEvent(this, e));
@@ -959,7 +983,7 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                     try {
                         this.startOperation();
                         options = this.writeRequest(request, this.requestOptions(http_2.RequestMethod.Patch, url, options));
-                        return this.wrapResponse(this.rike.patch(this.requestUrl(url, options), options.body, options));
+                        return this.wrapResponse(this.rike.patch(this.requestUrl(options), options.body, options));
                     }
                     catch (e) {
                         this.target.rikeEvents.error(new event_1.RikeErrorEvent(this, e));
@@ -970,7 +994,7 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                     try {
                         this.startOperation();
                         options = this.requestOptions(http_2.RequestMethod.Head, url, options);
-                        return this.wrapResponse(this.rike.head(this.requestUrl(url, options), options));
+                        return this.wrapResponse(this.rike.head(this.requestUrl(options), options));
                     }
                     catch (e) {
                         this.target.rikeEvents.error(new event_1.RikeErrorEvent(this, e));
@@ -980,16 +1004,6 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                 RikeOperationImpl.prototype.startOperation = function () {
                     this.target.startOperation(this);
                 };
-                //noinspection JSMethodCanBeStatic
-                RikeOperationImpl.prototype.requestUrl = function (url, options) {
-                    if (url != null) {
-                        return url;
-                    }
-                    if (options.url != null) {
-                        return options.url;
-                    }
-                    throw new Error("Request URL not specified");
-                };
                 RikeOperationImpl.prototype.requestOptions = function (method, url, options) {
                     if (!options) {
                         options = { url: url, method: method };
@@ -997,11 +1011,25 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                     else {
                         options = new http_2.RequestOptions(options).merge({ url: url, method: method });
                     }
-                    return this.dataType.prepareRequest(this.options.merge(options));
+                    options = this.options.merge(options);
+                    if (options.url == null) {
+                        options.url = this.target.baseUrl;
+                    }
+                    else {
+                        options.url = options_1.relativeUrl(this.target.baseUrl, options.url);
+                    }
+                    return this.dataType.prepareRequest(options);
                 };
                 RikeOperationImpl.prototype.writeRequest = function (request, options) {
                     options = this.dataType.writeRequest(request, options);
                     return options;
+                };
+                //noinspection JSMethodCanBeStatic
+                RikeOperationImpl.prototype.requestUrl = function (options) {
+                    if (options.url != null) {
+                        return options.url;
+                    }
+                    throw new Error("Request URL not specified");
                 };
                 RikeOperationImpl.prototype.wrapResponse = function (response) {
                     return this.target.wrapResponse(this, response);
