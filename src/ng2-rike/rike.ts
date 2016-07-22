@@ -481,7 +481,7 @@ class RikeTargetImpl<IN, OUT> extends RikeTarget<IN, OUT> {
             name,
             !dataType ? this.dataType : (
                 this.dataType as DataType<any, any> === HTTP_RESPONSE_DATA_TYPE
-                    ? dataType : new OperationDataType<any, any>(this.dataType, dataType)));
+                    ? dataType : dataType.prepareRequestWith(options => this.dataType.prepareRequest(options))));
     }
 
     startOperation(operation: RikeOperation<any, any>): void {
@@ -536,27 +536,6 @@ class RikeTargetImpl<IN, OUT> extends RikeTarget<IN, OUT> {
                     }
                 });
         });
-    }
-
-}
-
-class OperationDataType<IN, OUT> extends DataType<IN, OUT> {
-
-    constructor(private _targetDataType: DataType<any, any>, private _dataType: DataType<IN, OUT>) {
-        super();
-    }
-
-    readResponse(response: Response): OUT {
-        return this._dataType.readResponse(response);
-    }
-
-    prepareRequest(options: RequestOptionsArgs): RequestOptionsArgs {
-        options = this._targetDataType.prepareRequest(options);
-        return this._dataType.prepareRequest(options);
-    }
-
-    writeRequest(request: IN, options: RequestOptionsArgs): RequestOptionsArgs {
-        return this._dataType.writeRequest(request, options);
     }
 
 }

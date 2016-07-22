@@ -12,15 +12,6 @@ import {Response, RequestOptionsArgs, Request, RequestOptions} from "@angular/ht
  */
 export abstract class DataType<IN, OUT> {
 
-    /**
-     * Reads operation response from HTTP response.
-     *
-     * @param response HTTP response.
-     *
-     * @returns operation response.
-     */
-    abstract readResponse(response: Response): OUT;
-
     //noinspection JSMethodCanBeStatic
     /**
      * Prepares HTTP request.
@@ -39,6 +30,12 @@ export abstract class DataType<IN, OUT> {
         return options;
     }
 
+    prepareRequestWith(
+        prepare: (options: RequestOptionsArgs) => RequestOptionsArgs,
+        after?: boolean): DataType<IN, OUT> {
+        return new PrepareRequestDataType<IN, OUT>(this, prepare, after);
+    }
+
     /**
      * Writes operation request as HTTP request.
      *
@@ -54,8 +51,22 @@ export abstract class DataType<IN, OUT> {
      */
     abstract writeRequest(request: IN, options: RequestOptionsArgs): RequestOptionsArgs;
 
+    writeRequestWith<IN>(
+        writeRequest: (request: IN, options: RequestOptionsArgs) => RequestOptionsArgs): DataType<IN, OUT> {
+        return new WriteRequestDataType<IN, OUT>(this, writeRequest);
+    }
+
+    /**
+     * Reads operation response from HTTP response.
+     *
+     * @param response HTTP response.
+     *
+     * @returns operation response.
+     */
+    abstract readResponse(response: Response): OUT;
+
     readResponseWith<OUT>(readResponse: (response: Response) => OUT): DataType<IN, OUT> {
-        return new ResponseDataType<IN, OUT>(this, readResponse);
+        return new ReadResponseDataType<IN, OUT>(this, readResponse);
     }
 
 }
@@ -87,8 +98,6 @@ export const HTTP_RESPONSE_DATA_TYPE: DataType<any, Response> = new HttpResponse
 
 export abstract class RequestBodyType<T> extends DataType<T, T> {
 
-    abstract readResponse(response: Response): T;
-
     writeRequest(request: T, options: RequestOptionsArgs): RequestOptionsArgs {
         return new RequestOptions(options).merge({body: this.writeBody(request)});
     }
@@ -97,14 +106,58 @@ export abstract class RequestBodyType<T> extends DataType<T, T> {
 
 }
 
-class ResponseDataType<IN, OUT> extends DataType<IN, OUT> {
+class PrepareRequestDataType<IN, OUT> extends DataType<IN, OUT> {
 
-    constructor(private _requestType: DataType<IN, any>, private _readResponse: (response: Response) => OUT) {
+    constructor(
+        private _dataType: DataType<IN, OUT>,
+        private _prepare: (options: RequestOptionsArgs) => RequestOptionsArgs,
+        private _after?: boolean) {
         super();
     }
 
+    prepareRequest(options: RequestOptionsArgs): RequestOptionsArgs {
+        if (this._after) {
+            return this._prepare(this._dataType.prepareRequest(options));
+        }
+        return this._dataType.prepareRequest(this._prepare(options));
+    }
+
+    writeRequest(request: IN, options: RequestOptionsArgs): RequestOptionsArgs {
+        return this._dataType.writeRequest(request, options);
+    }
+
     readResponse(response: Response): OUT {
-        return this._readResponse(response);
+        return this._dataType.readResponse(response);
+    }
+
+}
+
+class WriteRequestDataType<IN, OUT> extends DataType<IN, OUT> {
+
+    constructor(
+        private _responseType: DataType<any, OUT>,
+        private _writeRequest: (request: IN, options: RequestOptionsArgs) => RequestOptionsArgs) {
+        super();
+    }
+
+    prepareRequest(options: RequestOptionsArgs): RequestOptionsArgs {
+        return this._responseType.prepareRequest(options);
+    }
+
+    writeRequest(request: IN, options: RequestOptionsArgs): RequestOptionsArgs {
+        return this._writeRequest(request, options);
+    }
+
+    readResponse(response: Response): OUT {
+        return this._responseType.readResponse(response);
+    }
+
+}
+
+class ReadResponseDataType<IN, OUT> extends DataType<IN, OUT> {
+
+    constructor(private _requestType: DataType<IN, any>, private _readResponse: (response: Response) => OUT) {
+        super();
     }
 
     prepareRequest(options: RequestOptionsArgs): RequestOptionsArgs {
@@ -115,32 +168,36 @@ class ResponseDataType<IN, OUT> extends DataType<IN, OUT> {
         return this._requestType.writeRequest(request, options);
     }
 
+    readResponse(response: Response): OUT {
+        return this._readResponse(response);
+    }
+
     readResponseWith<OUT>(readResponse: (response: Response) => OUT): DataType<IN, OUT> {
-        return new ResponseDataType<IN, OUT>(this._requestType, readResponse);
+        return new ReadResponseDataType<IN, OUT>(this._requestType, readResponse);
     }
 
 }
 
 class JsonDataType<T> extends RequestBodyType<T> {
 
-    readResponse(response: Response): T {
-        return response.json();
-    }
-
     writeBody(request: T): string {
         return JSON.stringify(request);
+    }
+
+    readResponse(response: Response): T {
+        return response.json();
     }
 
 }
 
 class HttpResponseDataType extends DataType<any, Response> {
 
-    readResponse(response: Response): Response {
-        return response;
-    }
-
     writeRequest(request: any, options: RequestOptionsArgs): RequestOptionsArgs {
         return new RequestOptions(options).merge({body: request});
+    }
+
+    readResponse(response: Response): Response {
+        return response;
     }
 
 }
