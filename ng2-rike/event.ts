@@ -1,4 +1,5 @@
 import {EventEmitter, Type} from "@angular/core";
+import {RikeTarget, RikeOperation} from "./rike";
 
 /**
  * REST-like resource access event emitter.
@@ -53,17 +54,15 @@ export abstract class RikeEvent {
 
     /**
      * Operation target.
-     *
-     * This is the value passed to the [Rike.target] method.
      */
-    abstract readonly target: any;
+    get target(): RikeTarget<any, any> {
+        return this.operation.target;
+    }
 
     /**
-     * Operation name.
-     *
-     * This is the value passed to the [RikeTarget.operation] method
+     * Rike operation.
      */
-    abstract readonly operation: string;
+    abstract readonly operation: RikeOperation<any, any>;
 
     /**
      * Whether an operation is complete.
@@ -91,15 +90,11 @@ export abstract class RikeEvent {
  */
 export class RikeOperationEvent extends RikeEvent {
 
-    constructor(private _target: any, private _operation: string) {
+    constructor(private _operation: RikeOperation<any, any>) {
         super();
     }
 
-    get target(): any {
-        return this._target;
-    }
-
-    get operation(): string {
+    get operation(): RikeOperation<any, any> {
         return this._operation;
     }
 
@@ -122,15 +117,11 @@ export class RikeOperationEvent extends RikeEvent {
  */
 export class RikeSuccessEvent extends RikeEvent {
 
-    constructor(private _target: any, private _operation: string, private _result: any) {
+    constructor(private _operation: RikeOperation<any, any>, private _result: any) {
         super();
     }
 
-    get target(): any {
-        return this._target;
-    }
-
-    get operation(): string {
+    get operation(): RikeOperation<any, any> {
         return this._operation;
     }
 
@@ -155,15 +146,11 @@ export class RikeSuccessEvent extends RikeEvent {
  */
 export class RikeErrorEvent extends RikeEvent {
 
-    constructor(private _target: any, private _operation: string, private _error: any) {
+    constructor(private _operation: RikeOperation<any, any>, private _error: any) {
         super();
     }
 
-    get target(): any {
-        return this._target;
-    }
-
-    get operation(): string {
+    get operation(): RikeOperation<any, any> {
         return this._operation;
     }
 
@@ -186,8 +173,8 @@ export class RikeErrorEvent extends RikeEvent {
  */
 export class RikeCancelEvent extends RikeErrorEvent {
 
-    constructor(target: any, operation: string, private _cause?: RikeOperationEvent) {
-        super(target, operation, _cause || "cancel");
+    constructor(operation: RikeOperation<any, any>, private _cause?: RikeOperationEvent) {
+        super(operation, _cause || "cancel");
     }
 
     get cause(): RikeOperationEvent | undefined {

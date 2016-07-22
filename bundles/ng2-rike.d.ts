@@ -1,6 +1,7 @@
 /// <reference types="core-js" />
 declare module "ng2-rike/event" {
     import { EventEmitter, Type } from "@angular/core";
+    import { RikeTarget, RikeOperation } from "ng2-rike/rike";
     /**
      * REST-like resource access event emitter.
      *
@@ -39,16 +40,12 @@ declare module "ng2-rike/event" {
     export abstract class RikeEvent {
         /**
          * Operation target.
-         *
-         * This is the value passed to the [Rike.target] method.
          */
-        readonly abstract target: any;
+        readonly target: RikeTarget<any, any>;
         /**
-         * Operation name.
-         *
-         * This is the value passed to the [RikeTarget.operation] method
+         * Rike operation.
          */
-        readonly abstract operation: string;
+        readonly abstract operation: RikeOperation<any, any>;
         /**
          * Whether an operation is complete.
          *
@@ -70,11 +67,9 @@ declare module "ng2-rike/event" {
      * An event emitted when operation on a REST-like resource is started.
      */
     export class RikeOperationEvent extends RikeEvent {
-        private _target;
         private _operation;
-        constructor(_target: any, _operation: string);
-        readonly target: any;
-        readonly operation: string;
+        constructor(_operation: RikeOperation<any, any>);
+        readonly operation: RikeOperation<any, any>;
         readonly complete: boolean;
         readonly error: undefined;
         readonly result: undefined;
@@ -83,12 +78,10 @@ declare module "ng2-rike/event" {
      * An event emitted when operation on a REST-like resource is successfully completed.
      */
     export class RikeSuccessEvent extends RikeEvent {
-        private _target;
         private _operation;
         private _result;
-        constructor(_target: any, _operation: string, _result: any);
-        readonly target: any;
-        readonly operation: string;
+        constructor(_operation: RikeOperation<any, any>, _result: any);
+        readonly operation: RikeOperation<any, any>;
         readonly complete: boolean;
         readonly error: undefined;
         readonly result: any;
@@ -99,12 +92,10 @@ declare module "ng2-rike/event" {
      * An object of this type is also reported as error when some internal exception occurs.
      */
     export class RikeErrorEvent extends RikeEvent {
-        private _target;
         private _operation;
         private _error;
-        constructor(_target: any, _operation: string, _error: any);
-        readonly target: any;
-        readonly operation: string;
+        constructor(_operation: RikeOperation<any, any>, _error: any);
+        readonly operation: RikeOperation<any, any>;
         readonly complete: boolean;
         readonly error: any;
         readonly result: undefined;
@@ -114,7 +105,7 @@ declare module "ng2-rike/event" {
      */
     export class RikeCancelEvent extends RikeErrorEvent {
         private _cause?;
-        constructor(target: any, operation: string, _cause?: RikeOperationEvent);
+        constructor(operation: RikeOperation<any, any>, _cause?: RikeOperationEvent);
         readonly cause: RikeOperationEvent | undefined;
     }
 }
@@ -346,12 +337,12 @@ declare module "ng2-rike/rike" {
          */
         readonly abstract target: any;
         /**
-         * A currently evaluating operation's name.
+         * A currently evaluating operation.
          *
          * `undefined` if no operations currently in process, i.e. operation not started, cancelled, or completed, either
          * successfully or with error.
          */
-        readonly abstract currentOperation?: string;
+        readonly abstract currentOperation?: RikeOperation<any, any>;
         /**
          * An emitter of events for operations performed on this target.
          */

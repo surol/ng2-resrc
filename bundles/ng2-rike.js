@@ -65,6 +65,16 @@ System.register("ng2-rike/event", [], function(exports_1, context_1) {
             RikeEvent = (function () {
                 function RikeEvent() {
                 }
+                Object.defineProperty(RikeEvent.prototype, "target", {
+                    /**
+                     * Operation target.
+                     */
+                    get: function () {
+                        return this.operation.target;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
                 return RikeEvent;
             }());
             exports_1("RikeEvent", RikeEvent);
@@ -73,18 +83,10 @@ System.register("ng2-rike/event", [], function(exports_1, context_1) {
              */
             RikeOperationEvent = (function (_super) {
                 __extends(RikeOperationEvent, _super);
-                function RikeOperationEvent(_target, _operation) {
+                function RikeOperationEvent(_operation) {
                     _super.call(this);
-                    this._target = _target;
                     this._operation = _operation;
                 }
-                Object.defineProperty(RikeOperationEvent.prototype, "target", {
-                    get: function () {
-                        return this._target;
-                    },
-                    enumerable: true,
-                    configurable: true
-                });
                 Object.defineProperty(RikeOperationEvent.prototype, "operation", {
                     get: function () {
                         return this._operation;
@@ -121,19 +123,11 @@ System.register("ng2-rike/event", [], function(exports_1, context_1) {
              */
             RikeSuccessEvent = (function (_super) {
                 __extends(RikeSuccessEvent, _super);
-                function RikeSuccessEvent(_target, _operation, _result) {
+                function RikeSuccessEvent(_operation, _result) {
                     _super.call(this);
-                    this._target = _target;
                     this._operation = _operation;
                     this._result = _result;
                 }
-                Object.defineProperty(RikeSuccessEvent.prototype, "target", {
-                    get: function () {
-                        return this._target;
-                    },
-                    enumerable: true,
-                    configurable: true
-                });
                 Object.defineProperty(RikeSuccessEvent.prototype, "operation", {
                     get: function () {
                         return this._operation;
@@ -172,19 +166,11 @@ System.register("ng2-rike/event", [], function(exports_1, context_1) {
              */
             RikeErrorEvent = (function (_super) {
                 __extends(RikeErrorEvent, _super);
-                function RikeErrorEvent(_target, _operation, _error) {
+                function RikeErrorEvent(_operation, _error) {
                     _super.call(this);
-                    this._target = _target;
                     this._operation = _operation;
                     this._error = _error;
                 }
-                Object.defineProperty(RikeErrorEvent.prototype, "target", {
-                    get: function () {
-                        return this._target;
-                    },
-                    enumerable: true,
-                    configurable: true
-                });
                 Object.defineProperty(RikeErrorEvent.prototype, "operation", {
                     get: function () {
                         return this._operation;
@@ -221,8 +207,8 @@ System.register("ng2-rike/event", [], function(exports_1, context_1) {
              */
             RikeCancelEvent = (function (_super) {
                 __extends(RikeCancelEvent, _super);
-                function RikeCancelEvent(target, operation, _cause) {
-                    _super.call(this, target, operation, _cause || "cancel");
+                function RikeCancelEvent(operation, _cause) {
+                    _super.call(this, operation, _cause || "cancel");
                     this._cause = _cause;
                 }
                 Object.defineProperty(RikeCancelEvent.prototype, "cause", {
@@ -750,12 +736,12 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                     try {
                         if (this._observer) {
                             try {
-                                var cancel = new event_1.RikeCancelEvent(this.target, this._operation.operation, cause);
+                                var cancel = new event_1.RikeCancelEvent(this._operation.operation, cause);
                                 this._observer.error(cancel);
                                 this._rikeEvents.error(cancel);
                             }
                             catch (e) {
-                                this._rikeEvents.error(new event_1.RikeErrorEvent(this.target, this._operation.operation, e));
+                                this._rikeEvents.error(new event_1.RikeErrorEvent(this._operation.operation, e));
                                 throw e;
                             }
                             finally {
@@ -782,7 +768,7 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                         ? dataType : new OperationDataType(this.dataType, dataType)));
                 };
                 RikeTargetImpl.prototype.startOperation = function (operation) {
-                    var event = new event_1.RikeOperationEvent(this.target, operation.name);
+                    var event = new event_1.RikeOperationEvent(operation);
                     this._cancel(event);
                     this._rikeEvents.emit(event);
                     this._operation = event;
@@ -800,26 +786,26 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                             try {
                                 var response_1 = operation.dataType.readResponse(httpResponse);
                                 responseObserver.next(response_1);
-                                _this._rikeEvents.emit(new event_1.RikeSuccessEvent(_this.target, operation.name, response_1));
+                                _this._rikeEvents.emit(new event_1.RikeSuccessEvent(operation, response_1));
                             }
                             catch (e) {
-                                _this._rikeEvents.error(new event_1.RikeErrorEvent(_this.target, operation.name, e));
+                                _this._rikeEvents.error(new event_1.RikeErrorEvent(operation, e));
                             }
                         }, function (error) {
-                            console.error("[" + _this.target + "] " + operation + " failed", error);
+                            console.error("[" + _this.target + "] " + operation.name + " failed", error);
                             try {
                                 responseObserver.error(error);
-                                _this._rikeEvents.emit(new event_1.RikeErrorEvent(_this.target, operation.name, error));
+                                _this._rikeEvents.emit(new event_1.RikeErrorEvent(operation, error));
                             }
                             catch (e) {
-                                _this._rikeEvents.error(new event_1.RikeErrorEvent(_this.target, operation.name, e));
+                                _this._rikeEvents.error(new event_1.RikeErrorEvent(operation, e));
                             }
                         }, function () {
                             try {
                                 responseObserver.complete();
                             }
                             catch (e) {
-                                _this._rikeEvents.error(new event_1.RikeErrorEvent(_this.target, operation.name, e));
+                                _this._rikeEvents.error(new event_1.RikeErrorEvent(operation, e));
                             }
                             finally {
                                 if (_this._subscr) {
@@ -909,7 +895,7 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                         return this.wrapResponse(this.rike.request(this.requestUrl(url, options), options));
                     }
                     catch (e) {
-                        this.target.rikeEvents.error(new event_1.RikeErrorEvent(this.target, this.name, e));
+                        this.target.rikeEvents.error(new event_1.RikeErrorEvent(this, e));
                         throw e;
                     }
                 };
@@ -920,7 +906,7 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                         return this.wrapResponse(this.rike.request(this.requestUrl(url, options), options));
                     }
                     catch (e) {
-                        this.target.rikeEvents.error(new event_1.RikeErrorEvent(this.target, this.name, e));
+                        this.target.rikeEvents.error(new event_1.RikeErrorEvent(this, e));
                         throw e;
                     }
                 };
@@ -931,7 +917,7 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                         return this.wrapResponse(this.rike.get(this.requestUrl(url, options), options));
                     }
                     catch (e) {
-                        this.target.rikeEvents.error(new event_1.RikeErrorEvent(this.target, this.name, e));
+                        this.target.rikeEvents.error(new event_1.RikeErrorEvent(this, e));
                         throw e;
                     }
                 };
@@ -942,7 +928,7 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                         return this.wrapResponse(this.rike.post(this.requestUrl(url, options), options.body, options));
                     }
                     catch (e) {
-                        this.target.rikeEvents.error(new event_1.RikeErrorEvent(this.target, this.name, e));
+                        this.target.rikeEvents.error(new event_1.RikeErrorEvent(this, e));
                         throw e;
                     }
                 };
@@ -953,7 +939,7 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                         return this.wrapResponse(this.rike.put(this.requestUrl(url, options), options.body, options));
                     }
                     catch (e) {
-                        this.target.rikeEvents.error(new event_1.RikeErrorEvent(this.target, this.name, e));
+                        this.target.rikeEvents.error(new event_1.RikeErrorEvent(this, e));
                         throw e;
                     }
                 };
@@ -965,7 +951,7 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                         return this.wrapResponse(this.rike.delete(this.requestUrl(url, options), options));
                     }
                     catch (e) {
-                        this.target.rikeEvents.error(new event_1.RikeErrorEvent(this.target, this.name, e));
+                        this.target.rikeEvents.error(new event_1.RikeErrorEvent(this, e));
                         throw e;
                     }
                 };
@@ -976,7 +962,7 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                         return this.wrapResponse(this.rike.patch(this.requestUrl(url, options), options.body, options));
                     }
                     catch (e) {
-                        this.target.rikeEvents.error(new event_1.RikeErrorEvent(this.target, this.name, e));
+                        this.target.rikeEvents.error(new event_1.RikeErrorEvent(this, e));
                         throw e;
                     }
                 };
@@ -987,7 +973,7 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                         return this.wrapResponse(this.rike.head(this.requestUrl(url, options), options));
                     }
                     catch (e) {
-                        this.target.rikeEvents.error(new event_1.RikeErrorEvent(this.target, this.name, e));
+                        this.target.rikeEvents.error(new event_1.RikeErrorEvent(this, e));
                         throw e;
                     }
                 };
