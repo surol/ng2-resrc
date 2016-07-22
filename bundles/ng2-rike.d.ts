@@ -1,8 +1,40 @@
+/// <reference types="core-js" />
 declare module "ng2-rike/event" {
+    import { EventEmitter, Type } from "@angular/core";
+    /**
+     * REST-like resource access event emitter.
+     *
+     * Multiple instances of this class could be injected into controller or service to listen for Rike events.
+     */
+    export abstract class RikeEventSource {
+        /**
+         * Constructs provider recipe for [RikeEventSource]
+         *
+         * @param useClass
+         * @param useValue
+         * @param useExisting
+         * @param useFactory
+         * @param deps
+         *
+         * @return new provider recipe.
+         */
+        static provide({useClass, useValue, useExisting, useFactory, deps}: {
+            useClass?: Type;
+            useValue?: any;
+            useExisting?: any;
+            useFactory?: Function;
+            deps?: Object[];
+            multi?: boolean;
+        }): any;
+        /**
+         * Rike events emitter.
+         */
+        readonly abstract rikeEvents: EventEmitter<RikeEvent>;
+    }
     /**
      * Basic REST-like resource access event.
      *
-     * Such events are emitted by [operations on REST-like resources][RikeOperation.events].
+     * Such events are emitted by [Rike event sources][RikeEventsSource].
      */
     export abstract class RikeEvent {
         /**
@@ -210,10 +242,10 @@ declare module "ng2-rike/rike" {
     import { EventEmitter } from "@angular/core";
     import { Request, RequestOptionsArgs, Response, Http, RequestMethod, RequestOptions } from "@angular/http";
     import { Observable } from "rxjs/Rx";
-    import { RikeEvent } from "ng2-rike/event";
+    import { RikeEvent, RikeEventSource } from "ng2-rike/event";
     import { RikeOptions } from "ng2-rike/options";
     import { DataType } from "ng2-rike/data";
-    export function requestMethod(method?: string | RequestMethod): RequestMethod;
+    export function requestMethod(method: string | RequestMethod): RequestMethod;
     /**
      * REST-like resource operations service.
      *
@@ -223,10 +255,10 @@ declare module "ng2-rike/rike" {
      *
      * It can also be used to perform operations on particular targets.
      */
-    export class Rike {
+    export class Rike implements RikeEventSource {
         private _http;
         private readonly _options;
-        private readonly _events;
+        private readonly _rikeEvents;
         private readonly _internals;
         constructor(_http: Http, defaultHttpOptions: RequestOptions, _options?: RikeOptions);
         /**
@@ -240,7 +272,7 @@ declare module "ng2-rike/rike" {
          *
          * @returns {EventEmitter<RikeEvent>}
          */
-        readonly events: EventEmitter<RikeEvent>;
+        readonly rikeEvents: EventEmitter<RikeEvent>;
         request(request: string | Request, options?: RequestOptionsArgs): Observable<Response>;
         get(url: string, options?: RequestOptionsArgs): Observable<Response>;
         post(url: string, body: any, options?: RequestOptionsArgs): Observable<Response>;
@@ -306,7 +338,7 @@ declare module "ng2-rike/rike" {
      * `IN` is a request type this target's operations accept by default.
      * `OUT` is a response type this target's operations return by default.
      */
-    export abstract class RikeTarget<IN, OUT> {
+    export abstract class RikeTarget<IN, OUT> implements RikeEventSource {
         /**
          * Operation target value.
          *
@@ -323,7 +355,7 @@ declare module "ng2-rike/rike" {
         /**
          * An emitter of events for operations performed on this target.
          */
-        readonly abstract events: EventEmitter<RikeEvent>;
+        readonly abstract rikeEvents: EventEmitter<RikeEvent>;
         /**
          * An operations data type to use by default.
          *
@@ -420,12 +452,12 @@ declare module "ng2-rike/decorator" {
     export interface OperationWithMethodMetadata extends OperationMetadata {
         method?: string | RequestMethod;
     }
-    export function RIKE(opts?: OperationWithMethodMetadata): MethodDecorator;
-    export function GET(opts?: OperationMetadata): MethodDecorator;
-    export function POST(opts?: OperationMetadata): MethodDecorator;
-    export function PUT(opts?: OperationMetadata): MethodDecorator;
-    export function DELETE(opts?: OperationMetadata): MethodDecorator;
-    export function OPTIONS(opts?: OperationMetadata): MethodDecorator;
+    export function RIKE(meta?: OperationWithMethodMetadata): MethodDecorator;
+    export function GET(meta?: OperationMetadata): MethodDecorator;
+    export function POST(meta?: OperationMetadata): MethodDecorator;
+    export function PUT(meta?: OperationMetadata): MethodDecorator;
+    export function DELETE(meta?: OperationMetadata): MethodDecorator;
+    export function OPTIONS(meta?: OperationMetadata): MethodDecorator;
     export function HEAD(opts?: OperationMetadata): MethodDecorator;
     export function PATCH(opts?: OperationMetadata): MethodDecorator;
 }

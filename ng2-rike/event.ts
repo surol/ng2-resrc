@@ -1,7 +1,53 @@
+import {EventEmitter, Type} from "@angular/core";
+
+/**
+ * REST-like resource access event emitter.
+ *
+ * Multiple instances of this class could be injected into controller or service to listen for Rike events.
+ */
+export abstract class RikeEventSource {
+
+    /**
+     * Constructs provider recipe for [RikeEventSource]
+     *
+     * @param useClass
+     * @param useValue
+     * @param useExisting
+     * @param useFactory
+     * @param deps
+     *
+     * @return new provider recipe.
+     */
+    static provide({useClass, useValue, useExisting, useFactory, deps}: {
+        useClass?: Type;
+        useValue?: any;
+        useExisting?: any;
+        useFactory?: Function;
+        deps?: Object[];
+        multi?: boolean;
+    }): any {
+        return {
+            "provide": RikeEventSource,
+            multi: true,
+            useClass,
+            useValue,
+            useExisting,
+            useFactory,
+            deps,
+        };
+    };
+
+    /**
+     * Rike events emitter.
+     */
+    abstract readonly rikeEvents: EventEmitter<RikeEvent>;
+
+}
+
 /**
  * Basic REST-like resource access event.
  *
- * Such events are emitted by [operations on REST-like resources][RikeOperation.events].
+ * Such events are emitted by [Rike event sources][RikeEventsSource].
  */
 export abstract class RikeEvent {
 

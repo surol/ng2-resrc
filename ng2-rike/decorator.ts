@@ -1,4 +1,4 @@
-import {RikeTarget, RikeOperation, Rike} from "./rike";
+import {RikeTarget, RikeOperation, Rike, requestMethod} from "./rike";
 import {DataType} from "./data";
 import {Observable} from "rxjs/Rx";
 import {RequestOptionsArgs, URLSearchParams, Headers, RequestOptions, RequestMethod} from "@angular/http";
@@ -20,8 +20,8 @@ class InjectableTarget extends RikeTarget<any, any> {
         return this.wrapped.currentOperation;
     }
 
-    get events() {
-        return this.wrapped.events;
+    get rikeEvents() {
+        return this.wrapped.rikeEvents;
     }
 
     get dataType() {
@@ -197,7 +197,7 @@ export interface OperationWithMethodMetadata extends OperationMetadata {
     method?: string | RequestMethod;
 }
 
-function opDecorator(method?: RequestMethod, opts?: OperationWithMethodMetadata): MethodDecorator {
+function opDecorator(method?: string | RequestMethod, meta?: OperationMetadata): MethodDecorator {
     return (
         target: Object,
         propertyKey: string | symbol,
@@ -208,18 +208,17 @@ function opDecorator(method?: RequestMethod, opts?: OperationWithMethodMetadata)
         descriptor.value = function (...args: any[]) {
 
             const op = operation();
-            const name = opts && opts.name || propertyKey.toString();
-            const dataType = opts && opts.dataType;
+            const name = meta && meta.name || propertyKey.toString();
+            const dataType = meta && meta.dataType;
 
             op.pushOperation(this, name, dataType);
             try {
-                if (opts) {
+                if (meta) {
                     op.withOptions({
-                        method: opts.method,
-                        url: opts.url,
-                        search: opts.search,
-                        headers: opts.headers && new Headers(opts.headers),
-                        withCredentials: opts.withCredentials,
+                        url: meta.url,
+                        search: meta.search,
+                        headers: meta.headers && new Headers(meta.headers),
+                        withCredentials: meta.withCredentials,
                     });
                     if (method != null) {
                         op.withMethod(method);
@@ -236,28 +235,28 @@ function opDecorator(method?: RequestMethod, opts?: OperationWithMethodMetadata)
     };
 }
 
-export function RIKE(opts?: OperationWithMethodMetadata): MethodDecorator {
-    return opDecorator(undefined, opts);
+export function RIKE(meta?: OperationWithMethodMetadata): MethodDecorator {
+    return opDecorator(meta && meta.method, meta);
 }
 
-export function GET(opts?: OperationMetadata): MethodDecorator {
-    return opDecorator(RequestMethod.Get, opts);
+export function GET(meta?: OperationMetadata): MethodDecorator {
+    return opDecorator(RequestMethod.Get, meta);
 }
 
-export function POST(opts?: OperationMetadata): MethodDecorator {
-    return opDecorator(RequestMethod.Post, opts);
+export function POST(meta?: OperationMetadata): MethodDecorator {
+    return opDecorator(RequestMethod.Post, meta);
 }
 
-export function PUT(opts?: OperationMetadata): MethodDecorator {
-    return opDecorator(RequestMethod.Put, opts);
+export function PUT(meta?: OperationMetadata): MethodDecorator {
+    return opDecorator(RequestMethod.Put, meta);
 }
 
-export function DELETE(opts?: OperationMetadata): MethodDecorator {
-    return opDecorator(RequestMethod.Delete, opts);
+export function DELETE(meta?: OperationMetadata): MethodDecorator {
+    return opDecorator(RequestMethod.Delete, meta);
 }
 
-export function OPTIONS(opts?: OperationMetadata): MethodDecorator {
-    return opDecorator(RequestMethod.Options, opts);
+export function OPTIONS(meta?: OperationMetadata): MethodDecorator {
+    return opDecorator(RequestMethod.Options, meta);
 }
 
 export function HEAD(opts?: OperationMetadata): MethodDecorator {
