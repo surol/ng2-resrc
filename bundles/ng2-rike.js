@@ -1011,18 +1011,29 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
         }
     }
 });
-System.register("ng2-rike/resource", ["@angular/http", "ng2-rike/event"], function(exports_5, context_5) {
+System.register("ng2-rike/resource", ["@angular/http", "ng2-rike/data", "ng2-rike/event"], function(exports_5, context_5) {
     "use strict";
     var __moduleName = context_5 && context_5.id;
-    var http_3, event_2;
-    var Resource, RikeResource;
+    var http_3, data_2, event_2;
+    var Resource, RikeResource, CRUDResource;
     function opDecorator(method, meta) {
         return function (target, key) {
             var desc = Object.getOwnPropertyDescriptor(this, key);
             if (delete this[key]) {
+                var fn;
                 var getter = function () {
+                    if (fn) {
+                        return fn;
+                    }
                     var resource = this;
-                    var operation = resource.rikeTarget.operation(meta && meta.name || key.toString());
+                    var name = meta && meta.name || key.toString();
+                    var operation;
+                    if (meta && meta.dataType) {
+                        operation = resource.rikeTarget.operation(name, meta.dataType);
+                    }
+                    else {
+                        operation = resource.rikeTarget.operation(name);
+                    }
                     if (meta) {
                         operation.withOptions({
                             url: meta.url,
@@ -1038,9 +1049,9 @@ System.register("ng2-rike/resource", ["@angular/http", "ng2-rike/event"], functi
                         case http_3.RequestMethod.Post:
                         case http_3.RequestMethod.Put:
                         case http_3.RequestMethod.Patch:
-                            return function (request) { return operation.send(request); };
+                            return fn = function (request) { return operation.send(request); };
                         default:
-                            return function () { return operation.load(); };
+                            return fn = function () { return operation.load(); };
                     }
                 };
                 Object.defineProperty(target, key, {
@@ -1089,6 +1100,9 @@ System.register("ng2-rike/resource", ["@angular/http", "ng2-rike/event"], functi
             function (http_3_1) {
                 http_3 = http_3_1;
             },
+            function (data_2_1) {
+                data_2 = data_2_1;
+            },
             function (event_2_1) {
                 event_2 = event_2_1;
             }],
@@ -1098,9 +1112,10 @@ System.register("ng2-rike/resource", ["@angular/http", "ng2-rike/event"], functi
                 }
                 Resource.provide = function (_a) {
                     var provide = _a.provide, useClass = _a.useClass, useValue = _a.useValue, useExisting = _a.useExisting, useFactory = _a.useFactory, deps = _a.deps;
+                    var token = provide || Resource;
                     return [
                         {
-                            provide: provide || Resource,
+                            provide: token,
                             useClass: useClass,
                             useValue: useValue,
                             useExisting: useExisting,
@@ -1109,7 +1124,7 @@ System.register("ng2-rike/resource", ["@angular/http", "ng2-rike/event"], functi
                         },
                         event_2.RikeEventSource.provide({
                             useFactory: function (resource) { return resource.rikeTarget; },
-                            deps: [Resource],
+                            deps: [token],
                         })
                     ];
                 };
@@ -1120,20 +1135,54 @@ System.register("ng2-rike/resource", ["@angular/http", "ng2-rike/event"], functi
                 function RikeResource(_rike) {
                     this._rike = _rike;
                 }
-                Object.defineProperty(RikeResource.prototype, "rikeTarget", {
+                Object.defineProperty(RikeResource.prototype, "rike", {
                     get: function () {
-                        return this._rikeTarget || (this._rikeTarget = this._rike.target(this, this.getDataType()));
+                        return this._rike;
                     },
                     enumerable: true,
                     configurable: true
                 });
+                Object.defineProperty(RikeResource.prototype, "rikeTarget", {
+                    get: function () {
+                        return this.getRikeTarget();
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                RikeResource.prototype.getRikeTarget = function () {
+                    return this._rikeTarget || (this._rikeTarget = this.createRikeTarget());
+                };
+                RikeResource.prototype.createRikeTarget = function () {
+                    return this.rike.target(this, data_2.JSON_DATA_TYPE);
+                };
                 return RikeResource;
             }());
             exports_5("RikeResource", RikeResource);
+            CRUDResource = (function (_super) {
+                __extends(CRUDResource, _super);
+                function CRUDResource(rike) {
+                    _super.call(this, rike);
+                }
+                Object.defineProperty(CRUDResource.prototype, "rikeTarget", {
+                    get: function () {
+                        return this.getRikeTarget();
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                CRUDResource.prototype.getRikeTarget = function () {
+                    return _super.prototype.getRikeTarget.call(this);
+                };
+                CRUDResource.prototype.createRikeTarget = function () {
+                    return this.rike.target(this, data_2.jsonDataType());
+                };
+                return CRUDResource;
+            }(RikeResource));
+            exports_5("CRUDResource", CRUDResource);
         }
     }
 });
-System.register("ng2-rike", ["ng2-rike/rike", "ng2-rike/event", "ng2-rike/data", "ng2-rike/resource", "ng2-rike/options"], function(exports_6, context_6) {
+System.register("ng2-rike", ["ng2-rike/rike", "ng2-rike/event", "ng2-rike/data", "ng2-rike/options", "ng2-rike/resource"], function(exports_6, context_6) {
     "use strict";
     var __moduleName = context_6 && context_6.id;
     var rike_1, event_3;
@@ -1158,14 +1207,14 @@ System.register("ng2-rike", ["ng2-rike/rike", "ng2-rike/event", "ng2-rike/data",
                 event_3 = event_3_1;
                 exportStar_1(event_3_1);
             },
-            function (data_2_1) {
-                exportStar_1(data_2_1);
-            },
-            function (resource_1_1) {
-                exportStar_1(resource_1_1);
+            function (data_3_1) {
+                exportStar_1(data_3_1);
             },
             function (options_2_1) {
                 exportStar_1(options_2_1);
+            },
+            function (resource_1_1) {
+                exportStar_1(resource_1_1);
             }],
         execute: function() {
             /**

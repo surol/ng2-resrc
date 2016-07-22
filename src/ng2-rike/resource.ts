@@ -1,10 +1,10 @@
 import {Type} from "@angular/core";
 import {URLSearchParams, Headers, RequestMethod} from "@angular/http";
-import {DataType} from "./data";
-import {RikeTarget, Rike} from "./rike";
+import {DataType, JSON_DATA_TYPE, jsonDataType} from "./data";
+import {RikeTarget, Rike, RikeOperation} from "./rike";
 import {RikeEventSource} from "./event";
 
-export abstract class Resource<IN, OUT> {
+export abstract class Resource {
 
     static provide({provide, useClass, useValue, useExisting, useFactory, deps}: {
         provide: any,
@@ -15,9 +15,12 @@ export abstract class Resource<IN, OUT> {
         deps?: Object[];
         multi?: boolean;
     }): any {
+
+        const token = provide || Resource;
+
         return [
             {
-                provide: provide || Resource,
+                provide: token,
                 useClass,
                 useValue,
                 useExisting,
@@ -25,13 +28,13 @@ export abstract class Resource<IN, OUT> {
                 deps,
             },
             RikeEventSource.provide({
-                useFactory: (resource: Resource<any, any>) => resource.rikeTarget,
-                deps: [Resource],
+                useFactory: (resource: Resource) => resource.rikeTarget,
+                deps: [token],
             })
         ];
     }
 
-    abstract readonly rikeTarget: RikeTarget<IN, OUT>;
+    abstract readonly rikeTarget: RikeTarget<any, any>;
 
 }
 
@@ -67,10 +70,22 @@ function opDecorator(method?: string | RequestMethod, meta?: OperationMetadata):
 
         if (delete this[key]) {
 
-            const getter: () => Function = function() {
+            var fn: Function | undefined;
 
-                const resource = this as Resource<any, any>;
-                const operation = resource.rikeTarget.operation(meta && meta.name || key.toString());
+            const getter: () => Function = function() {
+                if (fn) {
+                    return fn;
+                }
+
+                const resource = this as Resource;
+                const name = meta && meta.name || key.toString();
+                let operation: RikeOperation<any, any>;
+
+                if (meta && meta.dataType) {
+                    operation = resource.rikeTarget.operation(name, meta.dataType);
+                } else {
+                    operation = resource.rikeTarget.operation(name);
+                }
 
                 if (meta) {
                     operation.withOptions({
@@ -88,9 +103,9 @@ function opDecorator(method?: string | RequestMethod, meta?: OperationMetadata):
                 case RequestMethod.Post:
                 case RequestMethod.Put:
                 case RequestMethod.Patch:
-                    return (request: any) => operation.send(request);
+                    return fn = (request: any) => operation.send(request);
                 default:
-                    return () => operation.load();
+                    return fn = () => operation.load();
                 }
             };
 
@@ -136,17 +151,47 @@ export function PATCH(opts?: OperationMetadata): PropertyDecorator {
     return opDecorator(RequestMethod.Patch, opts);
 }
 
-export abstract class RikeResource<IN, OUT> implements Resource<IN, OUT> {
+export abstract class RikeResource implements Resource {
 
-    private _rikeTarget?: RikeTarget<IN, OUT>;
+    private _rikeTarget?: RikeTarget<any, any>;
 
-    constructor(protected _rike: Rike) {
+    constructor(private _rike: Rike) {
     }
 
-    abstract getDataType(): DataType<IN, OUT>;
+    get rike(): Rike {
+        return this._rike;
+    }
 
-    get rikeTarget(): RikeTarget<IN, OUT> {
-        return this._rikeTarget || (this._rikeTarget = this._rike.target(this, this.getDataType()));
+    get rikeTarget(): RikeTarget<any, any> {
+        return this.getRikeTarget();
+    }
+
+    getRikeTarget(): RikeTarget<any, any> {
+        return this._rikeTarget || (this._rikeTarget = this.createRikeTarget());
+    }
+
+    protected createRikeTarget(): RikeTarget<any, any> {
+        return this.rike.target(this, JSON_DATA_TYPE);
+    }
+
+}
+
+export abstract class CRUDResource<T> extends RikeResource {
+
+    constructor(rike: Rike) {
+        super(rike);
+    }
+
+    get rikeTarget(): RikeTarget<T, T> {
+        return this.getRikeTarget();
+    }
+
+    getRikeTarget(): RikeTarget<T, T> {
+        return super.getRikeTarget();
+    }
+
+    protected createRikeTarget(): RikeTarget<T, T> {
+        return this.rike.target(this, jsonDataType<T>());
     }
 
 }

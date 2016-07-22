@@ -431,7 +431,7 @@ declare module "ng2-rike/resource" {
     import { URLSearchParams, Headers, RequestMethod } from "@angular/http";
     import { DataType } from "ng2-rike/data";
     import { RikeTarget, Rike } from "ng2-rike/rike";
-    export abstract class Resource<IN, OUT> {
+    export abstract class Resource {
         static provide({provide, useClass, useValue, useExisting, useFactory, deps}: {
             provide: any;
             useClass?: Type;
@@ -441,7 +441,7 @@ declare module "ng2-rike/resource" {
             deps?: Object[];
             multi?: boolean;
         }): any;
-        readonly abstract rikeTarget: RikeTarget<IN, OUT>;
+        readonly abstract rikeTarget: RikeTarget<any, any>;
     }
     export interface LoadFn<OUT> {
         (): OUT;
@@ -470,19 +470,27 @@ declare module "ng2-rike/resource" {
     export function OPTIONS(meta?: OperationMetadata): PropertyDecorator;
     export function HEAD(opts?: OperationMetadata): PropertyDecorator;
     export function PATCH(opts?: OperationMetadata): PropertyDecorator;
-    export abstract class RikeResource<IN, OUT> implements Resource<IN, OUT> {
-        protected _rike: Rike;
+    export abstract class RikeResource implements Resource {
+        private _rike;
         private _rikeTarget?;
         constructor(_rike: Rike);
-        abstract getDataType(): DataType<IN, OUT>;
-        readonly rikeTarget: RikeTarget<IN, OUT>;
+        readonly rike: Rike;
+        readonly rikeTarget: RikeTarget<any, any>;
+        getRikeTarget(): RikeTarget<any, any>;
+        protected createRikeTarget(): RikeTarget<any, any>;
+    }
+    export abstract class CRUDResource<T> extends RikeResource {
+        constructor(rike: Rike);
+        readonly rikeTarget: RikeTarget<T, T>;
+        getRikeTarget(): RikeTarget<T, T>;
+        protected createRikeTarget(): RikeTarget<T, T>;
     }
 }
 declare module "ng2-rike" {
     export * from "ng2-rike/data";
-    export * from "ng2-rike/resource";
     export * from "ng2-rike/event";
     export * from "ng2-rike/options";
+    export * from "ng2-rike/resource";
     export * from "ng2-rike/rike";
     /**
      * Provides a basic set of providers to use REST-like services in application.
