@@ -1,6 +1,6 @@
+///<reference types="core-js"/>
 import {Rike} from "./ng2-rike/rike";
 import {RikeEventSource} from "./ng2-rike/event";
-import {RIKE_OPERATION_PROVIDERS} from "./ng2-rike/resource";
 export * from './ng2-rike/data';
 export * from './ng2-rike/resource';
 export * from './ng2-rike/event';
@@ -18,5 +18,4 @@ export * from './ng2-rike/rike';
 export const RIKE_PROVIDERS: any[] = [
     Rike,
     RikeEventSource.provide({useExisting: Rike}),
-    RIKE_OPERATION_PROVIDERS,
 ];

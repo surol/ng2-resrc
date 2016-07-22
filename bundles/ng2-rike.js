@@ -1133,10 +1133,10 @@ System.register("ng2-rike/resource", ["@angular/http", "ng2-rike/event"], functi
         }
     }
 });
-System.register("ng2-rike", ["ng2-rike/rike", "ng2-rike/event", "ng2-rike/resource", "ng2-rike/data", "ng2-rike/options"], function(exports_6, context_6) {
+System.register("ng2-rike", ["ng2-rike/rike", "ng2-rike/event", "ng2-rike/data", "ng2-rike/resource", "ng2-rike/options"], function(exports_6, context_6) {
     "use strict";
     var __moduleName = context_6 && context_6.id;
-    var rike_1, event_3, resource_1;
+    var rike_1, event_3;
     var RIKE_PROVIDERS;
     var exportedNames_1 = {
         'RIKE_PROVIDERS': true
@@ -1158,12 +1158,11 @@ System.register("ng2-rike", ["ng2-rike/rike", "ng2-rike/event", "ng2-rike/resour
                 event_3 = event_3_1;
                 exportStar_1(event_3_1);
             },
-            function (resource_1_1) {
-                resource_1 = resource_1_1;
-                exportStar_1(resource_1_1);
-            },
             function (data_2_1) {
                 exportStar_1(data_2_1);
+            },
+            function (resource_1_1) {
+                exportStar_1(resource_1_1);
             },
             function (options_2_1) {
                 exportStar_1(options_2_1);
@@ -1180,7 +1179,6 @@ System.register("ng2-rike", ["ng2-rike/rike", "ng2-rike/event", "ng2-rike/resour
             exports_6("RIKE_PROVIDERS", RIKE_PROVIDERS = [
                 rike_1.Rike,
                 event_3.RikeEventSource.provide({ useExisting: rike_1.Rike }),
-                resource_1.RIKE_OPERATION_PROVIDERS,
             ]);
         }
     }

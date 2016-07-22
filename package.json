@@ -25,7 +25,6 @@
     "del": "^2.2.0",
     "gulp": "^3.9.0",
     "jasmine-core": "^2.4.1",
-    "systemjs-builder": "^0.15.16",
-    "typescript": "^2.1.0-dev.20160719"
+    "typescript": "^2.0.0"
   }
 }
