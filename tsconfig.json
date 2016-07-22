@@ -5,6 +5,7 @@
     "moduleResolution": "node",
     "declaration": true,
     "sourceMap": true,
+    "inlineSources": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "removeComments": false,
@@ -14,8 +15,7 @@
     "strictNullChecks": true,
     "forceConsistentCasingInFileNames": true,
     "newLine": "LF",
-    "sourceRoot": ".",
     "outFile": "bundles/ng2-rike.js"
   },
-  "include": ["ng2-rike.ts", "ng2-rike/**/*"]
+  "include": ["src/*"]
 }
