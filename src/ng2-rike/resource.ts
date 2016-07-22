@@ -80,42 +80,38 @@ export abstract class CRUDResource<T> extends RikeResource {
     }
 
     create(object: T): Observable<T> {
-        return this.rikeTarget.operation(
-            "create",
-            this.rikeTarget.dataType.readResponseWith((response: Response) => this.objectCreated(object, response)))
-            .post(object);
+        return this.rikeTarget.operation("create", this.objectCreateDataType(object)).post(object);
     }
 
     read(id: any): Observable<T> {
-        return this.rikeTarget.operation("read", this.readDataType(id)).get();
+        return this.rikeTarget.operation("read", this.objectReadDataType(id)).get();
     }
 
     update(object: T): Observable<T> {
-        return this.rikeTarget.operation("update", this.updateDataType(object)).put(object);
+        return this.rikeTarget.operation("update", this.objectUpdateDataType(object)).put(object);
     }
 
     //noinspection ReservedWordAsName
     delete(object: T): Observable<any> {
-        return this.rikeTarget.operation("delete", this.deleteDataType(object)).delete();
+        return this.rikeTarget.operation("delete", this.objectDeleteDataType(object)).delete();
     }
 
     protected createRikeTarget(): RikeTarget<T, T> {
         return this.rike.target(this, jsonDataType<T>());
     }
 
-    //noinspection JSMethodCanBeStatic,JSUnusedLocalSymbols
-    protected objectCreated(object: T, _response: Response): T {
-        return object;
+    protected objectCreateDataType(object: T): DataType<any, T> {
+        return this.rikeTarget.dataType.readResponseWith(response => object);
     }
 
-    protected readDataType(id: any): DataType<any, T> {
+    protected objectReadDataType(id: any): DataType<any, T> {
         return this.rikeTarget.dataType.prepareRequestWith(
             options => new RequestOptions(options).merge({
                 url: this.objectUrl(options.url, id)
             }));
     }
 
-    protected updateDataType(object: T): DataType<T, T> {
+    protected objectUpdateDataType(object: T): DataType<T, T> {
         return this.rikeTarget.dataType
             .prepareRequestWith(options => new RequestOptions(options).merge({
                 url: this.objectUrl(options.url, this.objectId(object))
@@ -123,7 +119,7 @@ export abstract class CRUDResource<T> extends RikeResource {
             .readResponseWith(response => object);
     }
 
-    protected deleteDataType(object: T): DataType<T, any> {
+    protected objectDeleteDataType(object: T): DataType<T, any> {
         return this.rikeTarget.dataType
             .prepareRequestWith(options => new RequestOptions(options).merge({
                 url: this.objectUrl(options.url, this.objectId(object))

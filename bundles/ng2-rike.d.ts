@@ -450,7 +450,6 @@ declare module "ng2-rike/rike" {
 }
 declare module "ng2-rike/resource" {
     import { Type } from "@angular/core";
-    import { Response } from "@angular/http";
     import { Observable } from "rxjs/Rx";
     import { DataType } from "ng2-rike/data";
     import { RikeTarget, Rike } from "ng2-rike/rike";
@@ -484,10 +483,10 @@ declare module "ng2-rike/resource" {
         update(object: T): Observable<T>;
         delete(object: T): Observable<any>;
         protected createRikeTarget(): RikeTarget<T, T>;
-        protected objectCreated(object: T, _response: Response): T;
-        protected readDataType(id: any): DataType<any, T>;
-        protected updateDataType(object: T): DataType<T, T>;
-        protected deleteDataType(object: T): DataType<T, any>;
+        protected objectCreateDataType(object: T): DataType<any, T>;
+        protected objectReadDataType(id: any): DataType<any, T>;
+        protected objectUpdateDataType(object: T): DataType<T, T>;
+        protected objectDeleteDataType(object: T): DataType<T, any>;
         protected abstract objectId(object: T): any;
         protected objectUrl(baseUrl: string | undefined, id: any): string;
     }

@@ -1153,34 +1153,31 @@ System.register("ng2-rike/resource", ["@angular/http", "ng2-rike/data", "ng2-rik
                     return _super.prototype.getRikeTarget.call(this);
                 };
                 CRUDResource.prototype.create = function (object) {
-                    var _this = this;
-                    return this.rikeTarget.operation("create", this.rikeTarget.dataType.readResponseWith(function (response) { return _this.objectCreated(object, response); }))
-                        .post(object);
+                    return this.rikeTarget.operation("create", this.objectCreateDataType(object)).post(object);
                 };
                 CRUDResource.prototype.read = function (id) {
-                    return this.rikeTarget.operation("read", this.readDataType(id)).get();
+                    return this.rikeTarget.operation("read", this.objectReadDataType(id)).get();
                 };
                 CRUDResource.prototype.update = function (object) {
-                    return this.rikeTarget.operation("update", this.updateDataType(object)).put(object);
+                    return this.rikeTarget.operation("update", this.objectUpdateDataType(object)).put(object);
                 };
                 //noinspection ReservedWordAsName
                 CRUDResource.prototype.delete = function (object) {
-                    return this.rikeTarget.operation("delete", this.deleteDataType(object)).delete();
+                    return this.rikeTarget.operation("delete", this.objectDeleteDataType(object)).delete();
                 };
                 CRUDResource.prototype.createRikeTarget = function () {
                     return this.rike.target(this, data_2.jsonDataType());
                 };
-                //noinspection JSMethodCanBeStatic,JSUnusedLocalSymbols
-                CRUDResource.prototype.objectCreated = function (object, _response) {
-                    return object;
+                CRUDResource.prototype.objectCreateDataType = function (object) {
+                    return this.rikeTarget.dataType.readResponseWith(function (response) { return object; });
                 };
-                CRUDResource.prototype.readDataType = function (id) {
+                CRUDResource.prototype.objectReadDataType = function (id) {
                     var _this = this;
                     return this.rikeTarget.dataType.prepareRequestWith(function (options) { return new http_3.RequestOptions(options).merge({
                         url: _this.objectUrl(options.url, id)
                     }); });
                 };
-                CRUDResource.prototype.updateDataType = function (object) {
+                CRUDResource.prototype.objectUpdateDataType = function (object) {
                     var _this = this;
                     return this.rikeTarget.dataType
                         .prepareRequestWith(function (options) { return new http_3.RequestOptions(options).merge({
@@ -1188,7 +1185,7 @@ System.register("ng2-rike/resource", ["@angular/http", "ng2-rike/data", "ng2-rik
                     }); })
                         .readResponseWith(function (response) { return object; });
                 };
-                CRUDResource.prototype.deleteDataType = function (object) {
+                CRUDResource.prototype.objectDeleteDataType = function (object) {
                     var _this = this;
                     return this.rikeTarget.dataType
                         .prepareRequestWith(function (options) { return new http_3.RequestOptions(options).merge({
