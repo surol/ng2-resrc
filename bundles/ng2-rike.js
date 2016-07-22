@@ -234,11 +234,11 @@ System.register("ng2-rike/options", [], function(exports_2, context_2) {
      * @param baseUrl base URL.
      * @param url URL.
      *
-     * @returns {string} If `baseUrl` is not specified, or `url` is absolute, then returns unmodified `url`.
+     * @returns {string} If `baseUrl` is not specified, or empty string, or `url` is absolute, then returns unmodified `url`.
      * Otherwise concatenates `baseUrl` and `url` separating them by `/` sign.
      */
     function relativeUrl(baseUrl, url) {
-        if (baseUrl == null) {
+        if (!baseUrl) {
             return url;
         }
         if (url[0] === "/") {
@@ -275,8 +275,7 @@ System.register("ng2-rike/options", [], function(exports_2, context_2) {
                  *
                  * @param url URL
                  *
-                 * @returns {string} If `baseUrl` is not set, or `url` is absolute, then returns unmodified `url`.
-                 * Otherwise concatenates `baseUrl` and `url` separating them by `/` sign.
+                 * @returns {string} resolved URL.
                  */
                 RikeOptions.prototype.relativeUrl = function (url) {
                     return relativeUrl(this.baseUrl, url);
@@ -314,7 +313,7 @@ System.register("ng2-rike/data", ["@angular/http"], function(exports_3, context_
     "use strict";
     var __moduleName = context_3 && context_3.id;
     var http_1;
-    var DataType, JSON_DATA_TYPE, jsonDataType, HTTP_RESPONSE_DATA_TYPE, RequestBodyType, ResponseDataType, JsonDataType, HttpResponseDataType;
+    var DataType, JSON_DATA_TYPE, jsonDataType, HTTP_RESPONSE_DATA_TYPE, RequestBodyType, PrepareRequestDataType, WriteRequestDataType, ReadResponseDataType, JsonDataType, HttpResponseDataType;
     return {
         setters:[
             function (http_1_1) {
@@ -351,8 +350,14 @@ System.register("ng2-rike/data", ["@angular/http"], function(exports_3, context_
                 DataType.prototype.prepareRequest = function (options) {
                     return options;
                 };
+                DataType.prototype.prepareRequestWith = function (prepare, after) {
+                    return new PrepareRequestDataType(this, prepare, after);
+                };
+                DataType.prototype.writeRequestWith = function (writeRequest) {
+                    return new WriteRequestDataType(this, writeRequest);
+                };
                 DataType.prototype.readResponseWith = function (readResponse) {
-                    return new ResponseDataType(this, readResponse);
+                    return new ReadResponseDataType(this, readResponse);
                 };
                 return DataType;
             }());
@@ -390,37 +395,77 @@ System.register("ng2-rike/data", ["@angular/http"], function(exports_3, context_
                 return RequestBodyType;
             }(DataType));
             exports_3("RequestBodyType", RequestBodyType);
-            ResponseDataType = (function (_super) {
-                __extends(ResponseDataType, _super);
-                function ResponseDataType(_requestType, _readResponse) {
+            PrepareRequestDataType = (function (_super) {
+                __extends(PrepareRequestDataType, _super);
+                function PrepareRequestDataType(_dataType, _prepare, _after) {
+                    _super.call(this);
+                    this._dataType = _dataType;
+                    this._prepare = _prepare;
+                    this._after = _after;
+                }
+                PrepareRequestDataType.prototype.prepareRequest = function (options) {
+                    if (this._after) {
+                        return this._prepare(this._dataType.prepareRequest(options));
+                    }
+                    return this._dataType.prepareRequest(this._prepare(options));
+                };
+                PrepareRequestDataType.prototype.writeRequest = function (request, options) {
+                    return this._dataType.writeRequest(request, options);
+                };
+                PrepareRequestDataType.prototype.readResponse = function (response) {
+                    return this._dataType.readResponse(response);
+                };
+                return PrepareRequestDataType;
+            }(DataType));
+            WriteRequestDataType = (function (_super) {
+                __extends(WriteRequestDataType, _super);
+                function WriteRequestDataType(_responseType, _writeRequest) {
+                    _super.call(this);
+                    this._responseType = _responseType;
+                    this._writeRequest = _writeRequest;
+                }
+                WriteRequestDataType.prototype.prepareRequest = function (options) {
+                    return this._responseType.prepareRequest(options);
+                };
+                WriteRequestDataType.prototype.writeRequest = function (request, options) {
+                    return this._writeRequest(request, options);
+                };
+                WriteRequestDataType.prototype.readResponse = function (response) {
+                    return this._responseType.readResponse(response);
+                };
+                return WriteRequestDataType;
+            }(DataType));
+            ReadResponseDataType = (function (_super) {
+                __extends(ReadResponseDataType, _super);
+                function ReadResponseDataType(_requestType, _readResponse) {
                     _super.call(this);
                     this._requestType = _requestType;
                     this._readResponse = _readResponse;
                 }
-                ResponseDataType.prototype.readResponse = function (response) {
-                    return this._readResponse(response);
-                };
-                ResponseDataType.prototype.prepareRequest = function (options) {
+                ReadResponseDataType.prototype.prepareRequest = function (options) {
                     return this._requestType.prepareRequest(options);
                 };
-                ResponseDataType.prototype.writeRequest = function (request, options) {
+                ReadResponseDataType.prototype.writeRequest = function (request, options) {
                     return this._requestType.writeRequest(request, options);
                 };
-                ResponseDataType.prototype.readResponseWith = function (readResponse) {
-                    return new ResponseDataType(this._requestType, readResponse);
+                ReadResponseDataType.prototype.readResponse = function (response) {
+                    return this._readResponse(response);
                 };
-                return ResponseDataType;
+                ReadResponseDataType.prototype.readResponseWith = function (readResponse) {
+                    return new ReadResponseDataType(this._requestType, readResponse);
+                };
+                return ReadResponseDataType;
             }(DataType));
             JsonDataType = (function (_super) {
                 __extends(JsonDataType, _super);
                 function JsonDataType() {
                     _super.apply(this, arguments);
                 }
-                JsonDataType.prototype.readResponse = function (response) {
-                    return response.json();
-                };
                 JsonDataType.prototype.writeBody = function (request) {
                     return JSON.stringify(request);
+                };
+                JsonDataType.prototype.readResponse = function (response) {
+                    return response.json();
                 };
                 return JsonDataType;
             }(RequestBodyType));
@@ -429,11 +474,11 @@ System.register("ng2-rike/data", ["@angular/http"], function(exports_3, context_
                 function HttpResponseDataType() {
                     _super.apply(this, arguments);
                 }
-                HttpResponseDataType.prototype.readResponse = function (response) {
-                    return response;
-                };
                 HttpResponseDataType.prototype.writeRequest = function (request, options) {
                     return new http_1.RequestOptions(options).merge({ body: request });
+                };
+                HttpResponseDataType.prototype.readResponse = function (response) {
+                    return response;
                 };
                 return HttpResponseDataType;
             }(DataType));
@@ -444,7 +489,7 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
     "use strict";
     var __moduleName = context_4 && context_4.id;
     var core_1, http_2, Rx_1, event_1, options_1, data_1;
-    var REQUEST_METHODS, Rike, RikeTarget, RikeOperation, RikeTargetImpl, OperationDataType, RikeOperationImpl;
+    var REQUEST_METHODS, Rike, RikeTarget, RikeOperation, RikeTargetImpl, RikeOperationImpl;
     function requestMethod(method) {
         if (typeof method !== "string") {
             return method;
@@ -788,8 +833,9 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                     return true;
                 };
                 RikeTargetImpl.prototype.operation = function (name, dataType) {
+                    var _this = this;
                     return new RikeOperationImpl(this, name, !dataType ? this.dataType : (this.dataType === data_1.HTTP_RESPONSE_DATA_TYPE
-                        ? dataType : new OperationDataType(this.dataType, dataType)));
+                        ? dataType : dataType.prepareRequestWith(function (options) { return _this.dataType.prepareRequest(options); })));
                 };
                 RikeTargetImpl.prototype.startOperation = function (operation) {
                     var event = new event_1.RikeOperationEvent(operation);
@@ -843,25 +889,6 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                 };
                 return RikeTargetImpl;
             }(RikeTarget));
-            OperationDataType = (function (_super) {
-                __extends(OperationDataType, _super);
-                function OperationDataType(_targetDataType, _dataType) {
-                    _super.call(this);
-                    this._targetDataType = _targetDataType;
-                    this._dataType = _dataType;
-                }
-                OperationDataType.prototype.readResponse = function (response) {
-                    return this._dataType.readResponse(response);
-                };
-                OperationDataType.prototype.prepareRequest = function (options) {
-                    options = this._targetDataType.prepareRequest(options);
-                    return this._dataType.prepareRequest(options);
-                };
-                OperationDataType.prototype.writeRequest = function (request, options) {
-                    return this._dataType.writeRequest(request, options);
-                };
-                return OperationDataType;
-            }(data_1.DataType));
             RikeOperationImpl = (function (_super) {
                 __extends(RikeOperationImpl, _super);
                 function RikeOperationImpl(_target, _name, _dataType) {
@@ -1039,90 +1066,11 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
         }
     }
 });
-System.register("ng2-rike/resource", ["@angular/http", "ng2-rike/data", "ng2-rike/event"], function(exports_5, context_5) {
+System.register("ng2-rike/resource", ["@angular/http", "ng2-rike/data", "ng2-rike/event", "ng2-rike/options"], function(exports_5, context_5) {
     "use strict";
     var __moduleName = context_5 && context_5.id;
-    var http_3, data_2, event_2;
+    var http_3, data_2, event_2, options_2;
     var Resource, RikeResource, CRUDResource;
-    function opDecorator(method, meta) {
-        return function (target, key) {
-            var desc = Object.getOwnPropertyDescriptor(this, key);
-            if (delete this[key]) {
-                var fn;
-                var getter = function () {
-                    if (fn) {
-                        return fn;
-                    }
-                    var resource = this;
-                    var name = meta && meta.name || key.toString();
-                    var operation;
-                    if (meta && meta.dataType) {
-                        operation = resource.rikeTarget.operation(name, meta.dataType);
-                    }
-                    else {
-                        operation = resource.rikeTarget.operation(name);
-                    }
-                    if (meta) {
-                        operation.withOptions({
-                            url: meta.url,
-                            search: meta.search,
-                            headers: meta.headers && new http_3.Headers(meta.headers),
-                            withCredentials: meta.withCredentials,
-                        });
-                    }
-                    if (method != null) {
-                        operation.withMethod(method);
-                    }
-                    switch (operation.method) {
-                        case http_3.RequestMethod.Post:
-                        case http_3.RequestMethod.Put:
-                        case http_3.RequestMethod.Patch:
-                            return fn = function (request) { return operation.send(request); };
-                        default:
-                            return fn = function () { return operation.load(); };
-                    }
-                };
-                Object.defineProperty(target, key, {
-                    get: getter,
-                    writable: desc && desc.writable || false,
-                    enumerable: desc && desc.enumerable || true,
-                    configurable: desc && desc.configurable || true,
-                });
-            }
-        };
-    }
-    function RIKE(meta) {
-        return opDecorator(meta && meta.method, meta);
-    }
-    exports_5("RIKE", RIKE);
-    function GET(meta) {
-        return opDecorator(http_3.RequestMethod.Get, meta);
-    }
-    exports_5("GET", GET);
-    function POST(meta) {
-        return opDecorator(http_3.RequestMethod.Post, meta);
-    }
-    exports_5("POST", POST);
-    function PUT(meta) {
-        return opDecorator(http_3.RequestMethod.Put, meta);
-    }
-    exports_5("PUT", PUT);
-    function DELETE(meta) {
-        return opDecorator(http_3.RequestMethod.Delete, meta);
-    }
-    exports_5("DELETE", DELETE);
-    function OPTIONS(meta) {
-        return opDecorator(http_3.RequestMethod.Options, meta);
-    }
-    exports_5("OPTIONS", OPTIONS);
-    function HEAD(opts) {
-        return opDecorator(http_3.RequestMethod.Head, opts);
-    }
-    exports_5("HEAD", HEAD);
-    function PATCH(opts) {
-        return opDecorator(http_3.RequestMethod.Patch, opts);
-    }
-    exports_5("PATCH", PATCH);
     return {
         setters:[
             function (http_3_1) {
@@ -1133,6 +1081,9 @@ System.register("ng2-rike/resource", ["@angular/http", "ng2-rike/data", "ng2-rik
             },
             function (event_2_1) {
                 event_2 = event_2_1;
+            },
+            function (options_2_1) {
+                options_2 = options_2_1;
             }],
         execute: function() {
             Resource = (function () {
@@ -1201,8 +1152,53 @@ System.register("ng2-rike/resource", ["@angular/http", "ng2-rike/data", "ng2-rik
                 CRUDResource.prototype.getRikeTarget = function () {
                     return _super.prototype.getRikeTarget.call(this);
                 };
+                CRUDResource.prototype.create = function (object) {
+                    var _this = this;
+                    return this.rikeTarget.operation("create", this.rikeTarget.dataType.readResponseWith(function (response) { return _this.objectCreated(object, response); }))
+                        .post(object);
+                };
+                CRUDResource.prototype.read = function (id) {
+                    return this.rikeTarget.operation("read", this.readDataType(id)).get();
+                };
+                CRUDResource.prototype.update = function (object) {
+                    return this.rikeTarget.operation("update", this.updateDataType(object)).put(object);
+                };
+                //noinspection ReservedWordAsName
+                CRUDResource.prototype.delete = function (object) {
+                    return this.rikeTarget.operation("delete", this.deleteDataType(object)).delete();
+                };
                 CRUDResource.prototype.createRikeTarget = function () {
                     return this.rike.target(this, data_2.jsonDataType());
+                };
+                //noinspection JSMethodCanBeStatic,JSUnusedLocalSymbols
+                CRUDResource.prototype.objectCreated = function (object, _response) {
+                    return object;
+                };
+                CRUDResource.prototype.readDataType = function (id) {
+                    var _this = this;
+                    return this.rikeTarget.dataType.prepareRequestWith(function (options) { return new http_3.RequestOptions(options).merge({
+                        url: _this.objectUrl(options.url, id)
+                    }); });
+                };
+                CRUDResource.prototype.updateDataType = function (object) {
+                    var _this = this;
+                    return this.rikeTarget.dataType
+                        .prepareRequestWith(function (options) { return new http_3.RequestOptions(options).merge({
+                        url: _this.objectUrl(options.url, _this.objectId(object))
+                    }); })
+                        .readResponseWith(function (response) { return object; });
+                };
+                CRUDResource.prototype.deleteDataType = function (object) {
+                    var _this = this;
+                    return this.rikeTarget.dataType
+                        .prepareRequestWith(function (options) { return new http_3.RequestOptions(options).merge({
+                        url: _this.objectUrl(options.url, _this.objectId(object))
+                    }); })
+                        .readResponseWith(function (response) { return object; });
+                };
+                //noinspection JSMethodCanBeStatic
+                CRUDResource.prototype.objectUrl = function (baseUrl, id) {
+                    return options_2.relativeUrl(baseUrl, id.toString());
                 };
                 return CRUDResource;
             }(RikeResource));
@@ -1238,8 +1234,8 @@ System.register("ng2-rike", ["ng2-rike/rike", "ng2-rike/event", "ng2-rike/data",
             function (data_3_1) {
                 exportStar_1(data_3_1);
             },
-            function (options_2_1) {
-                exportStar_1(options_2_1);
+            function (options_3_1) {
+                exportStar_1(options_3_1);
             },
             function (resource_1_1) {
                 exportStar_1(resource_1_1);

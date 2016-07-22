@@ -122,7 +122,7 @@ declare module "ng2-rike/options" {
      * @param baseUrl base URL.
      * @param url URL.
      *
-     * @returns {string} If `baseUrl` is not specified, or `url` is absolute, then returns unmodified `url`.
+     * @returns {string} If `baseUrl` is not specified, or empty string, or `url` is absolute, then returns unmodified `url`.
      * Otherwise concatenates `baseUrl` and `url` separating them by `/` sign.
      */
     export function relativeUrl(baseUrl: string | undefined, url: string): string;
@@ -144,8 +144,7 @@ declare module "ng2-rike/options" {
          *
          * @param url URL
          *
-         * @returns {string} If `baseUrl` is not set, or `url` is absolute, then returns unmodified `url`.
-         * Otherwise concatenates `baseUrl` and `url` separating them by `/` sign.
+         * @returns {string} resolved URL.
          */
         relativeUrl(url: string): string;
     }
@@ -174,14 +173,6 @@ declare module "ng2-rike/data" {
      */
     export abstract class DataType<IN, OUT> {
         /**
-         * Reads operation response from HTTP response.
-         *
-         * @param response HTTP response.
-         *
-         * @returns operation response.
-         */
-        abstract readResponse(response: Response): OUT;
-        /**
          * Prepares HTTP request.
          *
          * The `options` passed have at least `url` and `method` fields set.
@@ -195,6 +186,7 @@ declare module "ng2-rike/data" {
          * `options` by default.
          */
         prepareRequest(options: RequestOptionsArgs): RequestOptionsArgs;
+        prepareRequestWith(prepare: (options: RequestOptionsArgs) => RequestOptionsArgs, after?: boolean): DataType<IN, OUT>;
         /**
          * Writes operation request as HTTP request.
          *
@@ -209,6 +201,15 @@ declare module "ng2-rike/data" {
          * @return modified HTTP request options that will be used to perform actual request.
          */
         abstract writeRequest(request: IN, options: RequestOptionsArgs): RequestOptionsArgs;
+        writeRequestWith<IN>(writeRequest: (request: IN, options: RequestOptionsArgs) => RequestOptionsArgs): DataType<IN, OUT>;
+        /**
+         * Reads operation response from HTTP response.
+         *
+         * @param response HTTP response.
+         *
+         * @returns operation response.
+         */
+        abstract readResponse(response: Response): OUT;
         readResponseWith<OUT>(readResponse: (response: Response) => OUT): DataType<IN, OUT>;
     }
     /**
@@ -234,7 +235,6 @@ declare module "ng2-rike/data" {
      */
     export const HTTP_RESPONSE_DATA_TYPE: DataType<any, Response>;
     export abstract class RequestBodyType<T> extends DataType<T, T> {
-        abstract readResponse(response: Response): T;
         writeRequest(request: T, options: RequestOptionsArgs): RequestOptionsArgs;
         abstract writeBody(request: T): any;
     }
@@ -450,7 +450,8 @@ declare module "ng2-rike/rike" {
 }
 declare module "ng2-rike/resource" {
     import { Type } from "@angular/core";
-    import { URLSearchParams, Headers, RequestMethod } from "@angular/http";
+    import { Response } from "@angular/http";
+    import { Observable } from "rxjs/Rx";
     import { DataType } from "ng2-rike/data";
     import { RikeTarget, Rike } from "ng2-rike/rike";
     export abstract class Resource {
@@ -465,33 +466,6 @@ declare module "ng2-rike/resource" {
         }): any;
         readonly abstract rikeTarget: RikeTarget<any, any>;
     }
-    export interface LoadFn<OUT> {
-        (): OUT;
-    }
-    export interface SendFn<IN, OUT> {
-        (request: IN): OUT;
-    }
-    export interface OperationMetadata {
-        name?: string;
-        dataType?: DataType<any, any>;
-        url?: string;
-        search?: string | URLSearchParams;
-        headers?: Headers | {
-            [key: string]: any;
-        };
-        withCredentials?: boolean;
-    }
-    export interface OperationWithMethodMetadata extends OperationMetadata {
-        method?: string | RequestMethod;
-    }
-    export function RIKE(meta?: OperationWithMethodMetadata): PropertyDecorator;
-    export function GET(meta?: OperationMetadata): PropertyDecorator;
-    export function POST(meta?: OperationMetadata): PropertyDecorator;
-    export function PUT(meta?: OperationMetadata): PropertyDecorator;
-    export function DELETE(meta?: OperationMetadata): PropertyDecorator;
-    export function OPTIONS(meta?: OperationMetadata): PropertyDecorator;
-    export function HEAD(opts?: OperationMetadata): PropertyDecorator;
-    export function PATCH(opts?: OperationMetadata): PropertyDecorator;
     export abstract class RikeResource implements Resource {
         private _rike;
         private _rikeTarget?;
@@ -505,7 +479,17 @@ declare module "ng2-rike/resource" {
         constructor(rike: Rike);
         readonly rikeTarget: RikeTarget<T, T>;
         getRikeTarget(): RikeTarget<T, T>;
+        create(object: T): Observable<T>;
+        read(id: any): Observable<T>;
+        update(object: T): Observable<T>;
+        delete(object: T): Observable<any>;
         protected createRikeTarget(): RikeTarget<T, T>;
+        protected objectCreated(object: T, _response: Response): T;
+        protected readDataType(id: any): DataType<any, T>;
+        protected updateDataType(object: T): DataType<T, T>;
+        protected deleteDataType(object: T): DataType<T, any>;
+        protected abstract objectId(object: T): any;
+        protected objectUrl(baseUrl: string | undefined, id: any): string;
     }
 }
 declare module "ng2-rike" {
