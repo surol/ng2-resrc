@@ -228,7 +228,7 @@ System.register("ng2-rike/event", [], function(exports_1, context_1) {
 System.register("ng2-rike/options", [], function(exports_2, context_2) {
     "use strict";
     var __moduleName = context_2 && context_2.id;
-    var DEFAULT_RIKE_OPTIONS, RikeOptions, BaseRikeOptions;
+    var RikeOptions, BaseRikeOptions, DEFAULT_RIKE_OPTIONS;
     /**
      * Constructs URL relative to base URL.
      *
@@ -254,12 +254,6 @@ System.register("ng2-rike/options", [], function(exports_2, context_2) {
     return {
         setters:[],
         execute: function() {
-            /**
-             * Default resource options.
-             *
-             * @type {RikeOptions}
-             */
-            exports_2("DEFAULT_RIKE_OPTIONS", DEFAULT_RIKE_OPTIONS = new BaseRikeOptions());
             /**
              * Global resource options.
              *
@@ -307,6 +301,12 @@ System.register("ng2-rike/options", [], function(exports_2, context_2) {
                 return BaseRikeOptions;
             }(RikeOptions));
             exports_2("BaseRikeOptions", BaseRikeOptions);
+            /**
+             * Default resource options.
+             *
+             * @type {RikeOptions}
+             */
+            exports_2("DEFAULT_RIKE_OPTIONS", DEFAULT_RIKE_OPTIONS = new BaseRikeOptions());
         }
     }
 });

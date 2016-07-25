@@ -1,11 +1,4 @@
 /**
- * Default resource options.
- *
- * @type {RikeOptions}
- */
-export const DEFAULT_RIKE_OPTIONS: RikeOptions = new BaseRikeOptions();
-
-/**
  * Constructs URL relative to base URL.
  *
  * @param baseUrl base URL.
@@ -76,3 +69,10 @@ export class BaseRikeOptions extends RikeOptions {
     }
 
 }
+
+/**
+ * Default resource options.
+ *
+ * @type {RikeOptions}
+ */
+export const DEFAULT_RIKE_OPTIONS: RikeOptions = new BaseRikeOptions();

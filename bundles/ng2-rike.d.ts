@@ -111,12 +111,6 @@ declare module "ng2-rike/event" {
 }
 declare module "ng2-rike/options" {
     /**
-     * Default resource options.
-     *
-     * @type {RikeOptions}
-     */
-    export const DEFAULT_RIKE_OPTIONS: RikeOptions;
-    /**
      * Constructs URL relative to base URL.
      *
      * @param baseUrl base URL.
@@ -158,6 +152,12 @@ declare module "ng2-rike/options" {
         constructor(opts?: RikeOptions);
         readonly baseUrl: string | undefined;
     }
+    /**
+     * Default resource options.
+     *
+     * @type {RikeOptions}
+     */
+    export const DEFAULT_RIKE_OPTIONS: RikeOptions;
 }
 declare module "ng2-rike/data" {
     import { Response, RequestOptionsArgs } from "@angular/http";
