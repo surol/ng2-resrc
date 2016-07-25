@@ -18,5 +18,5 @@
     "newLine": "LF",
     "outFile": "bundles/ng2-rike.js"
   },
-  "include": ["src/*"]
+  "include": ["src/*", "src/**/*"]
 }

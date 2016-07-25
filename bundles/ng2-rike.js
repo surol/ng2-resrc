@@ -15,6 +15,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
+///<reference types="jasmine"/>
 System.register("ng2-rike/event", [], function(exports_1, context_1) {
     "use strict";
     var __moduleName = context_1 && context_1.id;
@@ -313,7 +314,7 @@ System.register("ng2-rike/data", ["@angular/http"], function(exports_3, context_
     "use strict";
     var __moduleName = context_3 && context_3.id;
     var http_1;
-    var DataType, JSON_DATA_TYPE, jsonDataType, HTTP_RESPONSE_DATA_TYPE, RequestBodyType, PrepareRequestDataType, WriteRequestDataType, ReadResponseDataType, JsonDataType, HttpResponseDataType;
+    var DataType, RequestBodyType, PrepareRequestDataType, WriteRequestDataType, ReadResponseDataType, JsonDataType, JSON_DATA_TYPE, jsonDataType, HttpResponseDataType, HTTP_RESPONSE_DATA_TYPE;
     return {
         setters:[
             function (http_1_1) {
@@ -404,28 +405,6 @@ System.register("ng2-rike/data", ["@angular/http"], function(exports_3, context_
                 return DataType;
             }());
             exports_3("DataType", DataType);
-            /**
-             * JSON data type.
-             *
-             * Sends and receives arbitrary data as JSON over HTTP.
-             *
-             * @type {DataType<any>}
-             */
-            exports_3("JSON_DATA_TYPE", JSON_DATA_TYPE = new JsonDataType());
-            /**
-             * Returns JSON data type.
-             *
-             * Sends and receives the data of the given type as JSON over HTTP.
-             */
-            exports_3("jsonDataType", jsonDataType = function () { return JSON_DATA_TYPE; });
-            /**
-             * HTTP response data type.
-             *
-             * The request type is any. It is used as request body.
-             *
-             * @type {DataType<any, Response>}
-             */
-            exports_3("HTTP_RESPONSE_DATA_TYPE", HTTP_RESPONSE_DATA_TYPE = new HttpResponseDataType());
             RequestBodyType = (function (_super) {
                 __extends(RequestBodyType, _super);
                 function RequestBodyType() {
@@ -511,6 +490,20 @@ System.register("ng2-rike/data", ["@angular/http"], function(exports_3, context_
                 };
                 return JsonDataType;
             }(RequestBodyType));
+            /**
+             * JSON data type.
+             *
+             * Sends and receives arbitrary data as JSON over HTTP.
+             *
+             * @type {DataType<any>}
+             */
+            exports_3("JSON_DATA_TYPE", JSON_DATA_TYPE = new JsonDataType());
+            /**
+             * Returns JSON data type.
+             *
+             * Sends and receives the data of the given type as JSON over HTTP.
+             */
+            exports_3("jsonDataType", jsonDataType = function () { return JSON_DATA_TYPE; });
             HttpResponseDataType = (function (_super) {
                 __extends(HttpResponseDataType, _super);
                 function HttpResponseDataType() {
@@ -524,6 +517,14 @@ System.register("ng2-rike/data", ["@angular/http"], function(exports_3, context_
                 };
                 return HttpResponseDataType;
             }(DataType));
+            /**
+             * HTTP response data type.
+             *
+             * The request type is any. It is used as request body.
+             *
+             * @type {DataType<any, Response>}
+             */
+            exports_3("HTTP_RESPONSE_DATA_TYPE", HTTP_RESPONSE_DATA_TYPE = new HttpResponseDataType());
         }
     }
 });
@@ -1292,6 +1293,59 @@ System.register("ng2-rike", ["ng2-rike/rike", "ng2-rike/event", "ng2-rike/data",
                 rike_1.Rike,
                 event_3.RikeEventSource.provide({ useExisting: rike_1.Rike }),
             ]);
+        }
+    }
+});
+System.register("ng2-rike/data.spec", ["@angular/http", "ng2-rike/data"], function(exports_7, context_7) {
+    "use strict";
+    var __moduleName = context_7 && context_7.id;
+    var http_4, data_4;
+    var TestDataType;
+    return {
+        setters:[
+            function (http_4_1) {
+                http_4 = http_4_1;
+            },
+            function (data_4_1) {
+                data_4 = data_4_1;
+            }],
+        execute: function() {
+            TestDataType = (function (_super) {
+                __extends(TestDataType, _super);
+                function TestDataType() {
+                    _super.call(this);
+                }
+                TestDataType.prototype.prepareRequest = function (options) {
+                    return new http_4.RequestOptions(options).merge({ url: "/request", search: "prepared=true" });
+                };
+                TestDataType.prototype.writeRequest = function (request, options) {
+                    return options.body = {
+                        request: "request1"
+                    };
+                };
+                TestDataType.prototype.readResponse = function (response) {
+                    return {
+                        response: "response1"
+                    };
+                };
+                return TestDataType;
+            }(data_4.DataType));
+            exports_7("TestDataType", TestDataType);
+            describe("DataType", function () {
+                var dataType = new TestDataType();
+                it("Request prepared", function () {
+                    var type = dataType.prepareRequestWith(function (opts) { return new http_4.RequestOptions(opts).merge({ search: "updated=true" }); });
+                    var opts = type.prepareRequest({});
+                    expect(opts.url).toBe("/request");
+                    expect(opts.search && opts.search.toString()).toEqual("prepared=true");
+                });
+                it("Request prepared after", function () {
+                    var type = dataType.prepareRequestWith(function (opts) { return new http_4.RequestOptions(opts).merge({ search: "updated=true" }); }, true);
+                    var opts = type.prepareRequest({});
+                    expect(opts.url).toBe("/request");
+                    expect(opts.search && opts.search.toString()).toEqual("updated=true");
+                });
+            });
         }
     }
 });

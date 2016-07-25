@@ -115,31 +115,6 @@ export abstract class DataType<IN, OUT> {
 
 }
 
-/**
- * JSON data type.
- *
- * Sends and receives arbitrary data as JSON over HTTP.
- *
- * @type {DataType<any>}
- */
-export const JSON_DATA_TYPE: DataType<any, any> = new JsonDataType<any>();
-
-/**
- * Returns JSON data type.
- *
- * Sends and receives the data of the given type as JSON over HTTP.
- */
-export const jsonDataType: (<T>() => DataType<T, T>) = () => JSON_DATA_TYPE;
-
-/**
- * HTTP response data type.
- *
- * The request type is any. It is used as request body.
- *
- * @type {DataType<any, Response>}
- */
-export const HTTP_RESPONSE_DATA_TYPE: DataType<any, Response> = new HttpResponseDataType();
-
 export abstract class RequestBodyType<T> extends DataType<T, T> {
 
     writeRequest(request: T, options: RequestOptionsArgs): RequestOptionsArgs {
@@ -234,6 +209,22 @@ class JsonDataType<T> extends RequestBodyType<T> {
 
 }
 
+/**
+ * JSON data type.
+ *
+ * Sends and receives arbitrary data as JSON over HTTP.
+ *
+ * @type {DataType<any>}
+ */
+export const JSON_DATA_TYPE: DataType<any, any> = new JsonDataType<any>();
+
+/**
+ * Returns JSON data type.
+ *
+ * Sends and receives the data of the given type as JSON over HTTP.
+ */
+export const jsonDataType: (<T>() => DataType<T, T>) = () => JSON_DATA_TYPE;
+
 class HttpResponseDataType extends DataType<any, Response> {
 
     writeRequest(request: any, options: RequestOptionsArgs): RequestOptionsArgs {
@@ -245,3 +236,12 @@ class HttpResponseDataType extends DataType<any, Response> {
     }
 
 }
+
+/**
+ * HTTP response data type.
+ *
+ * The request type is any. It is used as request body.
+ *
+ * @type {DataType<any, Response>}
+ */
+export const HTTP_RESPONSE_DATA_TYPE: DataType<any, Response> = new HttpResponseDataType();

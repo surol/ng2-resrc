@@ -246,6 +246,10 @@ declare module "ng2-rike/data" {
          */
         readResponseWith<OUT>(readResponse: (response: Response) => OUT): DataType<IN, OUT>;
     }
+    export abstract class RequestBodyType<T> extends DataType<T, T> {
+        writeRequest(request: T, options: RequestOptionsArgs): RequestOptionsArgs;
+        abstract writeBody(request: T): any;
+    }
     /**
      * JSON data type.
      *
@@ -268,10 +272,6 @@ declare module "ng2-rike/data" {
      * @type {DataType<any, Response>}
      */
     export const HTTP_RESPONSE_DATA_TYPE: DataType<any, Response>;
-    export abstract class RequestBodyType<T> extends DataType<T, T> {
-        writeRequest(request: T, options: RequestOptionsArgs): RequestOptionsArgs;
-        abstract writeBody(request: T): any;
-    }
 }
 declare module "ng2-rike/rike" {
     import { EventEmitter } from "@angular/core";
@@ -540,4 +540,21 @@ declare module "ng2-rike" {
      * @type {any[]}
      */
     export const RIKE_PROVIDERS: any[];
+}
+declare module "ng2-rike/data.spec" {
+    import { RequestOptionsArgs, Response } from "@angular/http";
+    import { DataType } from "ng2-rike/data";
+    export interface In {
+        request?: string;
+        update?: string;
+    }
+    export interface Out {
+        response?: string;
+    }
+    export class TestDataType extends DataType<In, Out> {
+        constructor();
+        prepareRequest(options: RequestOptionsArgs): RequestOptionsArgs;
+        writeRequest(request: In, options: RequestOptionsArgs): RequestOptionsArgs;
+        readResponse(response: Response): Out;
+    }
 }
