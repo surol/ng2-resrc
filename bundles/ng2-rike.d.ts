@@ -542,19 +542,4 @@ declare module "ng2-rike" {
     export const RIKE_PROVIDERS: any[];
 }
 declare module "ng2-rike/data.spec" {
-    import { RequestOptionsArgs, Response } from "@angular/http";
-    import { DataType } from "ng2-rike/data";
-    export interface In {
-        request?: string;
-        update?: string;
-    }
-    export interface Out {
-        response?: string;
-    }
-    export class TestDataType extends DataType<In, Out> {
-        constructor();
-        prepareRequest(options: RequestOptionsArgs): RequestOptionsArgs;
-        writeRequest(request: In, options: RequestOptionsArgs): RequestOptionsArgs;
-        readResponse(response: Response): Out;
-    }
 }

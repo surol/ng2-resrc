@@ -1319,9 +1319,8 @@ System.register("ng2-rike/data.spec", ["@angular/http", "ng2-rike/data"], functi
                     return new http_4.RequestOptions(options).merge({ url: "/request", search: "prepared=true" });
                 };
                 TestDataType.prototype.writeRequest = function (request, options) {
-                    return options.body = {
-                        request: "request1"
-                    };
+                    request.written = "written1";
+                    return new http_4.RequestOptions(options).merge({ body: request });
                 };
                 TestDataType.prototype.readResponse = function (response) {
                     return {
@@ -1330,10 +1329,9 @@ System.register("ng2-rike/data.spec", ["@angular/http", "ng2-rike/data"], functi
                 };
                 return TestDataType;
             }(data_4.DataType));
-            exports_7("TestDataType", TestDataType);
             describe("DataType", function () {
                 var dataType = new TestDataType();
-                it("Request prepared", function () {
+                it("Request prepared before", function () {
                     var type = dataType.prepareRequestWith(function (opts) { return new http_4.RequestOptions(opts).merge({ search: "updated=true" }); });
                     var opts = type.prepareRequest({});
                     expect(opts.url).toBe("/request");
@@ -1344,6 +1342,46 @@ System.register("ng2-rike/data.spec", ["@angular/http", "ng2-rike/data"], functi
                     var opts = type.prepareRequest({});
                     expect(opts.url).toBe("/request");
                     expect(opts.search && opts.search.toString()).toEqual("updated=true");
+                });
+                it("Request written", function () {
+                    var type = dataType.writeRequestWith(function (request, opts) {
+                        return new http_4.RequestOptions(opts).merge({ body: request.request2 });
+                    });
+                    var opts = type.writeRequest({ request2: "request2" }, {});
+                    expect(opts.body).toBe("request2");
+                });
+                it("Request updated before it is written", function () {
+                    var type = dataType.updateRequestWith(function (request, opts) {
+                        request.update = "update1";
+                        request.written = "rewritten1";
+                        return new http_4.RequestOptions(opts).merge({ body: request });
+                    });
+                    var opts = type.writeRequest({ request: "request1" }, {});
+                    var body = opts.body;
+                    expect(body.request).toBe("request1");
+                    expect(body.update).toBe("update1");
+                    expect(body.written).toBe("written1");
+                });
+                it("Request updated after it is written", function () {
+                    var type = dataType.updateRequestWith(function (request, opts) {
+                        request.update = "update1";
+                        request.written = "rewritten1";
+                        return new http_4.RequestOptions(opts).merge({ body: request });
+                    }, true);
+                    var opts = type.writeRequest({ request: "request1" }, {});
+                    var body = opts.body;
+                    expect(body.request).toBe("request1");
+                    expect(body.update).toBe("update1");
+                    expect(body.written).toBe("rewritten1");
+                });
+                it("Response read", function () {
+                    var type = dataType.readResponseWith(function () {
+                        return {
+                            response2: "response2"
+                        };
+                    });
+                    var response = type.readResponse(new http_4.Response(new http_4.ResponseOptions()));
+                    expect(response.response2).toBe("response2");
                 });
             });
         }
