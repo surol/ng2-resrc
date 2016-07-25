@@ -350,12 +350,54 @@ System.register("ng2-rike/data", ["@angular/http"], function(exports_3, context_
                 DataType.prototype.prepareRequest = function (options) {
                     return options;
                 };
+                /**
+                 * Constructs new data type based on this one, which prepares the request with the given function.
+                 *
+                 * @param prepare a request preparation function invoked in addition to `this.prepareRequest` method.
+                 * @param after `true` to call the `prepare` function after `this.prepareRequest` method,
+                 * otherwise it will be called before `this.prepareRequest()` method
+                 *
+                 * @return {DataType<IN, OUT>} new data type.
+                 */
                 DataType.prototype.prepareRequestWith = function (prepare, after) {
                     return new PrepareRequestDataType(this, prepare, after);
                 };
+                /**
+                 * Constructs new data type based on this one, which writes the request with the given function.
+                 *
+                 * @param writeRequest new request writer function.
+                 *
+                 * @return {DataType<IN, OUT>} new data type.
+                 */
                 DataType.prototype.writeRequestWith = function (writeRequest) {
                     return new WriteRequestDataType(this, writeRequest);
                 };
+                /**
+                 * Constructs new data type based on this one, which updates request options with the given function. The request
+                 * will be written with original `writeRequest()` method.
+                 *
+                 * @param updateRequest a function updating request options in addition to `this.writeRequest()` method.
+                 * @param after `true` to invoke `updateRequest` function after `this.writeRequest()` method, otherwise it will be
+                 * invoked before the `this.writeRequest()` method.
+                 *
+                 * @return {DataType<IN, OUT>} new data type.
+                 */
+                DataType.prototype.updateRequestWith = function (updateRequest, after) {
+                    var _this = this;
+                    return new WriteRequestDataType(this, function (request, args) {
+                        if (!after) {
+                            return _this.writeRequest(request, updateRequest(request, args));
+                        }
+                        return updateRequest(request, _this.writeRequest(request, args));
+                    });
+                };
+                /**
+                 * Constructs new data type based on this one, which reads a response with the given function.
+                 *
+                 * @param readResponse new response reader function.
+                 *
+                 * @return {DataType<IN, OUT>} new data type.
+                 */
                 DataType.prototype.readResponseWith = function (readResponse) {
                     return new ReadResponseDataType(this, readResponse);
                 };
@@ -1180,7 +1222,7 @@ System.register("ng2-rike/resource", ["@angular/http", "ng2-rike/data", "ng2-rik
                 CRUDResource.prototype.objectUpdateDataType = function (object) {
                     var _this = this;
                     return this.rikeTarget.dataType
-                        .prepareRequestWith(function (options) { return new http_3.RequestOptions(options).merge({
+                        .updateRequestWith(function (object, options) { return new http_3.RequestOptions(options).merge({
                         url: _this.objectUrl(options.url, _this.objectId(object))
                     }); })
                         .readResponseWith(function (response) { return object; });
@@ -1188,7 +1230,7 @@ System.register("ng2-rike/resource", ["@angular/http", "ng2-rike/data", "ng2-rik
                 CRUDResource.prototype.objectDeleteDataType = function (object) {
                     var _this = this;
                     return this.rikeTarget.dataType
-                        .prepareRequestWith(function (options) { return new http_3.RequestOptions(options).merge({
+                        .updateRequestWith(function (object, options) { return new http_3.RequestOptions(options).merge({
                         url: _this.objectUrl(options.url, _this.objectId(object))
                     }); })
                         .readResponseWith(function (response) { return object; });

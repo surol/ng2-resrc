@@ -186,6 +186,15 @@ declare module "ng2-rike/data" {
          * `options` by default.
          */
         prepareRequest(options: RequestOptionsArgs): RequestOptionsArgs;
+        /**
+         * Constructs new data type based on this one, which prepares the request with the given function.
+         *
+         * @param prepare a request preparation function invoked in addition to `this.prepareRequest` method.
+         * @param after `true` to call the `prepare` function after `this.prepareRequest` method,
+         * otherwise it will be called before `this.prepareRequest()` method
+         *
+         * @return {DataType<IN, OUT>} new data type.
+         */
         prepareRequestWith(prepare: (options: RequestOptionsArgs) => RequestOptionsArgs, after?: boolean): DataType<IN, OUT>;
         /**
          * Writes operation request as HTTP request.
@@ -201,7 +210,25 @@ declare module "ng2-rike/data" {
          * @return modified HTTP request options that will be used to perform actual request.
          */
         abstract writeRequest(request: IN, options: RequestOptionsArgs): RequestOptionsArgs;
+        /**
+         * Constructs new data type based on this one, which writes the request with the given function.
+         *
+         * @param writeRequest new request writer function.
+         *
+         * @return {DataType<IN, OUT>} new data type.
+         */
         writeRequestWith<IN>(writeRequest: (request: IN, options: RequestOptionsArgs) => RequestOptionsArgs): DataType<IN, OUT>;
+        /**
+         * Constructs new data type based on this one, which updates request options with the given function. The request
+         * will be written with original `writeRequest()` method.
+         *
+         * @param updateRequest a function updating request options in addition to `this.writeRequest()` method.
+         * @param after `true` to invoke `updateRequest` function after `this.writeRequest()` method, otherwise it will be
+         * invoked before the `this.writeRequest()` method.
+         *
+         * @return {DataType<IN, OUT>} new data type.
+         */
+        updateRequestWith(updateRequest: (request: IN, options: RequestOptionsArgs) => RequestOptionsArgs, after?: boolean): DataType<IN, OUT>;
         /**
          * Reads operation response from HTTP response.
          *
@@ -210,6 +237,13 @@ declare module "ng2-rike/data" {
          * @returns operation response.
          */
         abstract readResponse(response: Response): OUT;
+        /**
+         * Constructs new data type based on this one, which reads a response with the given function.
+         *
+         * @param readResponse new response reader function.
+         *
+         * @return {DataType<IN, OUT>} new data type.
+         */
         readResponseWith<OUT>(readResponse: (response: Response) => OUT): DataType<IN, OUT>;
     }
     /**

@@ -113,7 +113,7 @@ export abstract class CRUDResource<T> extends RikeResource {
 
     protected objectUpdateDataType(object: T): DataType<T, T> {
         return this.rikeTarget.dataType
-            .prepareRequestWith(options => new RequestOptions(options).merge({
+            .updateRequestWith((object, options) => new RequestOptions(options).merge({
                 url: this.objectUrl(options.url, this.objectId(object))
             }))
             .readResponseWith(response => object);
@@ -121,7 +121,7 @@ export abstract class CRUDResource<T> extends RikeResource {
 
     protected objectDeleteDataType(object: T): DataType<T, any> {
         return this.rikeTarget.dataType
-            .prepareRequestWith(options => new RequestOptions(options).merge({
+            .updateRequestWith((object, options) => new RequestOptions(options).merge({
                 url: this.objectUrl(options.url, this.objectId(object))
             }))
             .readResponseWith(response => object)
