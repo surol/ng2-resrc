@@ -3,7 +3,7 @@
   "version": "0.0.1-dev",
   "description": "REST-like API for Angular2",
   "license": "MIT",
-  "author": "ruslan.lopatin@gmail.com",
+  "author": "Ruslan Lopatin<ruslan.lopatin@gmail.com>",
   "homepage": "https://github.com/surol/ng2-rike",
   "repository": {
     "type": "git",
