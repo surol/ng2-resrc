@@ -1,6 +1,6 @@
-import {Http, ConnectionBackend, HTTP_PROVIDERS} from "@angular/http";
+import {Http, ConnectionBackend, HTTP_PROVIDERS, Response, ResponseOptions} from "@angular/http";
 import {addProviders, inject} from "@angular/core/testing";
-import {MockBackend} from "@angular/http/testing";
+import {MockBackend, MockConnection} from "@angular/http/testing";
 import {RIKE_PROVIDERS} from "../ng2-rike";
 import {Rike} from "./rike";
 import {RikeOptions, BaseRikeOptions} from "./options";
@@ -8,7 +8,7 @@ import {RikeOptions, BaseRikeOptions} from "./options";
 describe("Rike", () => {
 
     let rike: Rike;
-    let be: MockBackend;
+    let back: MockBackend;
 
     beforeEach(() => addProviders([
         HTTP_PROVIDERS,
@@ -29,11 +29,38 @@ describe("Rike", () => {
     ]));
 
     beforeEach(inject([MockBackend, Rike], (_be: MockBackend, _rike: Rike) => {
-        be = _be;
+        back = _be;
         rike = _rike;
     }));
 
-    it("Initialized", () => {
+    it("is initialized", () => {
         expect(rike.options.baseUrl).toBe("/test-root");
+    });
+
+    it('processes GET request', done => {
+        back.connections.subscribe((connection: MockConnection) => {
+            expect(connection.request.url).toBe("/test-root/request-url");
+            connection.mockRespond(new Response(new ResponseOptions({
+                body: "response1",
+            })));
+        });
+        rike.get("request-url").subscribe(response => {
+            expect(response.text()).toBe("response1");
+            done();
+        })
+    });
+
+    it('processes POST request', done => {
+        back.connections.subscribe((connection: MockConnection) => {
+            expect(connection.request.url).toBe("/test-root/post-request-url");
+            expect(connection.request.text()).toBe("request2");
+            connection.mockRespond(new Response(new ResponseOptions({
+                body: "response2",
+            })));
+        });
+        rike.post("post-request-url", "request2").subscribe(response => {
+            expect(response.text()).toBe("response2");
+            done();
+        })
     });
 });

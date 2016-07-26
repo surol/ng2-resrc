@@ -248,7 +248,7 @@ System.register("ng2-rike/options", [], function(exports_2, context_2) {
         if (url.match(/^(\w*:)?\/\//)) {
             return url; // Full URL
         }
-        return baseUrl + "/";
+        return baseUrl + "/" + url;
     }
     exports_2("relativeUrl", relativeUrl);
     return {
@@ -1414,7 +1414,7 @@ System.register("ng2-rike/rike.spec", ["@angular/http", "@angular/core/testing",
         execute: function() {
             describe("Rike", function () {
                 var rike;
-                var be;
+                var back;
                 beforeEach(function () { return testing_1.addProviders([
                     http_5.HTTP_PROVIDERS,
                     testing_2.MockBackend,
@@ -1433,11 +1433,36 @@ System.register("ng2-rike/rike.spec", ["@angular/http", "@angular/core/testing",
                     ng2_rike_1.RIKE_PROVIDERS,
                 ]); });
                 beforeEach(testing_1.inject([testing_2.MockBackend, rike_3.Rike], function (_be, _rike) {
-                    be = _be;
+                    back = _be;
                     rike = _rike;
                 }));
-                it("Initialized", function () {
+                it("is initialized", function () {
                     expect(rike.options.baseUrl).toBe("/test-root");
+                });
+                it('processes GET request', function (done) {
+                    back.connections.subscribe(function (connection) {
+                        expect(connection.request.url).toBe("/test-root/request-url");
+                        connection.mockRespond(new http_5.Response(new http_5.ResponseOptions({
+                            body: "response1",
+                        })));
+                    });
+                    rike.get("request-url").subscribe(function (response) {
+                        expect(response.text()).toBe("response1");
+                        done();
+                    });
+                });
+                it('processes POST request', function (done) {
+                    back.connections.subscribe(function (connection) {
+                        expect(connection.request.url).toBe("/test-root/post-request-url");
+                        expect(connection.request.text()).toBe("request2");
+                        connection.mockRespond(new http_5.Response(new http_5.ResponseOptions({
+                            body: "response2",
+                        })));
+                    });
+                    rike.post("post-request-url", "request2").subscribe(function (response) {
+                        expect(response.text()).toBe("response2");
+                        done();
+                    });
                 });
             });
         }

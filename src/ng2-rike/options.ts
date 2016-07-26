@@ -17,7 +17,7 @@ export function relativeUrl(baseUrl: string | undefined, url: string): string {
     if (url.match(/^(\w*:)?\/\//)) {
         return url;// Full URL
     }
-    return baseUrl + "/";
+    return baseUrl + "/" + url;
 }
 
 /**
