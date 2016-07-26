@@ -16,12 +16,8 @@ import {RikeOptions, BaseRikeOptions} from "./options";
 import {HTTP_RESPONSE_DATA_TYPE, JSON_DATA_TYPE, jsonDataType} from "./data";
 import {Observable} from "rxjs/Rx";
 
-describe("Rike", () => {
-
-    let rike: Rike;
-    let back: MockBackend;
-
-    beforeEach(() => addProviders([
+export function addRikeProviders() {
+    addProviders([
         HTTP_PROVIDERS,
         MockBackend,
         {
@@ -34,7 +30,15 @@ describe("Rike", () => {
             useValue: new BaseRikeOptions({baseUrl: "/test-root"})
         },
         RIKE_PROVIDERS,
-    ]));
+    ])
+}
+
+describe("Rike", () => {
+
+    let rike: Rike;
+    let back: MockBackend;
+
+    beforeEach(() => addRikeProviders());
 
     beforeEach(inject([MockBackend, Rike], (_be: MockBackend, _rike: Rike) => {
         back = _be;

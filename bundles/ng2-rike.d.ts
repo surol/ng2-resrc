@@ -550,4 +550,7 @@ declare module "ng2-rike" {
 declare module "ng2-rike/data.spec" {
 }
 declare module "ng2-rike/rike.spec" {
+    export function addRikeProviders(): void;
+}
+declare module "ng2-rike/rike-target.spec" {
 }

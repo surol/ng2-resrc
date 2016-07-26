@@ -1391,6 +1391,23 @@ System.register("ng2-rike/rike.spec", ["@angular/http", "@angular/core/testing",
     "use strict";
     var __moduleName = context_8 && context_8.id;
     var http_5, testing_1, testing_2, ng2_rike_1, rike_3, options_4, data_5;
+    function addRikeProviders() {
+        testing_1.addProviders([
+            http_5.HTTP_PROVIDERS,
+            testing_2.MockBackend,
+            {
+                provide: http_5.ConnectionBackend,
+                useExisting: testing_2.MockBackend
+            },
+            http_5.Http,
+            {
+                provide: options_4.RikeOptions,
+                useValue: new options_4.BaseRikeOptions({ baseUrl: "/test-root" })
+            },
+            ng2_rike_1.RIKE_PROVIDERS,
+        ]);
+    }
+    exports_8("addRikeProviders", addRikeProviders);
     return {
         setters:[
             function (http_5_1) {
@@ -1418,20 +1435,7 @@ System.register("ng2-rike/rike.spec", ["@angular/http", "@angular/core/testing",
             describe("Rike", function () {
                 var rike;
                 var back;
-                beforeEach(function () { return testing_1.addProviders([
-                    http_5.HTTP_PROVIDERS,
-                    testing_2.MockBackend,
-                    {
-                        provide: http_5.ConnectionBackend,
-                        useExisting: testing_2.MockBackend
-                    },
-                    http_5.Http,
-                    {
-                        provide: options_4.RikeOptions,
-                        useValue: new options_4.BaseRikeOptions({ baseUrl: "/test-root" })
-                    },
-                    ng2_rike_1.RIKE_PROVIDERS,
-                ]); });
+                beforeEach(function () { return addRikeProviders(); });
                 beforeEach(testing_1.inject([testing_2.MockBackend, rike_3.Rike], function (_be, _rike) {
                     back = _be;
                     rike = _rike;
@@ -1509,6 +1513,75 @@ System.register("ng2-rike/rike.spec", ["@angular/http", "@angular/core/testing",
                     var target = rike.target(targetId, dataType);
                     expect(target.target).toBe(targetId);
                     expect(target.dataType).toBe(dataType);
+                });
+            });
+        }
+    }
+});
+System.register("ng2-rike/rike-target.spec", ["@angular/core/testing", "@angular/http", "@angular/http/testing", "ng2-rike/rike.spec", "ng2-rike/rike", "ng2-rike/data"], function(exports_9, context_9) {
+    "use strict";
+    var __moduleName = context_9 && context_9.id;
+    var testing_3, http_6, testing_4, rike_spec_1, rike_4, data_6;
+    return {
+        setters:[
+            function (testing_3_1) {
+                testing_3 = testing_3_1;
+            },
+            function (http_6_1) {
+                http_6 = http_6_1;
+            },
+            function (testing_4_1) {
+                testing_4 = testing_4_1;
+            },
+            function (rike_spec_1_1) {
+                rike_spec_1 = rike_spec_1_1;
+            },
+            function (rike_4_1) {
+                rike_4 = rike_4_1;
+            },
+            function (data_6_1) {
+                data_6 = data_6_1;
+            }],
+        execute: function() {
+            describe("RikeTarget", function () {
+                var rike;
+                var back;
+                var target;
+                beforeEach(function () { return rike_spec_1.addRikeProviders(); });
+                beforeEach(testing_3.inject([testing_4.MockBackend, rike_4.Rike], function (_be, _rike) {
+                    back = _be;
+                    rike = _rike;
+                    target = rike.target("target");
+                }));
+                it("created", function () {
+                    expect(target.baseUrl).toBeUndefined();
+                });
+                it("updated with base url", function () {
+                    var t = target.withBaseUrl("target-url");
+                    expect(t).toBe(target);
+                    expect(t.baseUrl).toBe("target-url");
+                });
+                it("creates operation of the target type", function () {
+                    var op = target.operation("operation1");
+                    expect(op.target).toBe(target);
+                    expect(op.name).toBe("operation1");
+                    expect(op.dataType).toBe(target.dataType);
+                });
+                it("creates JSON operation", function () {
+                    var op = target.json("jsonOperation");
+                    expect(op.target).toBe(target);
+                    expect(op.name).toBe("jsonOperation");
+                    expect(op.dataType).toBe(data_6.JSON_DATA_TYPE);
+                });
+                it("creates target of specified type", function () {
+                    var dataType = data_6.jsonDataType()
+                        .writeRequestWith(function (val, opts) {
+                        return new http_6.RequestOptions(opts).merge({ body: JSON.stringify(val) });
+                    });
+                    var op = target.operation("customOperation", dataType);
+                    expect(op.target).toBe(target);
+                    expect(op.name).toBe("customOperation");
+                    expect(op.dataType).toBe(dataType);
                 });
             });
         }
