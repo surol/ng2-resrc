@@ -11,7 +11,7 @@ import {
 import {addProviders, inject} from "@angular/core/testing";
 import {MockBackend, MockConnection} from "@angular/http/testing";
 import {RIKE_PROVIDERS} from "../ng2-rike";
-import {Rike} from "./rike";
+import {Rike, requestMethod} from "./rike";
 import {RikeOptions, BaseRikeOptions} from "./options";
 import {HTTP_RESPONSE_DATA_TYPE, JSON_DATA_TYPE, jsonDataType} from "./data";
 import {Observable} from "rxjs/Rx";
@@ -136,5 +136,28 @@ describe("Rike", () => {
 
         expect(target.target).toBe(targetId);
         expect(target.dataType).toBe(dataType);
+    });
+});
+
+function requestMethodTest(method: RequestMethod, value: string | RequestMethod) {
+    return () => expect(requestMethod(value)).toBe(method);
+}
+
+describe("requestMethod", () => {
+    it("GET", requestMethodTest(RequestMethod.Get, "GeT"));
+    it("POST", requestMethodTest(RequestMethod.Post, "pOSt"));
+    it("PUT", requestMethodTest(RequestMethod.Put, "put"));
+    it("DELETE", requestMethodTest(RequestMethod.Delete, "deletE"));
+    it("OPTIONS", requestMethodTest(RequestMethod.Options, "OPTIONS"));
+    it("HEAD", requestMethodTest(RequestMethod.Head, "hEad"));
+    it("PATCH", requestMethodTest(RequestMethod.Patch, "pAtch"));
+    it("specified as is", requestMethodTest(RequestMethod.Post, RequestMethod.Post));
+
+    it("rejects unknown method", () => {
+        expect(() => requestMethod("some")).toThrow();
+    });
+
+    it("rejects empty method", () => {
+        expect(() => requestMethod("")).toThrow();
     });
 });

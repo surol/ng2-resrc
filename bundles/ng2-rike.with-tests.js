@@ -1387,10 +1387,49 @@ System.register("ng2-rike/data.spec", ["@angular/http", "ng2-rike/data"], functi
         }
     }
 });
-System.register("ng2-rike/rike.spec", ["@angular/http", "@angular/core/testing", "@angular/http/testing", "ng2-rike", "ng2-rike/rike", "ng2-rike/options", "ng2-rike/data"], function(exports_8, context_8) {
+System.register("ng2-rike/options.spec", ["ng2-rike/options"], function(exports_8, context_8) {
     "use strict";
     var __moduleName = context_8 && context_8.id;
-    var http_5, testing_1, testing_2, ng2_rike_1, rike_3, options_4, data_5;
+    var options_4;
+    return {
+        setters:[
+            function (options_4_1) {
+                options_4 = options_4_1;
+            }],
+        execute: function() {
+            describe("relativeUrl", function () {
+                it("works without base URL", function () {
+                    expect(options_4.relativeUrl(undefined, "url")).toBe("url");
+                });
+                it("handles empty base URL", function () {
+                    expect(options_4.relativeUrl("", "url")).toBe("url");
+                });
+                it("resolves against base URL", function () {
+                    expect(options_4.relativeUrl("base-url", "url")).toBe("base-url/url");
+                });
+                it("resolves absolute URL", function () {
+                    expect(options_4.relativeUrl("/base-url", "/absolute-url")).toBe("/absolute-url");
+                });
+                it("resolves schema-qualified URL", function () {
+                    expect(options_4.relativeUrl("/base-url", "https://some.host/path")).toBe("https://some.host/path");
+                });
+                it("resolves URL with default schema", function () {
+                    expect(options_4.relativeUrl("/base-url", "//some.host/path")).toBe("//some.host/path");
+                });
+                it("resolves URL without schema", function () {
+                    expect(options_4.relativeUrl("/base-url", "://some.host/path")).toBe("://some.host/path");
+                });
+                it("resolves URL which looks like schema-qualified", function () {
+                    expect(options_4.relativeUrl("/base-url", "abc#http://some.host/path")).toBe("/base-url/abc#http://some.host/path");
+                });
+            });
+        }
+    }
+});
+System.register("ng2-rike/rike.spec", ["@angular/http", "@angular/core/testing", "@angular/http/testing", "ng2-rike", "ng2-rike/rike", "ng2-rike/options", "ng2-rike/data"], function(exports_9, context_9) {
+    "use strict";
+    var __moduleName = context_9 && context_9.id;
+    var http_5, testing_1, testing_2, ng2_rike_1, rike_3, options_5, data_5;
     function addRikeProviders() {
         testing_1.addProviders([
             http_5.HTTP_PROVIDERS,
@@ -1401,13 +1440,16 @@ System.register("ng2-rike/rike.spec", ["@angular/http", "@angular/core/testing",
             },
             http_5.Http,
             {
-                provide: options_4.RikeOptions,
-                useValue: new options_4.BaseRikeOptions({ baseUrl: "/test-root" })
+                provide: options_5.RikeOptions,
+                useValue: new options_5.BaseRikeOptions({ baseUrl: "/test-root" })
             },
             ng2_rike_1.RIKE_PROVIDERS,
         ]);
     }
-    exports_8("addRikeProviders", addRikeProviders);
+    exports_9("addRikeProviders", addRikeProviders);
+    function requestMethodTest(method, value) {
+        return function () { return expect(rike_3.requestMethod(value)).toBe(method); };
+    }
     return {
         setters:[
             function (http_5_1) {
@@ -1425,8 +1467,8 @@ System.register("ng2-rike/rike.spec", ["@angular/http", "@angular/core/testing",
             function (rike_3_1) {
                 rike_3 = rike_3_1;
             },
-            function (options_4_1) {
-                options_4 = options_4_1;
+            function (options_5_1) {
+                options_5 = options_5_1;
             },
             function (data_5_1) {
                 data_5 = data_5_1;
@@ -1514,12 +1556,28 @@ System.register("ng2-rike/rike.spec", ["@angular/http", "@angular/core/testing",
                     expect(target.dataType).toBe(dataType);
                 });
             });
+            describe("requestMethod", function () {
+                it("GET", requestMethodTest(http_5.RequestMethod.Get, "GeT"));
+                it("POST", requestMethodTest(http_5.RequestMethod.Post, "pOSt"));
+                it("PUT", requestMethodTest(http_5.RequestMethod.Put, "put"));
+                it("DELETE", requestMethodTest(http_5.RequestMethod.Delete, "deletE"));
+                it("OPTIONS", requestMethodTest(http_5.RequestMethod.Options, "OPTIONS"));
+                it("HEAD", requestMethodTest(http_5.RequestMethod.Head, "hEad"));
+                it("PATCH", requestMethodTest(http_5.RequestMethod.Patch, "pAtch"));
+                it("specified as is", requestMethodTest(http_5.RequestMethod.Post, http_5.RequestMethod.Post));
+                it("rejects unknown method", function () {
+                    expect(function () { return rike_3.requestMethod("some"); }).toThrow();
+                });
+                it("rejects empty method", function () {
+                    expect(function () { return rike_3.requestMethod(""); }).toThrow();
+                });
+            });
         }
     }
 });
-System.register("ng2-rike/rike-target.spec", ["@angular/core/testing", "@angular/http", "@angular/http/testing", "ng2-rike/rike.spec", "ng2-rike/rike", "ng2-rike/data"], function(exports_9, context_9) {
+System.register("ng2-rike/rike-target.spec", ["@angular/core/testing", "@angular/http", "@angular/http/testing", "ng2-rike/rike.spec", "ng2-rike/rike", "ng2-rike/data"], function(exports_10, context_10) {
     "use strict";
-    var __moduleName = context_9 && context_9.id;
+    var __moduleName = context_10 && context_10.id;
     var testing_3, http_6, testing_4, rike_spec_1, rike_4, data_6;
     return {
         setters:[
