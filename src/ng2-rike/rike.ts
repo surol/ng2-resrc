@@ -387,7 +387,7 @@ interface RikeInternals {
 
 class RikeTargetImpl<IN, OUT> extends RikeTarget<IN, OUT> {
 
-    private readonly _rikeEvents = new EventEmitter<RikeEvent>();
+    private _rikeEvents = new EventEmitter<RikeEvent>();
     private _baseUrl?: string;
     private _operation?: RikeOperationEvent;
     private _response?: Observable<Response>;

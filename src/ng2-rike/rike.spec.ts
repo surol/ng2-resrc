@@ -49,9 +49,9 @@ describe("Rike", () => {
         expect(rike.options.baseUrl).toBe("/test-root");
     });
 
-    function readRequestTest(
+    function loadRequestTest(
         method: RequestMethod,
-        read: (rike: Rike) => ((url: string) => Observable<Response>)): (done: () => void) => void {
+        read: (rike: Rike) => ((url: string) => Observable<Response>)): (done: DoneFn) => void {
         return done => {
             back.connections.subscribe((connection: MockConnection) => {
                 expect(connection.request.method).toBe(method);
@@ -67,9 +67,9 @@ describe("Rike", () => {
         }
     }
 
-    it("processes GET request", readRequestTest(RequestMethod.Get, rike => rike.get));
-    it("processes DELETE request", readRequestTest(RequestMethod.Delete, rike => rike.delete));
-    it("processes HEAD request", readRequestTest(RequestMethod.Head, rike => rike.head));
+    it("processes GET request", loadRequestTest(RequestMethod.Get, rike => rike.get));
+    it("processes DELETE request", loadRequestTest(RequestMethod.Delete, rike => rike.delete));
+    it("processes HEAD request", loadRequestTest(RequestMethod.Head, rike => rike.head));
 
     function sendRequestTest(
         method: RequestMethod,

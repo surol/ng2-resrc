@@ -9,7 +9,7 @@ describe("RikeTarget", () => {
 
     let rike: Rike;
     let back: MockBackend;
-    let target: RikeTarget<Request, Response>
+    let target: RikeTarget<any, Response>
 
     beforeEach(() => addRikeProviders());
 
