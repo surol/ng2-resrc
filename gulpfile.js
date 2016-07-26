@@ -36,7 +36,17 @@ gulp.task('bundle-angular', function(cb) {
             )});
 });
 
-gulp.task('compile', function(cb) {
+gulp.task('compile-devel', function(cb) {
+    exec(
+        'node_modules/.bin/tsc -p devel',
+        function(err, stdout, stderr) {
+            console.log(stdout);
+            if (err) console.error(stderr);
+            cb(err);
+        });
+});
+
+gulp.task('compile-with-tests', function(cb) {
     exec(
         'node_modules/.bin/tsc -p .',
         function(err, stdout, stderr) {
@@ -46,10 +56,12 @@ gulp.task('compile', function(cb) {
         });
 });
 
+gulp.task('compile-all', ['compile-with-tests', 'compile-devel']);
+
 gulp.task('clean-bundle', function() {
     return del('bundles');
 });
 
-gulp.task('default', ['compile', 'bundle-angular']);
+gulp.task('default', ['bundle-angular', 'compile-all']);
 
 gulp.task('clean', ['clean-bundle']);

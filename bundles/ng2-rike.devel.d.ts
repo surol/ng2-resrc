@@ -547,10 +547,3 @@ declare module "ng2-rike" {
      */
     export const RIKE_PROVIDERS: any[];
 }
-declare module "ng2-rike/data.spec" {
-}
-declare module "ng2-rike/rike.spec" {
-    export function addRikeProviders(): void;
-}
-declare module "ng2-rike/rike-target.spec" {
-}

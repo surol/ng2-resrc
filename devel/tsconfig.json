@@ -4,6 +4,8 @@
     "module": "system",
     "moduleResolution": "node",
     "removeComments": false,
+    "declaration": true,
+    "stripInternal": true,
     "sourceMap": true,
     "inlineSources": true,
     "emitDecoratorMetadata": true,
@@ -14,7 +16,8 @@
     "strictNullChecks": true,
     "forceConsistentCasingInFileNames": true,
     "newLine": "LF",
-    "outFile": "bundles/ng2-rike.with-tests.js"
+    "outFile": "../bundles/ng2-rike.devel.js"
   },
-  "include": ["src/*", "src/**/*"]
+  "include": ["../src/*", "../src/**/*"],
+  "exclude": ["../src/*.spec.ts", "../src/**/*.spec.ts"]
 }
