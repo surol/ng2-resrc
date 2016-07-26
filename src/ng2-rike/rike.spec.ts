@@ -73,7 +73,7 @@ describe("Rike", () => {
 
     function sendRequestTest(
         method: RequestMethod,
-        read: (rike: Rike) => ((url: string, body: any) => Observable<Response>)): (done: () => void) => void {
+        read: (rike: Rike) => ((url: string, body: any) => Observable<Response>)): (done: DoneFn) => void {
         return done => {
             back.connections.subscribe((connection: MockConnection) => {
                 expect(connection.request.method).toBe(method);
@@ -100,8 +100,7 @@ describe("Rike", () => {
         });
         rike.get("request-url").subscribe(
             () => {
-                fail("Response received");
-                done();
+                done.fail("Response received");
             },
             (error: Error) => {
                 expect(error.message).toBe("Response error");

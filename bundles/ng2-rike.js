@@ -1485,8 +1485,7 @@ System.register("ng2-rike/rike.spec", ["@angular/http", "@angular/core/testing",
                         connection.mockError(new Error("Response error"));
                     });
                     rike.get("request-url").subscribe(function () {
-                        fail("Response received");
-                        done();
+                        done.fail("Response received");
                     }, function (error) {
                         expect(error.message).toBe("Response error");
                         done();
