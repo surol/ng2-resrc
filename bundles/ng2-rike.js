@@ -1387,10 +1387,10 @@ System.register("ng2-rike/data.spec", ["@angular/http", "ng2-rike/data"], functi
         }
     }
 });
-System.register("ng2-rike/rike.spec", ["@angular/http", "@angular/core/testing", "@angular/http/testing", "ng2-rike", "ng2-rike/rike", "ng2-rike/options"], function(exports_8, context_8) {
+System.register("ng2-rike/rike.spec", ["@angular/http", "@angular/core/testing", "@angular/http/testing", "ng2-rike", "ng2-rike/rike", "ng2-rike/options", "ng2-rike/data"], function(exports_8, context_8) {
     "use strict";
     var __moduleName = context_8 && context_8.id;
-    var http_5, testing_1, testing_2, ng2_rike_1, rike_3, options_4;
+    var http_5, testing_1, testing_2, ng2_rike_1, rike_3, options_4, data_5;
     return {
         setters:[
             function (http_5_1) {
@@ -1410,6 +1410,9 @@ System.register("ng2-rike/rike.spec", ["@angular/http", "@angular/core/testing",
             },
             function (options_4_1) {
                 options_4 = options_4_1;
+            },
+            function (data_5_1) {
+                data_5 = data_5_1;
             }],
         execute: function() {
             describe("Rike", function () {
@@ -1419,16 +1422,13 @@ System.register("ng2-rike/rike.spec", ["@angular/http", "@angular/core/testing",
                     http_5.HTTP_PROVIDERS,
                     testing_2.MockBackend,
                     {
-                        provide: options_4.RikeOptions,
-                        useValue: new options_4.BaseRikeOptions({ baseUrl: "/test-root" })
-                    },
-                    {
                         provide: http_5.ConnectionBackend,
                         useExisting: testing_2.MockBackend
                     },
+                    http_5.Http,
                     {
-                        provide: http_5.Http,
-                        useClass: http_5.Http
+                        provide: options_4.RikeOptions,
+                        useValue: new options_4.BaseRikeOptions({ baseUrl: "/test-root" })
                     },
                     ng2_rike_1.RIKE_PROVIDERS,
                 ]); });
@@ -1439,30 +1439,76 @@ System.register("ng2-rike/rike.spec", ["@angular/http", "@angular/core/testing",
                 it("is initialized", function () {
                     expect(rike.options.baseUrl).toBe("/test-root");
                 });
-                it('processes GET request', function (done) {
+                function readRequestTest(method, read) {
+                    return function (done) {
+                        back.connections.subscribe(function (connection) {
+                            expect(connection.request.method).toBe(method);
+                            expect(connection.request.url).toBe("/test-root/request-url");
+                            connection.mockRespond(new http_5.Response(new http_5.ResponseOptions({
+                                body: "response1",
+                            })));
+                        });
+                        read(rike).call(rike, "request-url").subscribe(function (response) {
+                            expect(response.text()).toBe("response1");
+                            done();
+                        });
+                    };
+                }
+                it("processes GET request", readRequestTest(http_5.RequestMethod.Get, function (rike) { return rike.get; }));
+                it("processes DELETE request", readRequestTest(http_5.RequestMethod.Delete, function (rike) { return rike.delete; }));
+                it("processes HEAD request", readRequestTest(http_5.RequestMethod.Head, function (rike) { return rike.head; }));
+                function sendRequestTest(method, read) {
+                    return function (done) {
+                        back.connections.subscribe(function (connection) {
+                            expect(connection.request.method).toBe(method);
+                            expect(connection.request.url).toBe("/test-root/send-request-url");
+                            expect(connection.request.text()).toBe("request2");
+                            connection.mockRespond(new http_5.Response(new http_5.ResponseOptions({
+                                body: "response1",
+                            })));
+                        });
+                        read(rike).call(rike, "send-request-url", "request2").subscribe(function (response) {
+                            expect(response.text()).toBe("response1");
+                            done();
+                        });
+                    };
+                }
+                it("processes POST request", sendRequestTest(http_5.RequestMethod.Post, function (rike) { return rike.post; }));
+                it("processes PUT request", sendRequestTest(http_5.RequestMethod.Put, function (rike) { return rike.put; }));
+                it("processes PATCH request", sendRequestTest(http_5.RequestMethod.Patch, function (rike) { return rike.patch; }));
+                it("processes HTTP error", function (done) {
                     back.connections.subscribe(function (connection) {
-                        expect(connection.request.url).toBe("/test-root/request-url");
-                        connection.mockRespond(new http_5.Response(new http_5.ResponseOptions({
-                            body: "response1",
-                        })));
+                        connection.mockError(new Error("Response error"));
                     });
-                    rike.get("request-url").subscribe(function (response) {
-                        expect(response.text()).toBe("response1");
+                    rike.get("request-url").subscribe(function () {
+                        fail("Response received");
+                        done();
+                    }, function (error) {
+                        expect(error.message).toBe("Response error");
                         done();
                     });
                 });
-                it('processes POST request', function (done) {
-                    back.connections.subscribe(function (connection) {
-                        expect(connection.request.url).toBe("/test-root/post-request-url");
-                        expect(connection.request.text()).toBe("request2");
-                        connection.mockRespond(new http_5.Response(new http_5.ResponseOptions({
-                            body: "response2",
-                        })));
+                it("creates target of the default type", function () {
+                    var targetId = "target1";
+                    var target = rike.target(targetId);
+                    expect(target.target).toBe(targetId);
+                    expect(target.dataType).toBe(data_5.HTTP_RESPONSE_DATA_TYPE);
+                });
+                it("creates JSON target", function () {
+                    var targetId = "target1";
+                    var target = rike.json(targetId);
+                    expect(target.target).toBe(targetId);
+                    expect(target.dataType).toBe(data_5.JSON_DATA_TYPE);
+                });
+                it("creates target of specified type", function () {
+                    var dataType = data_5.jsonDataType()
+                        .writeRequestWith(function (val, opts) {
+                        return new http_5.RequestOptions(opts).merge({ body: JSON.stringify(val) });
                     });
-                    rike.post("post-request-url", "request2").subscribe(function (response) {
-                        expect(response.text()).toBe("response2");
-                        done();
-                    });
+                    var targetId = "target1";
+                    var target = rike.target(targetId, dataType);
+                    expect(target.target).toBe(targetId);
+                    expect(target.dataType).toBe(dataType);
                 });
             });
         }
