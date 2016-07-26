@@ -1,5 +1,5 @@
 import {Type} from "@angular/core";
-import {Response, RequestOptions} from "@angular/http";
+import {RequestOptions} from "@angular/http";
 import {Observable} from "rxjs/Rx";
 import {DataType, JSON_DATA_TYPE, jsonDataType} from "./data";
 import {RikeEventSource} from "./event";

@@ -21,6 +21,8 @@
     "zone.js": "^0.6.12"
   },
   "devDependencies": {
+    "@angular/core/testing": "2.0.0-rc.4",
+    "@angular/http/testing": "2.0.0-rc.4",
     "@angular/platform-browser-dynamic": "2.0.0-rc.4",
     "@types/core-js": "^0.9.28",
     "@types/jasmine": "^2.2.30",

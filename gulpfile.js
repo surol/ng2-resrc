@@ -14,10 +14,13 @@ gulp.task('bundle-angular', function(cb) {
     builder.loadConfig('angular.systemjs.config.js')
         .then(function() {
             builder.bundle(
-                '@angular/common'
+                'rxjs'
+                + ' + @angular/common'
                 + ' + @angular/compiler'
                 + ' + @angular/core'
+                + ' + @angular/core/testing'
                 + ' + @angular/http'
+                + ' + @angular/http/testing'
                 + ' + @angular/platform-browser'
                 + ' + @angular/platform-browser-dynamic',
                 'bundles/angular.js',

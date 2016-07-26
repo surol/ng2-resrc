@@ -121,17 +121,23 @@ declare module "ng2-rike/options" {
      */
     export function relativeUrl(baseUrl: string | undefined, url: string): string;
     /**
-     * Global resource options.
+     * Global Rike options interface.
+     */
+    export interface RikeOptionsArgs {
+        /**
+         * Base URL of all relative URLs
+         */
+        readonly baseUrl?: string;
+    }
+    /**
+     * Global Rike options.
      *
      * To overwrite global options add a provider for [BaseRikeOptions] instance with [RikeOptions] as a key:
      * ```ts
      * bootstrap(AppComponent, {provide: RikeOptions, new BaseRikeOptions({baseDir: "/rike"})});
      * ```
      */
-    export abstract class RikeOptions {
-        /**
-         * Base URL of all relative URLs
-         */
+    export abstract class RikeOptions implements RikeOptionsArgs {
         readonly abstract baseUrl?: string;
         /**
          * Constructs URL relative to `baseUrl`.
@@ -149,7 +155,7 @@ declare module "ng2-rike/options" {
      */
     export class BaseRikeOptions extends RikeOptions {
         private _baseUrl?;
-        constructor(opts?: RikeOptions);
+        constructor(opts?: RikeOptionsArgs);
         readonly baseUrl: string | undefined;
     }
     /**
@@ -542,4 +548,6 @@ declare module "ng2-rike" {
     export const RIKE_PROVIDERS: any[];
 }
 declare module "ng2-rike/data.spec" {
+}
+declare module "ng2-rike/rike.spec" {
 }

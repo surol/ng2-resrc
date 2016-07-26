@@ -255,7 +255,7 @@ System.register("ng2-rike/options", [], function(exports_2, context_2) {
         setters:[],
         execute: function() {
             /**
-             * Global resource options.
+             * Global Rike options.
              *
              * To overwrite global options add a provider for [BaseRikeOptions] instance with [RikeOptions] as a key:
              * ```ts
@@ -1382,6 +1382,62 @@ System.register("ng2-rike/data.spec", ["@angular/http", "ng2-rike/data"], functi
                     });
                     var response = type.readResponse(new http_4.Response(new http_4.ResponseOptions()));
                     expect(response.response2).toBe("response2");
+                });
+            });
+        }
+    }
+});
+System.register("ng2-rike/rike.spec", ["@angular/http", "@angular/core/testing", "@angular/http/testing", "ng2-rike", "ng2-rike/rike", "ng2-rike/options"], function(exports_8, context_8) {
+    "use strict";
+    var __moduleName = context_8 && context_8.id;
+    var http_5, testing_1, testing_2, ng2_rike_1, rike_3, options_4;
+    return {
+        setters:[
+            function (http_5_1) {
+                http_5 = http_5_1;
+            },
+            function (testing_1_1) {
+                testing_1 = testing_1_1;
+            },
+            function (testing_2_1) {
+                testing_2 = testing_2_1;
+            },
+            function (ng2_rike_1_1) {
+                ng2_rike_1 = ng2_rike_1_1;
+            },
+            function (rike_3_1) {
+                rike_3 = rike_3_1;
+            },
+            function (options_4_1) {
+                options_4 = options_4_1;
+            }],
+        execute: function() {
+            describe("Rike", function () {
+                var rike;
+                var be;
+                beforeEach(function () { return testing_1.addProviders([
+                    http_5.HTTP_PROVIDERS,
+                    testing_2.MockBackend,
+                    {
+                        provide: options_4.RikeOptions,
+                        useValue: new options_4.BaseRikeOptions({ baseUrl: "/test-root" })
+                    },
+                    {
+                        provide: http_5.ConnectionBackend,
+                        useExisting: testing_2.MockBackend
+                    },
+                    {
+                        provide: http_5.Http,
+                        useClass: http_5.Http
+                    },
+                    ng2_rike_1.RIKE_PROVIDERS,
+                ]); });
+                beforeEach(testing_1.inject([testing_2.MockBackend, rike_3.Rike], function (_be, _rike) {
+                    be = _be;
+                    rike = _rike;
+                }));
+                it("Initialized", function () {
+                    expect(rike.options.baseUrl).toBe("/test-root");
                 });
             });
         }

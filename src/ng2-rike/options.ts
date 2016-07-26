@@ -21,18 +21,27 @@ export function relativeUrl(baseUrl: string | undefined, url: string): string {
 }
 
 /**
- * Global resource options.
+ * Global Rike options interface.
+ */
+export interface RikeOptionsArgs {
+
+    /**
+     * Base URL of all relative URLs
+     */
+    readonly baseUrl?: string;
+
+}
+
+/**
+ * Global Rike options.
  *
  * To overwrite global options add a provider for [BaseRikeOptions] instance with [RikeOptions] as a key:
  * ```ts
  * bootstrap(AppComponent, {provide: RikeOptions, new BaseRikeOptions({baseDir: "/rike"})});
  * ```
  */
-export abstract class RikeOptions {
+export abstract class RikeOptions implements RikeOptionsArgs {
 
-    /**
-     * Base URL of all relative URLs
-     */
     abstract readonly baseUrl?: string;
 
     /**
@@ -57,7 +66,7 @@ export class BaseRikeOptions extends RikeOptions {
 
     private _baseUrl?: string;
 
-    constructor(opts?: RikeOptions) {
+    constructor(opts?: RikeOptionsArgs) {
         super();
         if (opts) {
             this._baseUrl = opts.baseUrl;

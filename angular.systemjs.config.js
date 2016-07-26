@@ -1,30 +1,29 @@
 (function(global) {
 
-    // packages tells the System loader how to load when no filename and/or no extension
-    var packages = {
-        'rxjs': {defaultExtension: 'js'}
-    };
-
-    var packageNames = [
-        '@angular/common',
-        '@angular/compiler',
-        '@angular/core',
-        '@angular/http',
-        '@angular/platform-browser',
-        '@angular/platform-browser-dynamic',
-        '@angular/router'
-    ];
-
-    // add package entries for angular packages in the form '@angular/common': { main: 'index.js', defaultExtension: 'js' }
-    packageNames.forEach(function(pkgName) {
-        packages[pkgName] = { main: 'index.js', defaultExtension: 'js' };
-    });
-
     var config = {
-        packages: packages
+        packages: {
+            'rxjs': {main: 'Rx.js', defaultExtension: 'js'},
+            '@angular/common': {main: 'index.js', defaultExtension: 'js'},
+            '@angular/compiler': {main: 'index.js', defaultExtension: 'js'},
+            '@angular/core': {
+                main: 'index.js',
+                defaultExtension: 'js',
+                map: {
+                    'testing': 'testing.js'
+                }
+            },
+            '@angular/http': {
+                main: 'index.js',
+                defaultExtension: 'js',
+                map: {
+                    'testing': 'testing.js'
+                }
+            },
+            '@angular/platform-browser': {main: 'index.js', defaultExtension: 'js'},
+            '@angular/platform-browser-dynamic': {main: 'index.js', defaultExtension: 'js'}
+        }
     };
 
-    // filterSystemConfig - index.html's chance to modify config before we register it.
     if (global.filterSystemConfig) {
         global.filterSystemConfig(config);
     }
