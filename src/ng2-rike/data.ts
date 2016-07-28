@@ -103,7 +103,7 @@ export abstract class DataType<IN, OUT> {
     abstract readResponse(response: Response): OUT;
 
     /**
-     * Constructs new data type based on this one, which reads a response with the given function.
+     * Constructs new data type based on this one, which reads responses with the given function.
      *
      * @param readResponse new response reader function.
      *
@@ -113,9 +113,31 @@ export abstract class DataType<IN, OUT> {
         return new ReadResponseDataType<IN, OUT>(this, readResponse);
     }
 
+    /**
+     * Handles HTTP error.
+     *
+     * If absent the error is not modified.
+     *
+     * @param error error to handle.
+     *
+     * @returns error processing result.
+     */
+    abstract readonly handleError?: (error: any) => any;
+
+    /**
+     * Constructs new data type base on this one, which handles errors with the given function.
+     * @param errorHandler
+     * @return {HandleErrorDataType<IN, OUT>}
+     */
+    handleErrorWith(errorHandler: (error: any) => any): DataType<IN, OUT> {
+        return new HandleErrorDataType<IN, OUT>(this, errorHandler);
+    }
+
 }
 
 export abstract class RequestBodyType<T> extends DataType<T, T> {
+
+    handleError?: (error: any) => any;
 
     writeRequest(request: T, options: RequestOptionsArgs): RequestOptionsArgs {
         return new RequestOptions(options).merge({body: this.writeBody(request)});
@@ -127,11 +149,14 @@ export abstract class RequestBodyType<T> extends DataType<T, T> {
 
 class PrepareRequestDataType<IN, OUT> extends DataType<IN, OUT> {
 
+    readonly handleError?: (error: any) => any;
+
     constructor(
         private _dataType: DataType<IN, OUT>,
         private _prepare: (options: RequestOptionsArgs) => RequestOptionsArgs,
         private _after?: boolean) {
         super();
+        this.handleError = this._dataType.handleError;
     }
 
     prepareRequest(options: RequestOptionsArgs): RequestOptionsArgs {
@@ -153,10 +178,13 @@ class PrepareRequestDataType<IN, OUT> extends DataType<IN, OUT> {
 
 class WriteRequestDataType<IN, OUT> extends DataType<IN, OUT> {
 
+    readonly handleError?: (error: any) => any;
+
     constructor(
         private _responseType: DataType<any, OUT>,
         private _writeRequest: (request: IN, options: RequestOptionsArgs) => RequestOptionsArgs) {
         super();
+        this.handleError = this._responseType.handleError;
     }
 
     prepareRequest(options: RequestOptionsArgs): RequestOptionsArgs {
@@ -175,8 +203,11 @@ class WriteRequestDataType<IN, OUT> extends DataType<IN, OUT> {
 
 class ReadResponseDataType<IN, OUT> extends DataType<IN, OUT> {
 
+    readonly handleError?: (error: any) => any;
+
     constructor(private _requestType: DataType<IN, any>, private _readResponse: (response: Response) => OUT) {
         super();
+        this.handleError = this._requestType.handleError;
     }
 
     prepareRequest(options: RequestOptionsArgs): RequestOptionsArgs {
@@ -193,6 +224,30 @@ class ReadResponseDataType<IN, OUT> extends DataType<IN, OUT> {
 
     readResponseWith<OUT>(readResponse: (response: Response) => OUT): DataType<IN, OUT> {
         return new ReadResponseDataType<IN, OUT>(this._requestType, readResponse);
+    }
+
+}
+
+class HandleErrorDataType<IN, OUT> extends DataType<IN, OUT> {
+
+    constructor(private _dataType: DataType<IN, OUT>, public handleError: (error: any) => any) {
+        super();
+    }
+
+    prepareRequest(options: RequestOptionsArgs): RequestOptionsArgs {
+        return this._dataType.prepareRequest(options);
+    }
+
+    writeRequest(request: IN, options: RequestOptionsArgs): RequestOptionsArgs {
+        return this._dataType.writeRequest(request, options);
+    }
+
+    readResponse(response: Response): OUT {
+        return this._dataType.readResponse(response);
+    }
+
+    handleErrorWith(errorHandler: (error: any) => any): DataType<IN, OUT> {
+        return new HandleErrorDataType(this._dataType, errorHandler);
     }
 
 }
@@ -226,6 +281,8 @@ export const JSON_DATA_TYPE: DataType<any, any> = new JsonDataType<any>();
 export const jsonDataType: (<T>() => DataType<T, T>) = () => JSON_DATA_TYPE;
 
 class HttpResponseDataType extends DataType<any, Response> {
+
+    readonly handleError?: (error: any) => any;
 
     writeRequest(request: any, options: RequestOptionsArgs): RequestOptionsArgs {
         return new RequestOptions(options).merge({body: request});

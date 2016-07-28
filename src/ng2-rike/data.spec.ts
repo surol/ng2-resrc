@@ -21,6 +21,8 @@ interface Out2 {
 
 class TestDataType extends DataType<In, Out> {
 
+    readonly handleError?: (error: any) => any;
+
     constructor() {
         super();
     }
@@ -46,7 +48,7 @@ describe("DataType", () => {
 
     const dataType = new TestDataType();
 
-    it("Request prepared before", () => {
+    it("prepares request before", () => {
 
         const type = dataType.prepareRequestWith(opts => new RequestOptions(opts).merge({search: "updated=true"}));
         const opts = type.prepareRequest({});
@@ -55,7 +57,7 @@ describe("DataType", () => {
         expect(opts.search && opts.search.toString()).toEqual("prepared=true");
     });
 
-    it("Request prepared after", () => {
+    it("prepares request after", () => {
 
         const type = dataType.prepareRequestWith(
             opts => new RequestOptions(opts).merge({search: "updated=true"}),
@@ -66,7 +68,7 @@ describe("DataType", () => {
         expect(opts.search && opts.search.toString()).toEqual("updated=true");
     });
 
-    it("Request written", () => {
+    it("writes request", () => {
 
         const type = dataType.writeRequestWith((request: In2, opts: RequestOptionsArgs) => {
             return new RequestOptions(opts).merge({body: request.request2});
@@ -77,7 +79,7 @@ describe("DataType", () => {
 
     });
 
-    it("Request updated before it is written", () => {
+    it("updates request before it is written", () => {
 
         const type = dataType.updateRequestWith((request, opts) => {
             request.update = "update1";
@@ -92,7 +94,7 @@ describe("DataType", () => {
         expect(body.written).toBe("written1");
     });
 
-    it("Request updated after it is written", () => {
+    it("updates request after it is written", () => {
 
         const type = dataType.updateRequestWith(
             (request, opts) => {
@@ -109,7 +111,7 @@ describe("DataType", () => {
         expect(body.written).toBe("rewritten1");
     });
 
-    it("Response read", () => {
+    it("reads response", () => {
 
         const type = dataType.readResponseWith(() => {
             return {
@@ -119,5 +121,15 @@ describe("DataType", () => {
         const response = type.readResponse(new Response(new ResponseOptions()));
 
         expect(response.response2).toBe("response2");
+    });
+
+    it("handles error", () => {
+
+        const type = dataType.handleErrorWith(error => {
+            return {error};
+        });
+        const error: {error: any} = type.handleError!("abc");
+
+        expect(error.error).toBe("abc");
     });
 });

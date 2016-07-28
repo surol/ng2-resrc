@@ -32,6 +32,11 @@ export interface RikeOptionsArgs {
     readonly baseUrl?: string;
 
     /**
+     * Default error handler to use, if any.
+     */
+    readonly defaultErrorHandler?: (error: any) => any;
+
+    /**
      * Rike operation status labels to use by default.
      */
     readonly defaultStatusLabels?: {[operation: string]: RikeStatusLabels<any>};
@@ -49,6 +54,8 @@ export interface RikeOptionsArgs {
 export abstract class RikeOptions implements RikeOptionsArgs {
 
     abstract readonly baseUrl?: string;
+
+    abstract readonly defaultErrorHandler?: (error: any) => any;
 
     abstract defaultStatusLabels?: {[operation: string]: RikeStatusLabels<any>};
 
@@ -73,12 +80,14 @@ export abstract class RikeOptions implements RikeOptionsArgs {
 export class BaseRikeOptions extends RikeOptions {
 
     private _baseUrl?: string;
+    private _defaultErrorHandler?: (error: any) => any;
     private _defaultStatusLabels = DEFAULT_STATUS_LABELS;
 
     constructor(opts?: RikeOptionsArgs) {
         super();
         if (opts) {
             this._baseUrl = opts.baseUrl;
+            this._defaultErrorHandler = opts.defaultErrorHandler;
             if (opts.defaultStatusLabels) {
                 this._defaultStatusLabels = opts.defaultStatusLabels;
             }
@@ -87,6 +96,10 @@ export class BaseRikeOptions extends RikeOptions {
 
     get baseUrl(): string | undefined {
         return this._baseUrl;
+    }
+
+    get defaultErrorHandler(): ((error: any) => any) | undefined {
+        return this._defaultErrorHandler;
     }
 
     get defaultStatusLabels():{[operation: string]: RikeStatusLabels<any>} | undefined {

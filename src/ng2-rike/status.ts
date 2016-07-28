@@ -41,7 +41,7 @@ export interface RikeStatusLabels<L> {
 
 export class RikeStatus<L> {
 
-    private _targetStatuses: {[id: string]: TargetStatus} = {};
+    private _targetStatuses: {[targetId: string]: TargetStatus} = {};
     private _labels: {[operation: string]: RikeStatusLabels<L>} = {};
     private _combined?: CombinedStatus<L>;
 
@@ -97,25 +97,26 @@ export class RikeStatus<L> {
 
         let combined: CombinedStatus<L> | undefined = undefined;
 
-        for (let id in this._targetStatuses) {
-            if (this._targetStatuses.hasOwnProperty(id)) {
+        for (let targetId in this._targetStatuses) {
+            if (this._targetStatuses.hasOwnProperty(targetId)) {
 
-                const targetStatus: TargetStatus = this._targetStatuses[id]!;
+                const targetStatus: TargetStatus = this._targetStatuses[targetId]!;
 
                 if (!targetStatus) {
                     continue;
                 }
 
-                combined = combineLabels(combined, this.labelFor(id, targetStatus));
+                combined = combineLabels(combined, this.labelFor(targetStatus));
             }
         }
 
         return this._combined = combined;
     }
 
-    private labelFor(id: string, status: TargetStatus): StatusLabel<L> | undefined {
+    private labelFor(status: TargetStatus): StatusLabel<L> | undefined {
 
-        let label = labelOf(status, this._labels[id]) || labelOf(status, this._labels["*"]);
+        const operationName = status.start.operation.name;
+        let label = labelOf(status, this._labels[operationName]) || labelOf(status, this._labels["*"]);
 
         if (label) {
             return label;
@@ -123,13 +124,13 @@ export class RikeStatus<L> {
 
         const defaultLabels = status.start.target.rike.options.defaultStatusLabels || DEFAULT_STATUS_LABELS;
 
-        return labelOf(status, defaultLabels[id]) || labelOf(status, defaultLabels["*"]);
+        return labelOf(status, defaultLabels[operationName]) || labelOf(status, defaultLabels["*"]);
     }
 
     private applyEvent(event: RikeEvent) {
         this._combined = undefined;
 
-        const uniqueId = event.operation.name;
+        const uniqueId = event.target.uniqueId;
 
         if (!event.complete) {
             this._targetStatuses[uniqueId] = {

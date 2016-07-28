@@ -889,26 +889,26 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                     if (typeof request === "string") {
                         request = this.options.relativeUrl(request);
                     }
-                    return this.wrapResponse(this._http.request(request, options));
+                    return this.handleError(this._http.request(request, options));
                 };
                 Rike.prototype.get = function (url, options) {
-                    return this.wrapResponse(this._http.get(this.options.relativeUrl(url), this.updateRequestOptions(options)));
+                    return this.handleError(this._http.get(this.options.relativeUrl(url), this.updateRequestOptions(options)));
                 };
                 Rike.prototype.post = function (url, body, options) {
-                    return this.wrapResponse(this._http.post(this.options.relativeUrl(url), body, this.updateRequestOptions(options)));
+                    return this.handleError(this._http.post(this.options.relativeUrl(url), body, this.updateRequestOptions(options)));
                 };
                 Rike.prototype.put = function (url, body, options) {
-                    return this.wrapResponse(this._http.put(this.options.relativeUrl(url), body, this.updateRequestOptions(options)));
+                    return this.handleError(this._http.put(this.options.relativeUrl(url), body, this.updateRequestOptions(options)));
                 };
                 //noinspection ReservedWordAsName
                 Rike.prototype.delete = function (url, options) {
-                    return this.wrapResponse(this._http.delete(this.options.relativeUrl(url), this.updateRequestOptions(options)));
+                    return this.handleError(this._http.delete(this.options.relativeUrl(url), this.updateRequestOptions(options)));
                 };
                 Rike.prototype.patch = function (url, body, options) {
-                    return this.wrapResponse(this._http.patch(this.options.relativeUrl(url), body, this.updateRequestOptions(options)));
+                    return this.handleError(this._http.patch(this.options.relativeUrl(url), body, this.updateRequestOptions(options)));
                 };
                 Rike.prototype.head = function (url, options) {
-                    return this.wrapResponse(this._http.head(this.options.relativeUrl(url), this.updateRequestOptions(options)));
+                    return this.handleError(this._http.head(this.options.relativeUrl(url), this.updateRequestOptions(options)));
                 };
                 Rike.prototype.target = function (target, dataType) {
                     var _this = this;
