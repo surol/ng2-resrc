@@ -271,9 +271,212 @@ System.register("ng2-rike/event", [], function(exports_1, context_1) {
         }
     }
 });
-System.register("ng2-rike/options", [], function(exports_2, context_2) {
+System.register("ng2-rike/status", [], function(exports_2, context_2) {
     "use strict";
     var __moduleName = context_2 && context_2.id;
+    var DEFAULT_STATUS_LABELS, RikeStatus;
+    function labelOf(status, labels) {
+        if (!labels) {
+            return undefined;
+        }
+        var end = status.end;
+        if (!end) {
+            var processing = evalLabel(status, labels.processing);
+            return processing && { label: processing, processing: true };
+        }
+        if (end.cancel) {
+            var cancelled = evalLabel(status, labels.cancelled);
+            return cancelled && { label: cancelled, cancelled: true };
+        }
+        if (end.error) {
+            var failed = evalLabel(status, labels.failed);
+            return failed && { label: failed, failed: true };
+        }
+        var succeed = evalLabel(status, labels.succeed);
+        return succeed && { label: succeed, succeed: true };
+    }
+    function evalLabel(status, label) {
+        if (!label) {
+            return undefined;
+        }
+        if (typeof label !== "function") {
+            return label;
+        }
+        var labelFn = label;
+        return labelFn(status.start.target);
+    }
+    function combineLabels(combined, label) {
+        if (!label) {
+            return combined;
+        }
+        var lbl = label.label;
+        if (!combined) {
+            return {
+                labels: [lbl],
+                processing: label.processing,
+                failed: label.failed,
+                cancelled: label.cancelled,
+                succeed: label.succeed,
+            };
+        }
+        combined.processing = combined.processing || label.processing;
+        combined.failed = combined.failed || label.failed;
+        combined.cancelled = combined.cancelled || label.cancelled;
+        combined.succeed = combined.succeed || label.succeed;
+        for (var _i = 0, _a = combined.labels; _i < _a.length; _i++) {
+            var l = _a[_i];
+            if (l === lbl) {
+                return combined;
+            }
+        }
+        combined.labels.push(lbl);
+        return combined;
+    }
+    return {
+        setters:[],
+        execute: function() {
+            exports_2("DEFAULT_STATUS_LABELS", DEFAULT_STATUS_LABELS = {
+                "*": {
+                    processing: "Processing",
+                    failed: "Error",
+                    cancelled: "Cancelled"
+                },
+                "load": {
+                    processing: "Loading",
+                },
+                "send": {
+                    processing: "Sending",
+                    succeed: "Sent",
+                },
+                "read": {
+                    processing: "Loading",
+                },
+                "create": {
+                    processing: "Creating",
+                    succeed: "Created",
+                },
+                "update": {
+                    processing: "Updating",
+                    succeed: "Updated"
+                },
+                "delete": {
+                    processing: "Deleting",
+                    succeed: "Deleted",
+                },
+            });
+            RikeStatus = (function () {
+                function RikeStatus() {
+                    this._targetStatuses = {};
+                    this._labels = {};
+                }
+                RikeStatus.prototype.subscribeOn = function (events) {
+                    var _this = this;
+                    events.subscribe(function (event) { return _this.applyEvent(event); });
+                };
+                RikeStatus.prototype.withLabels = function (operation, labels) {
+                    var id;
+                    if (!labels) {
+                        id = "*";
+                        labels = operation;
+                    }
+                    else {
+                        id = operation;
+                    }
+                    this._combined = undefined;
+                    this._labels[id] = labels;
+                    return this;
+                };
+                Object.defineProperty(RikeStatus.prototype, "labels", {
+                    get: function () {
+                        return this.combined && this.combined.labels || [];
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                Object.defineProperty(RikeStatus.prototype, "processing", {
+                    get: function () {
+                        return this.combined && this.combined.processing || false;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                Object.defineProperty(RikeStatus.prototype, "failed", {
+                    get: function () {
+                        return this.combined && this.combined.failed || false;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                Object.defineProperty(RikeStatus.prototype, "cancelled", {
+                    get: function () {
+                        return this.combined && this.combined.cancelled || false;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                Object.defineProperty(RikeStatus.prototype, "succeed", {
+                    get: function () {
+                        return this.combined && this.combined.succeed || false;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                Object.defineProperty(RikeStatus.prototype, "combined", {
+                    get: function () {
+                        if (this._combined) {
+                            return this._combined;
+                        }
+                        var combined = undefined;
+                        for (var id in this._targetStatuses) {
+                            if (this._targetStatuses.hasOwnProperty(id)) {
+                                var targetStatus = this._targetStatuses[id];
+                                if (!targetStatus) {
+                                    continue;
+                                }
+                                combined = combineLabels(combined, this.labelFor(id, targetStatus));
+                            }
+                        }
+                        return this._combined = combined;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                RikeStatus.prototype.labelFor = function (id, status) {
+                    var label = labelOf(status, this._labels[id]) || labelOf(status, this._labels["*"]);
+                    if (label) {
+                        return label;
+                    }
+                    var defaultLabels = status.start.target.rike.options.defaultStatusLabels || DEFAULT_STATUS_LABELS;
+                    return labelOf(status, defaultLabels[id]) || labelOf(status, defaultLabels["*"]);
+                };
+                RikeStatus.prototype.applyEvent = function (event) {
+                    this._combined = undefined;
+                    var uniqueId = event.operation.name;
+                    if (!event.complete) {
+                        this._targetStatuses[uniqueId] = {
+                            start: event,
+                        };
+                    }
+                    else {
+                        var targetStatus = this._targetStatuses[uniqueId];
+                        if (!targetStatus) {
+                            this._targetStatuses[uniqueId] = { start: event, end: event };
+                        }
+                        else {
+                            targetStatus.end = event;
+                        }
+                    }
+                };
+                return RikeStatus;
+            }());
+            exports_2("RikeStatus", RikeStatus);
+        }
+    }
+});
+System.register("ng2-rike/options", ["ng2-rike/status"], function(exports_3, context_3) {
+    "use strict";
+    var __moduleName = context_3 && context_3.id;
+    var status_1;
     var RikeOptions, BaseRikeOptions, DEFAULT_RIKE_OPTIONS;
     /**
      * Constructs URL relative to base URL.
@@ -296,9 +499,12 @@ System.register("ng2-rike/options", [], function(exports_2, context_2) {
         }
         return baseUrl + "/" + url;
     }
-    exports_2("relativeUrl", relativeUrl);
+    exports_3("relativeUrl", relativeUrl);
     return {
-        setters:[],
+        setters:[
+            function (status_1_1) {
+                status_1 = status_1_1;
+            }],
         execute: function() {
             /**
              * Global Rike options.
@@ -323,7 +529,7 @@ System.register("ng2-rike/options", [], function(exports_2, context_2) {
                 };
                 return RikeOptions;
             }());
-            exports_2("RikeOptions", RikeOptions);
+            exports_3("RikeOptions", RikeOptions);
             /**
              * Basic [global resource options][RikeOptions] implementation.
              *
@@ -333,8 +539,12 @@ System.register("ng2-rike/options", [], function(exports_2, context_2) {
                 __extends(BaseRikeOptions, _super);
                 function BaseRikeOptions(opts) {
                     _super.call(this);
+                    this._defaultStatusLabels = status_1.DEFAULT_STATUS_LABELS;
                     if (opts) {
                         this._baseUrl = opts.baseUrl;
+                        if (opts.defaultStatusLabels) {
+                            this._defaultStatusLabels = opts.defaultStatusLabels;
+                        }
                     }
                 }
                 Object.defineProperty(BaseRikeOptions.prototype, "baseUrl", {
@@ -344,21 +554,28 @@ System.register("ng2-rike/options", [], function(exports_2, context_2) {
                     enumerable: true,
                     configurable: true
                 });
+                Object.defineProperty(BaseRikeOptions.prototype, "defaultStatusLabels", {
+                    get: function () {
+                        return this._defaultStatusLabels;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
                 return BaseRikeOptions;
             }(RikeOptions));
-            exports_2("BaseRikeOptions", BaseRikeOptions);
+            exports_3("BaseRikeOptions", BaseRikeOptions);
             /**
              * Default resource options.
              *
              * @type {RikeOptions}
              */
-            exports_2("DEFAULT_RIKE_OPTIONS", DEFAULT_RIKE_OPTIONS = new BaseRikeOptions());
+            exports_3("DEFAULT_RIKE_OPTIONS", DEFAULT_RIKE_OPTIONS = new BaseRikeOptions());
         }
     }
 });
-System.register("ng2-rike/data", ["@angular/http"], function(exports_3, context_3) {
+System.register("ng2-rike/data", ["@angular/http"], function(exports_4, context_4) {
     "use strict";
-    var __moduleName = context_3 && context_3.id;
+    var __moduleName = context_4 && context_4.id;
     var http_1;
     var DataType, RequestBodyType, PrepareRequestDataType, WriteRequestDataType, ReadResponseDataType, JsonDataType, JSON_DATA_TYPE, jsonDataType, HttpResponseDataType, HTTP_RESPONSE_DATA_TYPE;
     return {
@@ -450,7 +667,7 @@ System.register("ng2-rike/data", ["@angular/http"], function(exports_3, context_
                 };
                 return DataType;
             }());
-            exports_3("DataType", DataType);
+            exports_4("DataType", DataType);
             RequestBodyType = (function (_super) {
                 __extends(RequestBodyType, _super);
                 function RequestBodyType() {
@@ -461,7 +678,7 @@ System.register("ng2-rike/data", ["@angular/http"], function(exports_3, context_
                 };
                 return RequestBodyType;
             }(DataType));
-            exports_3("RequestBodyType", RequestBodyType);
+            exports_4("RequestBodyType", RequestBodyType);
             PrepareRequestDataType = (function (_super) {
                 __extends(PrepareRequestDataType, _super);
                 function PrepareRequestDataType(_dataType, _prepare, _after) {
@@ -543,13 +760,13 @@ System.register("ng2-rike/data", ["@angular/http"], function(exports_3, context_
              *
              * @type {DataType<any>}
              */
-            exports_3("JSON_DATA_TYPE", JSON_DATA_TYPE = new JsonDataType());
+            exports_4("JSON_DATA_TYPE", JSON_DATA_TYPE = new JsonDataType());
             /**
              * Returns JSON data type.
              *
              * Sends and receives the data of the given type as JSON over HTTP.
              */
-            exports_3("jsonDataType", jsonDataType = function () { return JSON_DATA_TYPE; });
+            exports_4("jsonDataType", jsonDataType = function () { return JSON_DATA_TYPE; });
             HttpResponseDataType = (function (_super) {
                 __extends(HttpResponseDataType, _super);
                 function HttpResponseDataType() {
@@ -570,13 +787,13 @@ System.register("ng2-rike/data", ["@angular/http"], function(exports_3, context_
              *
              * @type {DataType<any, Response>}
              */
-            exports_3("HTTP_RESPONSE_DATA_TYPE", HTTP_RESPONSE_DATA_TYPE = new HttpResponseDataType());
+            exports_4("HTTP_RESPONSE_DATA_TYPE", HTTP_RESPONSE_DATA_TYPE = new HttpResponseDataType());
         }
     }
 });
-System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "ng2-rike/event", "ng2-rike/options", "ng2-rike/data"], function(exports_4, context_4) {
+System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "ng2-rike/event", "ng2-rike/options", "ng2-rike/data"], function(exports_5, context_5) {
     "use strict";
-    var __moduleName = context_4 && context_4.id;
+    var __moduleName = context_5 && context_5.id;
     var core_1, http_2, Rx_1, event_1, options_1, data_1;
     var REQUEST_METHODS, Rike, RikeTarget, RikeOperation, RikeTargetImpl, RikeOperationImpl;
     function requestMethod(method) {
@@ -589,7 +806,7 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
         }
         throw new Error("Unsupported HTTP request method: " + method);
     }
-    exports_4("requestMethod", requestMethod);
+    exports_5("requestMethod", requestMethod);
     return {
         setters:[
             function (core_1_1) {
@@ -754,7 +971,7 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                 ], Rike);
                 return Rike;
             }());
-            exports_4("Rike", Rike);
+            exports_5("Rike", Rike);
             /**
              * REST-like operations target.
              *
@@ -782,7 +999,7 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                 };
                 return RikeTarget;
             }());
-            exports_4("RikeTarget", RikeTarget);
+            exports_5("RikeTarget", RikeTarget);
             //noinspection ReservedWordAsName
             /**
              * REST-like resource operation.
@@ -821,7 +1038,7 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                 };
                 return RikeOperation;
             }());
-            exports_4("RikeOperation", RikeOperation);
+            exports_5("RikeOperation", RikeOperation);
             RikeTargetImpl = (function (_super) {
                 __extends(RikeTargetImpl, _super);
                 function RikeTargetImpl(_rike, _internals, _target, _dataType) {
@@ -1177,9 +1394,133 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
         }
     }
 });
-System.register("ng2-rike/resource", ["@angular/http", "ng2-rike/data", "ng2-rike/event", "ng2-rike/options"], function(exports_5, context_5) {
+System.register("ng2-rike/status.component", ["@angular/core", "ng2-rike/status"], function(exports_6, context_6) {
     "use strict";
-    var __moduleName = context_5 && context_5.id;
+    var __moduleName = context_6 && context_6.id;
+    var core_2, status_2;
+    var RikeStatusComponent;
+    return {
+        setters:[
+            function (core_2_1) {
+                core_2 = core_2_1;
+            },
+            function (status_2_1) {
+                status_2 = status_2_1;
+            }],
+        execute: function() {
+            RikeStatusComponent = (function () {
+                function RikeStatusComponent(_eventSources) {
+                    this._eventSources = _eventSources;
+                    this._labelText = function (label) { return label.toString(); };
+                }
+                Object.defineProperty(RikeStatusComponent.prototype, "rikeStatus", {
+                    get: function () {
+                        return this._rikeStatus || (this._rikeStatus = this.createStatus());
+                    },
+                    set: function (status) {
+                        this._rikeStatus = status;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                Object.defineProperty(RikeStatusComponent.prototype, "rikeStatusLabels", {
+                    get: function () {
+                        return this._statusLabels;
+                    },
+                    set: function (labels) {
+                        this._rikeStatus = undefined;
+                        this._statusLabels = labels;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                Object.defineProperty(RikeStatusComponent.prototype, "rikeStatusLabelText", {
+                    get: function () {
+                        return this._labelText;
+                    },
+                    set: function (value) {
+                        this._labelText = value;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                Object.defineProperty(RikeStatusComponent.prototype, "cssClass", {
+                    get: function () {
+                        return {
+                            "rike-status": true,
+                            "rike-status-processing": this.rikeStatus.processing,
+                            "rike-status-failed": this.rikeStatus.failed,
+                            "rike-status-cancelled": this.rikeStatus.cancelled,
+                            "rike-status-succeed": this.rikeStatus.succeed,
+                        };
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                Object.defineProperty(RikeStatusComponent.prototype, "text", {
+                    get: function () {
+                        var labels = this.rikeStatus.labels;
+                        if (!labels.length) {
+                            return undefined;
+                        }
+                        var text = "";
+                        for (var _i = 0, labels_1 = labels; _i < labels_1.length; _i++) {
+                            var label = labels_1[_i];
+                            var t = this.rikeStatusLabelText(label);
+                            if (text) {
+                                text += ", ";
+                            }
+                            text += t;
+                        }
+                        if (this.rikeStatus.processing) {
+                            text += "...";
+                        }
+                        return text;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                RikeStatusComponent.prototype.createStatus = function () {
+                    var status = new status_2.RikeStatus();
+                    this.configureStatus(status);
+                    return status;
+                };
+                RikeStatusComponent.prototype.configureStatus = function (status) {
+                    if (this.rikeStatusLabels) {
+                        status.withLabels(this.rikeStatusLabels);
+                    }
+                    for (var _i = 0, _a = this._eventSources; _i < _a.length; _i++) {
+                        var esrc = _a[_i];
+                        status.subscribeOn(esrc.rikeEvents);
+                    }
+                };
+                __decorate([
+                    core_2.Input(), 
+                    __metadata('design:type', status_2.RikeStatus)
+                ], RikeStatusComponent.prototype, "rikeStatus", null);
+                __decorate([
+                    core_2.Input(), 
+                    __metadata('design:type', Object)
+                ], RikeStatusComponent.prototype, "rikeStatusLabels", null);
+                RikeStatusComponent = __decorate([
+                    core_2.Component({
+                        selector: '[rikeStatus]',
+                        template: "{{text}}",
+                        host: {
+                            '[ngClass]': 'cssClass'
+                        }
+                    }), 
+                    __metadata('design:paramtypes', [Array])
+                ], RikeStatusComponent);
+                return RikeStatusComponent;
+            }());
+            exports_6("RikeStatusComponent", RikeStatusComponent);
+        }
+    }
+});
+System.register("ng2-rike/resource", ["@angular/http", "ng2-rike/data", "ng2-rike/event", "ng2-rike/options"], function(exports_7, context_7) {
+    "use strict";
+    var __moduleName = context_7 && context_7.id;
     var http_3, data_2, event_2, options_2;
     var Resource, RikeResource, CRUDResource;
     return {
@@ -1220,7 +1561,7 @@ System.register("ng2-rike/resource", ["@angular/http", "ng2-rike/data", "ng2-rik
                 };
                 return Resource;
             }());
-            exports_5("Resource", Resource);
+            exports_7("Resource", Resource);
             RikeResource = (function () {
                 function RikeResource(_rike) {
                     this._rike = _rike;
@@ -1247,7 +1588,7 @@ System.register("ng2-rike/resource", ["@angular/http", "ng2-rike/data", "ng2-rik
                 };
                 return RikeResource;
             }());
-            exports_5("RikeResource", RikeResource);
+            exports_7("RikeResource", RikeResource);
             CRUDResource = (function (_super) {
                 __extends(CRUDResource, _super);
                 function CRUDResource(rike) {
@@ -1310,182 +1651,14 @@ System.register("ng2-rike/resource", ["@angular/http", "ng2-rike/data", "ng2-rik
                 };
                 return CRUDResource;
             }(RikeResource));
-            exports_5("CRUDResource", CRUDResource);
+            exports_7("CRUDResource", CRUDResource);
         }
     }
 });
-System.register("ng2-rike/status", [], function(exports_6, context_6) {
+System.register("ng2-rike", ["ng2-rike/rike", "ng2-rike/event", "@angular/core", "ng2-rike/status.component", "ng2-rike/data", "ng2-rike/options", "ng2-rike/resource", "ng2-rike/status"], function(exports_8, context_8) {
     "use strict";
-    var __moduleName = context_6 && context_6.id;
-    var RikeStatus;
-    function labelOf(status, labels) {
-        if (!labels) {
-            return undefined;
-        }
-        var end = status.end;
-        if (!end) {
-            var processing = evalLabel(status, labels.processing);
-            return processing && { label: processing, processing: true };
-        }
-        if (end.cancel) {
-            var cancelled = evalLabel(status, labels.cancelled);
-            return cancelled && { label: cancelled, cancelled: true };
-        }
-        if (end.error) {
-            var failed = evalLabel(status, labels.failed);
-            return failed && { label: failed, failed: true };
-        }
-        var succeed = evalLabel(status, labels.succeed);
-        return succeed && { label: succeed, succeed: true };
-    }
-    function evalLabel(status, label) {
-        if (!label) {
-            return undefined;
-        }
-        if (typeof label !== "function") {
-            return label;
-        }
-        var labelFn = label;
-        return labelFn(status.start.target);
-    }
-    function combineLabels(combined, label) {
-        if (!label) {
-            return combined;
-        }
-        var lbl = label.label;
-        if (!combined) {
-            return {
-                labels: [lbl],
-                processing: label.processing,
-                failed: label.failed,
-                cancelled: label.cancelled,
-                succeed: label.succeed,
-            };
-        }
-        combined.processing = combined.processing || label.processing;
-        combined.failed = combined.failed || label.failed;
-        combined.cancelled = combined.cancelled || label.cancelled;
-        combined.succeed = combined.succeed || label.succeed;
-        for (var _i = 0, _a = combined.labels; _i < _a.length; _i++) {
-            var l = _a[_i];
-            if (l === lbl) {
-                return combined;
-            }
-        }
-        combined.labels.push(lbl);
-        return combined;
-    }
-    return {
-        setters:[],
-        execute: function() {
-            RikeStatus = (function () {
-                function RikeStatus() {
-                    this._targetStatuses = {};
-                    this._labels = {};
-                }
-                RikeStatus.prototype.subscribeOn = function (events) {
-                    var _this = this;
-                    events.subscribe(function (event) { return _this.applyEvent(event); });
-                };
-                RikeStatus.prototype.withLabels = function (target, labels) {
-                    var id;
-                    if (!labels) {
-                        id = "*";
-                        labels = target;
-                    }
-                    else {
-                        id = target.uniqueId;
-                    }
-                    this._combined = undefined;
-                    this._labels[id] = labels;
-                    return this;
-                };
-                Object.defineProperty(RikeStatus.prototype, "labels", {
-                    get: function () {
-                        return this.combined && this.combined.labels || [];
-                    },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(RikeStatus.prototype, "processing", {
-                    get: function () {
-                        return this.combined && this.combined.processing || false;
-                    },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(RikeStatus.prototype, "failed", {
-                    get: function () {
-                        return this.combined && this.combined.failed || false;
-                    },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(RikeStatus.prototype, "cancelled", {
-                    get: function () {
-                        return this.combined && this.combined.cancelled || false;
-                    },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(RikeStatus.prototype, "succeed", {
-                    get: function () {
-                        return this.combined && this.combined.succeed || false;
-                    },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(RikeStatus.prototype, "combined", {
-                    get: function () {
-                        if (this._combined) {
-                            return this._combined;
-                        }
-                        var combined;
-                        for (var id in this._targetStatuses) {
-                            if (this._targetStatuses.hasOwnProperty(id)) {
-                                var targetStatus = this._targetStatuses[id];
-                                if (!targetStatus) {
-                                    continue;
-                                }
-                                combined = combineLabels(combined, this.labelFor(id, targetStatus));
-                            }
-                        }
-                        return this._combined = combined;
-                    },
-                    enumerable: true,
-                    configurable: true
-                });
-                RikeStatus.prototype.labelFor = function (id, status) {
-                    return labelOf(status, this._labels[id]) || labelOf(status, this._labels["*"]);
-                };
-                RikeStatus.prototype.applyEvent = function (event) {
-                    this._combined = undefined;
-                    var uniqueId = event.target.uniqueId;
-                    if (!event.complete) {
-                        this._targetStatuses[uniqueId] = {
-                            start: event,
-                        };
-                    }
-                    else {
-                        var targetStatus = this._targetStatuses[uniqueId];
-                        if (!targetStatus) {
-                            this._targetStatuses[uniqueId] = { start: event, end: event };
-                        }
-                        else {
-                            targetStatus.end = event;
-                        }
-                    }
-                };
-                return RikeStatus;
-            }());
-            exports_6("RikeStatus", RikeStatus);
-        }
-    }
-});
-System.register("ng2-rike", ["ng2-rike/rike", "ng2-rike/event", "ng2-rike/data", "ng2-rike/options", "ng2-rike/resource", "ng2-rike/status"], function(exports_7, context_7) {
-    "use strict";
-    var __moduleName = context_7 && context_7.id;
-    var rike_1, event_3;
+    var __moduleName = context_8 && context_8.id;
+    var rike_1, event_3, core_3, status_component_1;
     var RIKE_PROVIDERS;
     var exportedNames_1 = {
         'RIKE_PROVIDERS': true
@@ -1495,7 +1668,7 @@ System.register("ng2-rike", ["ng2-rike/rike", "ng2-rike/event", "ng2-rike/data",
         for(var n in m) {
             if (n !== "default"&& !exportedNames_1.hasOwnProperty(n)) exports[n] = m[n];
         }
-        exports_7(exports);
+        exports_8(exports);
     }
     return {
         setters:[
@@ -1507,6 +1680,13 @@ System.register("ng2-rike", ["ng2-rike/rike", "ng2-rike/event", "ng2-rike/data",
                 event_3 = event_3_1;
                 exportStar_1(event_3_1);
             },
+            function (core_3_1) {
+                core_3 = core_3_1;
+            },
+            function (status_component_1_1) {
+                status_component_1 = status_component_1_1;
+                exportStar_1(status_component_1_1);
+            },
             function (data_3_1) {
                 exportStar_1(data_3_1);
             },
@@ -1516,8 +1696,8 @@ System.register("ng2-rike", ["ng2-rike/rike", "ng2-rike/event", "ng2-rike/data",
             function (resource_1_1) {
                 exportStar_1(resource_1_1);
             },
-            function (status_1_1) {
-                exportStar_1(status_1_1);
+            function (status_3_1) {
+                exportStar_1(status_3_1);
             }],
         execute: function() {
             /**
@@ -1528,9 +1708,14 @@ System.register("ng2-rike", ["ng2-rike/rike", "ng2-rike/event", "ng2-rike/data",
              *
              * @type {any[]}
              */
-            exports_7("RIKE_PROVIDERS", RIKE_PROVIDERS = [
+            exports_8("RIKE_PROVIDERS", RIKE_PROVIDERS = [
                 rike_1.Rike,
                 event_3.RikeEventSource.provide({ useExisting: rike_1.Rike }),
+                {
+                    provide: core_3.PLATFORM_DIRECTIVES,
+                    useValue: status_component_1.RikeStatusComponent,
+                    multi: true,
+                }
             ]);
         }
     }

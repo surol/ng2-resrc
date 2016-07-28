@@ -2,6 +2,36 @@ import {EventEmitter} from "@angular/core";
 import {RikeTarget} from "./rike";
 import {RikeEvent} from "./event";
 
+export const DEFAULT_STATUS_LABELS: {[operation: string]: RikeStatusLabels<any>} = {
+    "*": {
+        processing: "Processing",
+        failed: "Error",
+        cancelled: "Cancelled"
+    },
+    "load": {
+        processing: "Loading",
+    },
+    "send": {
+        processing: "Sending",
+        succeed: "Sent",
+    },
+    "read": {
+        processing: "Loading",
+    },
+    "create": {
+        processing: "Creating",
+        succeed: "Created",
+    },
+    "update": {
+        processing: "Updating",
+        succeed: "Updated"
+    },
+    "delete": {
+        processing: "Deleting",
+        succeed: "Deleted",
+    },
+};
+
 export interface RikeStatusLabels<L> {
     processing?: L | ((target: RikeTarget<any, any>) => L);
     failed?: L | ((target: RikeTarget<any, any>) => L);
@@ -12,7 +42,7 @@ export interface RikeStatusLabels<L> {
 export class RikeStatus<L> {
 
     private _targetStatuses: {[id: string]: TargetStatus} = {};
-    private _labels: {[id: string]: RikeStatusLabels<L>} = {};
+    private _labels: {[operation: string]: RikeStatusLabels<L>} = {};
     private _combined?: CombinedStatus<L>;
 
     subscribeOn(events: EventEmitter<RikeEvent>) {
@@ -21,17 +51,17 @@ export class RikeStatus<L> {
 
     withLabels(labels: RikeStatusLabels<L>): this;
 
-    withLabels(target: RikeTarget<any, any>, labels: RikeStatusLabels<L>): this;
+    withLabels(operation: string, labels: RikeStatusLabels<L>): this;
 
-    withLabels(target: RikeTarget<any, any>, labels?: RikeStatusLabels<L>): this {
+    withLabels(operation: string, labels?: RikeStatusLabels<L>): this {
 
         let id: string;
 
         if (!labels) {
             id = "*";
-            labels = target as RikeStatusLabels<L>;
+            labels = operation as RikeStatusLabels<L>;
         } else {
-            id = (target as RikeTarget<any, any>).uniqueId;
+            id = operation;
         }
 
         this._combined = undefined;
@@ -40,7 +70,7 @@ export class RikeStatus<L> {
         return this;
     }
 
-    get labels(): L[] | undefined {
+    get labels(): L[] {
         return this.combined && this.combined.labels || [];
     }
 
@@ -65,7 +95,7 @@ export class RikeStatus<L> {
             return this._combined;
         }
 
-        let combined: CombinedStatus<L> | undefined;
+        let combined: CombinedStatus<L> | undefined = undefined;
 
         for (let id in this._targetStatuses) {
             if (this._targetStatuses.hasOwnProperty(id)) {
@@ -84,13 +114,22 @@ export class RikeStatus<L> {
     }
 
     private labelFor(id: string, status: TargetStatus): StatusLabel<L> | undefined {
-        return labelOf(status, this._labels[id]) || labelOf(status, this._labels["*"]);
+
+        let label = labelOf(status, this._labels[id]) || labelOf(status, this._labels["*"]);
+
+        if (label) {
+            return label;
+        }
+
+        const defaultLabels = status.start.target.rike.options.defaultStatusLabels || DEFAULT_STATUS_LABELS;
+
+        return labelOf(status, defaultLabels[id]) || labelOf(status, defaultLabels["*"]);
     }
 
     private applyEvent(event: RikeEvent) {
         this._combined = undefined;
 
-        const uniqueId = event.target.uniqueId;
+        const uniqueId = event.operation.name;
 
         if (!event.complete) {
             this._targetStatuses[uniqueId] = {

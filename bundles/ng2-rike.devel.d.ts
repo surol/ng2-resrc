@@ -124,7 +124,38 @@ declare module "ng2-rike/event" {
         readonly cancelledBy: RikeOperationEvent | undefined;
     }
 }
+declare module "ng2-rike/status" {
+    import { EventEmitter } from "@angular/core";
+    import { RikeTarget } from "ng2-rike/rike";
+    import { RikeEvent } from "ng2-rike/event";
+    export const DEFAULT_STATUS_LABELS: {
+        [operation: string]: RikeStatusLabels<any>;
+    };
+    export interface RikeStatusLabels<L> {
+        processing?: L | ((target: RikeTarget<any, any>) => L);
+        failed?: L | ((target: RikeTarget<any, any>) => L);
+        cancelled?: L | ((target: RikeTarget<any, any>) => L);
+        succeed?: L | ((target: RikeTarget<any, any>) => L);
+    }
+    export class RikeStatus<L> {
+        private _targetStatuses;
+        private _labels;
+        private _combined?;
+        subscribeOn(events: EventEmitter<RikeEvent>): void;
+        withLabels(labels: RikeStatusLabels<L>): this;
+        withLabels(operation: string, labels: RikeStatusLabels<L>): this;
+        readonly labels: L[];
+        readonly processing: boolean;
+        readonly failed: boolean;
+        readonly cancelled: boolean;
+        readonly succeed: boolean;
+        private readonly combined;
+        private labelFor(id, status);
+        private applyEvent(event);
+    }
+}
 declare module "ng2-rike/options" {
+    import { RikeStatusLabels } from "ng2-rike/status";
     /**
      * Constructs URL relative to base URL.
      *
@@ -143,6 +174,12 @@ declare module "ng2-rike/options" {
          * Base URL of all relative URLs
          */
         readonly baseUrl?: string;
+        /**
+         * Rike operation status labels to use by default.
+         */
+        readonly defaultStatusLabels?: {
+            [operation: string]: RikeStatusLabels<any>;
+        };
     }
     /**
      * Global Rike options.
@@ -154,6 +191,9 @@ declare module "ng2-rike/options" {
      */
     export abstract class RikeOptions implements RikeOptionsArgs {
         readonly abstract baseUrl?: string;
+        abstract defaultStatusLabels?: {
+            [operation: string]: RikeStatusLabels<any>;
+        };
         /**
          * Constructs URL relative to `baseUrl`.
          *
@@ -170,8 +210,12 @@ declare module "ng2-rike/options" {
      */
     export class BaseRikeOptions extends RikeOptions {
         private _baseUrl?;
+        private _defaultStatusLabels;
         constructor(opts?: RikeOptionsArgs);
         readonly baseUrl: string | undefined;
+        readonly defaultStatusLabels: {
+            [operation: string]: RikeStatusLabels<any>;
+        } | undefined;
     }
     /**
      * Default resource options.
@@ -396,6 +440,10 @@ declare module "ng2-rike/rike" {
      */
     export abstract class RikeTarget<IN, OUT> implements RikeEventSource {
         /**
+         * `Rike` service instance.
+         */
+        readonly abstract rike: Rike;
+        /**
          * Operation target value.
          *
          * This is the value passed to the [Rike.target] method.
@@ -507,6 +555,24 @@ declare module "ng2-rike/rike" {
         abstract head(url?: string, options?: RequestOptionsArgs): Observable<OUT>;
     }
 }
+declare module "ng2-rike/status.component" {
+    import { RikeStatusLabels, RikeStatus } from "ng2-rike/status";
+    import { RikeEventSource } from "ng2-rike/event";
+    export class RikeStatusComponent<L> {
+        private _eventSources;
+        private _statusLabels?;
+        private _rikeStatus?;
+        private _labelText;
+        constructor(_eventSources: RikeEventSource[]);
+        rikeStatus: RikeStatus<L>;
+        rikeStatusLabels: RikeStatusLabels<L> | undefined;
+        rikeStatusLabelText: (label: L) => string;
+        readonly cssClass: any;
+        readonly text: string | undefined;
+        protected createStatus(): RikeStatus<L>;
+        protected configureStatus(status: RikeStatus<L>): void;
+    }
+}
 declare module "ng2-rike/resource" {
     import { Type } from "@angular/core";
     import { Observable } from "rxjs/Rx";
@@ -550,33 +616,6 @@ declare module "ng2-rike/resource" {
         protected objectUrl(baseUrl: string | undefined, id: any): string;
     }
 }
-declare module "ng2-rike/status" {
-    import { EventEmitter } from "@angular/core";
-    import { RikeTarget } from "ng2-rike/rike";
-    import { RikeEvent } from "ng2-rike/event";
-    export interface RikeStatusLabels<L> {
-        processing?: L | ((target: RikeTarget<any, any>) => L);
-        failed?: L | ((target: RikeTarget<any, any>) => L);
-        cancelled?: L | ((target: RikeTarget<any, any>) => L);
-        succeed?: L | ((target: RikeTarget<any, any>) => L);
-    }
-    export class RikeStatus<L> {
-        private _targetStatuses;
-        private _labels;
-        private _combined?;
-        subscribeOn(events: EventEmitter<RikeEvent>): void;
-        withLabels(labels: RikeStatusLabels<L>): this;
-        withLabels(target: RikeTarget<any, any>, labels: RikeStatusLabels<L>): this;
-        readonly labels: L[] | undefined;
-        readonly processing: boolean;
-        readonly failed: boolean;
-        readonly cancelled: boolean;
-        readonly succeed: boolean;
-        private readonly combined;
-        private labelFor(id, status);
-        private applyEvent(event);
-    }
-}
 declare module "ng2-rike" {
     export * from "ng2-rike/data";
     export * from "ng2-rike/event";
@@ -584,6 +623,7 @@ declare module "ng2-rike" {
     export * from "ng2-rike/resource";
     export * from "ng2-rike/rike";
     export * from "ng2-rike/status";
+    export * from "ng2-rike/status.component";
     /**
      * Provides a basic set of providers to use REST-like services in application.
      *

@@ -11,6 +11,7 @@ import {
 } from "./event";
 import {RikeOptions, DEFAULT_RIKE_OPTIONS, relativeUrl} from "./options";
 import {DataType, HTTP_RESPONSE_DATA_TYPE, jsonDataType} from "./data";
+import {RikeStatusLabels, DEFAULT_STATUS_LABELS} from "./status";
 
 const REQUEST_METHODS: {[name: string]: number} = {
     "GET": RequestMethod.Get,
@@ -235,6 +236,11 @@ export class Rike implements RikeEventSource {
  * `OUT` is a response type this target's operations return by default.
  */
 export abstract class RikeTarget<IN, OUT> implements RikeEventSource {
+
+    /**
+     * `Rike` service instance.
+     */
+    abstract readonly rike: Rike;
 
     /**
      * Operation target value.
