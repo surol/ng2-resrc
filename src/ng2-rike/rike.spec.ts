@@ -60,10 +60,18 @@ describe("Rike", () => {
                     body: "response1",
                 })));
             });
-            read(rike).call(rike, "request-url").subscribe((response: Response) => {
-                expect(response.text()).toBe("response1");
-                done();
-            });
+
+            let succeed = false;
+            read(rike).call(rike, "request-url").subscribe(
+                (response: Response) => {
+                    expect(response.text()).toBe("response1");
+                    succeed = true;
+                },
+                (err: any) => done.fail(err),
+                () => {
+                    expect(succeed).toBeTruthy("Response not received");
+                    done();
+                });
         }
     }
 

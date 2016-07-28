@@ -1494,8 +1494,12 @@ System.register("ng2-rike/rike.spec", ["@angular/http", "@angular/core/testing",
                                 body: "response1",
                             })));
                         });
+                        var succeed = false;
                         read(rike).call(rike, "request-url").subscribe(function (response) {
                             expect(response.text()).toBe("response1");
+                            succeed = true;
+                        }, function (err) { return done.fail(err); }, function () {
+                            expect(succeed).toBeTruthy("Response not received");
                             done();
                         });
                     };
@@ -1637,8 +1641,12 @@ System.register("ng2-rike/rike-operation.spec", ["@angular/http", "@angular/core
                             })));
                         });
                         var op = target.operation("operation1");
+                        var succeed = false;
                         read(op).call(op, "request2", "send-request-url").subscribe(function (response) {
                             expect(response.text()).toBe("response1");
+                            succeed = true;
+                        }, function (err) { return done.fail(err); }, function () {
+                            expect(succeed).toBeTruthy("No response received");
                             done();
                         });
                     };
@@ -1676,6 +1684,99 @@ System.register("ng2-rike/rike-operation.spec", ["@angular/http", "@angular/core
                         connection.mockRespond(new http_6.Response(new http_6.ResponseOptions()));
                     });
                     target.operation("operation1").send("abc").subscribe(done);
+                });
+            });
+            describe("RikeOperation event", function () {
+                var rike;
+                var back;
+                var target;
+                beforeEach(function () { return rike_spec_1.addRikeProviders(); });
+                beforeEach(testing_3.inject([testing_4.MockBackend, rike_4.Rike], function (_be, _rike) {
+                    back = _be;
+                    rike = _rike;
+                    target = rike.target("target").withBaseUrl("target-url");
+                }));
+                function mockRespond() {
+                    back.connections.subscribe(function (connection) {
+                        connection.mockRespond(new http_6.Response(new http_6.ResponseOptions({
+                            body: "response1",
+                        })));
+                    });
+                }
+                it("start", function (done) {
+                    mockRespond();
+                    var op = target.operation("operation");
+                    var complete = false;
+                    target.rikeEvents.subscribe(function (ev) {
+                        if (!complete) {
+                            complete = true;
+                            expect(ev.operation).toBe(op);
+                            expect(ev.target).toBe(target);
+                            expect(ev.complete).toBeFalsy();
+                            done();
+                        }
+                    }, function (err) { return done.fail(err); });
+                    op.load().subscribe();
+                });
+                it("complete", function (done) {
+                    mockRespond();
+                    var op = target.operation("operation");
+                    var events = 0;
+                    target.rikeEvents.subscribe(function (ev) {
+                        expect(ev.operation).toBe(op);
+                        expect(ev.target).toBe(target);
+                        if (events++) {
+                            expect(ev.complete).toBeTruthy();
+                            expect(ev.error).toBeUndefined();
+                            var result = ev.result;
+                            expect(result.text()).toBe("response1");
+                            done();
+                        }
+                    }, function (err) { return done.fail(err); });
+                    op.load().subscribe();
+                });
+                it("error", function (done) {
+                    back.connections.subscribe(function (connection) {
+                        connection.mockError(new Error("error1"));
+                    });
+                    var op = target.operation("operation");
+                    var events = 0;
+                    target.rikeEvents.subscribe(function (ev) {
+                        if (!events++) {
+                            expect(ev.operation).toBe(op);
+                            expect(ev.target).toBe(target);
+                        }
+                        else {
+                            expect(events).toBe(2, "Start event not received yet");
+                            expect(ev.complete).toBeTruthy();
+                            var error = ev.error;
+                            expect(error.message).toBe("error1");
+                            done();
+                        }
+                    }, function (err) { return done.fail(err); });
+                    op.load().subscribe();
+                });
+                it("exception", function (done) {
+                    back.connections.subscribe(function (connection) {
+                        throw new Error("error1");
+                    });
+                    var op = target.operation("operation");
+                    var events = 0;
+                    target.rikeEvents.subscribe(function (ev) {
+                        if (!events++) {
+                            expect(ev.operation).toBe(op);
+                            expect(ev.target).toBe(target);
+                        }
+                        else {
+                        }
+                    }, function (ev) {
+                        expect(events).toBe(1, "Start event not received yet");
+                        expect(ev.complete).toBeTruthy();
+                        var error = ev.error;
+                        expect(error.message).toBe("error1");
+                        done();
+                    });
+                    op.load().subscribe();
                 });
             });
         }
