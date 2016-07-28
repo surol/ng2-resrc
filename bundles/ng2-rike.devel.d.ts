@@ -150,7 +150,7 @@ declare module "ng2-rike/status" {
         readonly cancelled: boolean;
         readonly succeed: boolean;
         private readonly combined;
-        private labelFor(id, status);
+        private labelFor(status);
         private applyEvent(event);
     }
 }
@@ -175,6 +175,10 @@ declare module "ng2-rike/options" {
          */
         readonly baseUrl?: string;
         /**
+         * Default error handler to use, if any.
+         */
+        readonly defaultErrorHandler?: (error: any) => any;
+        /**
          * Rike operation status labels to use by default.
          */
         readonly defaultStatusLabels?: {
@@ -191,6 +195,7 @@ declare module "ng2-rike/options" {
      */
     export abstract class RikeOptions implements RikeOptionsArgs {
         readonly abstract baseUrl?: string;
+        readonly abstract defaultErrorHandler?: (error: any) => any;
         abstract defaultStatusLabels?: {
             [operation: string]: RikeStatusLabels<any>;
         };
@@ -210,9 +215,11 @@ declare module "ng2-rike/options" {
      */
     export class BaseRikeOptions extends RikeOptions {
         private _baseUrl?;
+        private _defaultErrorHandler?;
         private _defaultStatusLabels;
         constructor(opts?: RikeOptionsArgs);
         readonly baseUrl: string | undefined;
+        readonly defaultErrorHandler: ((error: any) => any) | undefined;
         readonly defaultStatusLabels: {
             [operation: string]: RikeStatusLabels<any>;
         } | undefined;
@@ -303,15 +310,32 @@ declare module "ng2-rike/data" {
          */
         abstract readResponse(response: Response): OUT;
         /**
-         * Constructs new data type based on this one, which reads a response with the given function.
+         * Constructs new data type based on this one, which reads responses with the given function.
          *
          * @param readResponse new response reader function.
          *
          * @return {DataType<IN, OUT>} new data type.
          */
         readResponseWith<OUT>(readResponse: (response: Response) => OUT): DataType<IN, OUT>;
+        /**
+         * Handles HTTP error.
+         *
+         * If absent the error is not modified.
+         *
+         * @param error error to handle.
+         *
+         * @returns error processing result.
+         */
+        readonly abstract handleError?: (error: any) => any;
+        /**
+         * Constructs new data type base on this one, which handles errors with the given function.
+         * @param errorHandler
+         * @return {HandleErrorDataType<IN, OUT>}
+         */
+        handleErrorWith(errorHandler: (error: any) => any): DataType<IN, OUT>;
     }
     export abstract class RequestBodyType<T> extends DataType<T, T> {
+        handleError?: (error: any) => any;
         writeRequest(request: T, options: RequestOptionsArgs): RequestOptionsArgs;
         abstract writeBody(request: T): any;
     }
@@ -418,13 +442,13 @@ declare module "ng2-rike/rike" {
          */
         protected updateRequestOptions(options?: RequestOptionsArgs): RequestOptionsArgs | undefined;
         /**
-         * Wraps the HTTP response observable for the given operation.
+         * Wraps the HTTP response observable for the given operation to make it handle errors.
          *
          * @param response response observer to wrap.
          *
          * @returns {Observable<Response>} response observer wrapper.
          */
-        protected wrapResponse(response: Observable<Response>): Observable<Response>;
+        protected handleErrors(response: Observable<Response>): Observable<Response>;
     }
     /**
      * REST-like operations target.
@@ -467,7 +491,7 @@ declare module "ng2-rike/rike" {
         /**
          * An operations data type to use by default.
          *
-         * This is the data type to the [Rike.target] method.
+         * This is the data type based on the one passed to [Rike.target] method, which honors the default error handler.
          */
         readonly abstract dataType: DataType<IN, OUT>;
         /**
