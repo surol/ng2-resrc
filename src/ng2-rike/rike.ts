@@ -56,7 +56,6 @@ export class Rike implements RikeEventSource {
         this._options = _options || DEFAULT_RIKE_OPTIONS;
         this._internals = {
             defaultHttpOptions,
-            wrapResponse: (target, operation, response) => this.wrapResponse(target, operation, response)
         }
     }
 
@@ -83,32 +82,47 @@ export class Rike implements RikeEventSource {
         if (typeof request === "string") {
             request = this.options.relativeUrl(request);
         }
-        return this._http.request(request, options);
+        return this.wrapResponse(this._http.request(request, options));
     }
 
     get(url: string, options?: RequestOptionsArgs): Observable<Response> {
-        return this._http.get(this.options.relativeUrl(url), this.updateRequestOptions(options));
+        return this.wrapResponse(this._http.get(
+            this.options.relativeUrl(url),
+            this.updateRequestOptions(options)));
     }
 
     post(url: string, body: any, options?: RequestOptionsArgs): Observable<Response> {
-        return this._http.post(this.options.relativeUrl(url), body, this.updateRequestOptions(options));
+        return this.wrapResponse(this._http.post(
+            this.options.relativeUrl(url),
+            body,
+            this.updateRequestOptions(options)));
     }
 
     put(url: string, body: any, options?: RequestOptionsArgs): Observable<Response> {
-        return this._http.put(this.options.relativeUrl(url), body, this.updateRequestOptions(options));
+        return this.wrapResponse(this._http.put(
+            this.options.relativeUrl(url),
+            body,
+            this.updateRequestOptions(options)));
     }
 
     //noinspection ReservedWordAsName
     delete(url: string, options?: RequestOptionsArgs): Observable<Response> {
-        return this._http.delete(this.options.relativeUrl(url), this.updateRequestOptions(options));
+        return this.wrapResponse(this._http.delete(
+            this.options.relativeUrl(url),
+            this.updateRequestOptions(options)));
     }
 
     patch(url: string, body: any, options?: RequestOptionsArgs): Observable<Response> {
-        return this._http.patch(this.options.relativeUrl(url), body, this.updateRequestOptions(options));
+        return this.wrapResponse(this._http.patch(
+            this.options.relativeUrl(url),
+            body,
+            this.updateRequestOptions(options)));
     }
 
     head(url: string, options?: RequestOptionsArgs): Observable<Response> {
-        return this._http.head(this.options.relativeUrl(url), this.updateRequestOptions(options));
+        return this.wrapResponse(this._http.head(
+            this.options.relativeUrl(url),
+            this.updateRequestOptions(options)));
     }
 
     /**
@@ -194,15 +208,11 @@ export class Rike implements RikeEventSource {
     /**
      * Wraps the HTTP response observable for the given operation.
      *
-     * @param _target operation target.
-     * @param _operation operation name.
-     * @param response
-     * @returns {Observable<Response>}
+     * @param response response observer to wrap.
+     *
+     * @returns {Observable<Response>} response observer wrapper.
      */
-    protected wrapResponse(
-        _target: RikeTarget<any, any>,
-        _operation: RikeOperation<any, any>,
-        response: Observable<Response>): Observable<Response> {
+    protected wrapResponse(response: Observable<Response>): Observable<Response> {
         return response;
     }
 
@@ -378,11 +388,6 @@ interface RikeInternals {
 
     readonly defaultHttpOptions: RequestOptions;
 
-    wrapResponse(
-        target: RikeTarget<any, any>,
-        operation: RikeOperation<any, any>,
-        response: Observable<Response>): Observable<Response>;
-
 }
 
 class RikeTargetImpl<IN, OUT> extends RikeTarget<IN, OUT> {
@@ -494,13 +499,22 @@ class RikeTargetImpl<IN, OUT> extends RikeTarget<IN, OUT> {
     }
 
     wrapResponse<IN, OUT>(operation: RikeOperation<IN, OUT>, response: Observable<Response>): Observable<OUT> {
-        response = this.internals.wrapResponse(this, operation, response);
         this._response = response;
         return new Observable<OUT>((responseObserver: Observer<OUT>) => {
             if (this._response !== response) {
                 return;// Another request already initiated
             }
             this._observer = responseObserver;
+
+            const cleanup = () => {
+                this._response = undefined;
+                this._operation = undefined;
+                if (this._subscr) {
+                    this._subscr.unsubscribe();
+                    this._subscr = undefined;
+                }
+            };
+
             this._subscr = response.subscribe(
                 httpResponse => {
                     try {
@@ -520,6 +534,8 @@ class RikeTargetImpl<IN, OUT> extends RikeTarget<IN, OUT> {
                         this._rikeEvents.emit(new RikeErrorEvent(operation, error));
                     } catch (e) {
                         this._rikeEvents.error(new RikeErrorEvent(operation, e));
+                    } finally {
+                        cleanup();
                     }
                 },
                 () => {
@@ -528,14 +544,14 @@ class RikeTargetImpl<IN, OUT> extends RikeTarget<IN, OUT> {
                     } catch (e) {
                         this._rikeEvents.error(new RikeErrorEvent(operation, e));
                     } finally {
-                        if (this._subscr) {
-                            this._subscr.unsubscribe();
-                            this._subscr = undefined;
-                            this._response = undefined;
-                        }
+                        cleanup();
                     }
                 });
         });
+    }
+
+    toString(): string {
+        return "RikeTarget[" + this.target + "]";
     }
 
 }
@@ -666,6 +682,10 @@ class RikeOperationImpl<IN, OUT> extends RikeOperation<IN, OUT> {
             this.target.rikeEvents.error(new RikeErrorEvent(this, e));
             throw e;
         }
+    }
+
+    toString() {
+        return "RikeOperation[" + this.name + "@" + this.target + "]";
     }
 
     private startOperation() {

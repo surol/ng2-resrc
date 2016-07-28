@@ -62,6 +62,7 @@ describe("Rike", () => {
             });
 
             let succeed = false;
+
             read(rike).call(rike, "request-url").subscribe(
                 (response: Response) => {
                     expect(response.text()).toBe("response1");

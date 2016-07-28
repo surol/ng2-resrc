@@ -1,6 +1,6 @@
 import {inject} from "@angular/core/testing";
-import {Request, Response, RequestOptionsArgs, RequestOptions} from "@angular/http";
-import {MockBackend} from "@angular/http/testing";
+import {Response, RequestOptionsArgs, RequestOptions, ResponseOptions} from "@angular/http";
+import {MockBackend, MockConnection} from "@angular/http/testing";
 import {addRikeProviders} from "./rike.spec";
 import {Rike, RikeTarget} from "./rike";
 import {JSON_DATA_TYPE, jsonDataType} from "./data";
@@ -59,5 +59,48 @@ describe("RikeTarget", () => {
         expect(op.target).toBe(target);
         expect(op.name).toBe("customOperation");
         expect(op.dataType).toBe(dataType);
+    });
+
+    it("current operation updated on request", done => {
+        back.connections.subscribe((connection: MockConnection) => {
+            connection.mockRespond(new Response(new ResponseOptions({
+                body: "response1",
+            })));
+        });
+
+        const op = target.operation("operation").withUrl("/request-url");
+
+        op.load().subscribe(
+            () => {
+                expect(target.currentOperation).toBe(op, "Current operation not set on response");
+            },
+            (err: any) => done.fail(err),
+            () => {
+                expect(target.currentOperation).toBe(op, "Current operation not set when complete");
+                setTimeout(() => {
+                    expect(target.currentOperation).toBeUndefined("Current operation not cleared");
+                    done();
+                });
+            })
+    });
+
+    it("current operation updated on error", done => {
+        back.connections.subscribe((connection: MockConnection) => {
+            connection.mockError(new Error("error1"));
+        });
+
+        const op = target.operation("operation").withUrl("/request-url");
+
+        op.load().subscribe(
+            () => {
+                done.fail("Response received");
+            },
+            () => {
+                expect(target.currentOperation).toBe(op, "Current operation not set on error");
+                setTimeout(() => {
+                    expect(target.currentOperation).toBeUndefined("Current operation not cleared");
+                    done();
+                });
+            });
     });
 });

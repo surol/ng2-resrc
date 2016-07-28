@@ -360,12 +360,11 @@ declare module "ng2-rike/rike" {
         /**
          * Wraps the HTTP response observable for the given operation.
          *
-         * @param _target operation target.
-         * @param _operation operation name.
-         * @param response
-         * @returns {Observable<Response>}
+         * @param response response observer to wrap.
+         *
+         * @returns {Observable<Response>} response observer wrapper.
          */
-        protected wrapResponse(_target: RikeTarget<any, any>, _operation: RikeOperation<any, any>, response: Observable<Response>): Observable<Response>;
+        protected wrapResponse(response: Observable<Response>): Observable<Response>;
     }
     /**
      * REST-like operations target.

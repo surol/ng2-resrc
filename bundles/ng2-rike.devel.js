@@ -584,13 +584,11 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
              */
             Rike = (function () {
                 function Rike(_http, defaultHttpOptions, _options) {
-                    var _this = this;
                     this._http = _http;
                     this._rikeEvents = new core_1.EventEmitter();
                     this._options = _options || options_1.DEFAULT_RIKE_OPTIONS;
                     this._internals = {
                         defaultHttpOptions: defaultHttpOptions,
-                        wrapResponse: function (target, operation, response) { return _this.wrapResponse(target, operation, response); }
                     };
                 }
                 Object.defineProperty(Rike.prototype, "options", {
@@ -622,26 +620,26 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                     if (typeof request === "string") {
                         request = this.options.relativeUrl(request);
                     }
-                    return this._http.request(request, options);
+                    return this.wrapResponse(this._http.request(request, options));
                 };
                 Rike.prototype.get = function (url, options) {
-                    return this._http.get(this.options.relativeUrl(url), this.updateRequestOptions(options));
+                    return this.wrapResponse(this._http.get(this.options.relativeUrl(url), this.updateRequestOptions(options)));
                 };
                 Rike.prototype.post = function (url, body, options) {
-                    return this._http.post(this.options.relativeUrl(url), body, this.updateRequestOptions(options));
+                    return this.wrapResponse(this._http.post(this.options.relativeUrl(url), body, this.updateRequestOptions(options)));
                 };
                 Rike.prototype.put = function (url, body, options) {
-                    return this._http.put(this.options.relativeUrl(url), body, this.updateRequestOptions(options));
+                    return this.wrapResponse(this._http.put(this.options.relativeUrl(url), body, this.updateRequestOptions(options)));
                 };
                 //noinspection ReservedWordAsName
                 Rike.prototype.delete = function (url, options) {
-                    return this._http.delete(this.options.relativeUrl(url), this.updateRequestOptions(options));
+                    return this.wrapResponse(this._http.delete(this.options.relativeUrl(url), this.updateRequestOptions(options)));
                 };
                 Rike.prototype.patch = function (url, body, options) {
-                    return this._http.patch(this.options.relativeUrl(url), body, this.updateRequestOptions(options));
+                    return this.wrapResponse(this._http.patch(this.options.relativeUrl(url), body, this.updateRequestOptions(options)));
                 };
                 Rike.prototype.head = function (url, options) {
-                    return this._http.head(this.options.relativeUrl(url), this.updateRequestOptions(options));
+                    return this.wrapResponse(this._http.head(this.options.relativeUrl(url), this.updateRequestOptions(options)));
                 };
                 Rike.prototype.target = function (target, dataType) {
                     var _this = this;
@@ -690,12 +688,11 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                 /**
                  * Wraps the HTTP response observable for the given operation.
                  *
-                 * @param _target operation target.
-                 * @param _operation operation name.
-                 * @param response
-                 * @returns {Observable<Response>}
+                 * @param response response observer to wrap.
+                 *
+                 * @returns {Observable<Response>} response observer wrapper.
                  */
-                Rike.prototype.wrapResponse = function (_target, _operation, response) {
+                Rike.prototype.wrapResponse = function (response) {
                     return response;
                 };
                 Rike = __decorate([
@@ -887,13 +884,20 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                 };
                 RikeTargetImpl.prototype.wrapResponse = function (operation, response) {
                     var _this = this;
-                    response = this.internals.wrapResponse(this, operation, response);
                     this._response = response;
                     return new Rx_1.Observable(function (responseObserver) {
                         if (_this._response !== response) {
                             return; // Another request already initiated
                         }
                         _this._observer = responseObserver;
+                        var cleanup = function () {
+                            _this._response = undefined;
+                            _this._operation = undefined;
+                            if (_this._subscr) {
+                                _this._subscr.unsubscribe();
+                                _this._subscr = undefined;
+                            }
+                        };
                         _this._subscr = response.subscribe(function (httpResponse) {
                             try {
                                 var response_1 = operation.dataType.readResponse(httpResponse);
@@ -912,6 +916,9 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                             catch (e) {
                                 _this._rikeEvents.error(new event_1.RikeErrorEvent(operation, e));
                             }
+                            finally {
+                                cleanup();
+                            }
                         }, function () {
                             try {
                                 responseObserver.complete();
@@ -920,14 +927,13 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                                 _this._rikeEvents.error(new event_1.RikeErrorEvent(operation, e));
                             }
                             finally {
-                                if (_this._subscr) {
-                                    _this._subscr.unsubscribe();
-                                    _this._subscr = undefined;
-                                    _this._response = undefined;
-                                }
+                                cleanup();
                             }
                         });
                     });
+                };
+                RikeTargetImpl.prototype.toString = function () {
+                    return "RikeTarget[" + this.target + "]";
                 };
                 return RikeTargetImpl;
             }(RikeTarget));
@@ -1069,6 +1075,9 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                         this.target.rikeEvents.error(new event_1.RikeErrorEvent(this, e));
                         throw e;
                     }
+                };
+                RikeOperationImpl.prototype.toString = function () {
+                    return "RikeOperation[" + this.name + "@" + this.target + "]";
                 };
                 RikeOperationImpl.prototype.startOperation = function () {
                     this.target.startOperation(this);

@@ -215,7 +215,7 @@ describe("RikeOperation event", () => {
     });
 
     it("exception", done => {
-        back.connections.subscribe((connection: MockConnection) => {
+        back.connections.subscribe(() => {
             throw new Error("error1");
         });
 
