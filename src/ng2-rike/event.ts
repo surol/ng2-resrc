@@ -79,6 +79,20 @@ export abstract class RikeEvent {
     abstract readonly error?: any;
 
     /**
+     * Whether this is an operation cancel.
+     *
+     * @return {boolean} `true` if operation cancelled, or `false` otherwise.
+     */
+    get cancel(): boolean {
+        return false;
+    }
+
+    /**
+     * The operation that cancelled this operation.
+     */
+    abstract readonly cancelledBy?: RikeOperationEvent;
+
+    /**
      * Operation result, if any.
      */
     abstract readonly result?: any;
@@ -106,6 +120,10 @@ export class RikeOperationEvent extends RikeEvent {
         return undefined;
     }
 
+    get cancelledBy(): undefined {
+        return undefined;
+    }
+
     get result(): undefined {
         return undefined;
     }
@@ -130,6 +148,10 @@ export class RikeSuccessEvent extends RikeEvent {
     }
 
     get error(): undefined {
+        return undefined;
+    }
+
+    get cancelledBy(): undefined {
         return undefined;
     }
 
@@ -162,6 +184,10 @@ export class RikeErrorEvent extends RikeEvent {
         return this._error;
     }
 
+    get cancelledBy(): RikeOperationEvent | undefined {
+        return undefined;
+    }
+
     get result(): undefined {
         return undefined;
     }
@@ -173,12 +199,20 @@ export class RikeErrorEvent extends RikeEvent {
  */
 export class RikeCancelEvent extends RikeErrorEvent {
 
-    constructor(operation: RikeOperation<any, any>, private _cause?: RikeOperationEvent) {
-        super(operation, _cause || "cancel");
+    constructor(operation: RikeOperation<any, any>, private _cancelledBy?: RikeOperationEvent) {
+        super(operation, _cancelledBy || "cancel");
     }
 
-    get cause(): RikeOperationEvent | undefined {
-        return this._cause;
+    get error(): RikeOperationEvent | undefined {
+        return this.cancelledBy;
+    }
+
+    get cancel(): boolean {
+        return true;
+    }
+
+    get cancelledBy(): RikeOperationEvent | undefined {
+        return this._cancelledBy;
     }
 
 }

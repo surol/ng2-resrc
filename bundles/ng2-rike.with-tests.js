@@ -76,6 +76,18 @@ System.register("ng2-rike/event", [], function(exports_1, context_1) {
                     enumerable: true,
                     configurable: true
                 });
+                Object.defineProperty(RikeEvent.prototype, "cancel", {
+                    /**
+                     * Whether this is an operation cancel.
+                     *
+                     * @return {boolean} `true` if operation cancelled, or `false` otherwise.
+                     */
+                    get: function () {
+                        return false;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
                 return RikeEvent;
             }());
             exports_1("RikeEvent", RikeEvent);
@@ -103,6 +115,13 @@ System.register("ng2-rike/event", [], function(exports_1, context_1) {
                     configurable: true
                 });
                 Object.defineProperty(RikeOperationEvent.prototype, "error", {
+                    get: function () {
+                        return undefined;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                Object.defineProperty(RikeOperationEvent.prototype, "cancelledBy", {
                     get: function () {
                         return undefined;
                     },
@@ -144,6 +163,13 @@ System.register("ng2-rike/event", [], function(exports_1, context_1) {
                     configurable: true
                 });
                 Object.defineProperty(RikeSuccessEvent.prototype, "error", {
+                    get: function () {
+                        return undefined;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                Object.defineProperty(RikeSuccessEvent.prototype, "cancelledBy", {
                     get: function () {
                         return undefined;
                     },
@@ -193,6 +219,13 @@ System.register("ng2-rike/event", [], function(exports_1, context_1) {
                     enumerable: true,
                     configurable: true
                 });
+                Object.defineProperty(RikeErrorEvent.prototype, "cancelledBy", {
+                    get: function () {
+                        return undefined;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
                 Object.defineProperty(RikeErrorEvent.prototype, "result", {
                     get: function () {
                         return undefined;
@@ -208,13 +241,27 @@ System.register("ng2-rike/event", [], function(exports_1, context_1) {
              */
             RikeCancelEvent = (function (_super) {
                 __extends(RikeCancelEvent, _super);
-                function RikeCancelEvent(operation, _cause) {
-                    _super.call(this, operation, _cause || "cancel");
-                    this._cause = _cause;
+                function RikeCancelEvent(operation, _cancelledBy) {
+                    _super.call(this, operation, _cancelledBy || "cancel");
+                    this._cancelledBy = _cancelledBy;
                 }
-                Object.defineProperty(RikeCancelEvent.prototype, "cause", {
+                Object.defineProperty(RikeCancelEvent.prototype, "error", {
                     get: function () {
-                        return this._cause;
+                        return this.cancelledBy;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                Object.defineProperty(RikeCancelEvent.prototype, "cancel", {
+                    get: function () {
+                        return true;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                Object.defineProperty(RikeCancelEvent.prototype, "cancelledBy", {
+                    get: function () {
+                        return this._cancelledBy;
                     },
                     enumerable: true,
                     configurable: true
@@ -585,11 +632,16 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
              */
             Rike = (function () {
                 function Rike(_http, defaultHttpOptions, _options) {
+                    var _this = this;
                     this._http = _http;
                     this._rikeEvents = new core_1.EventEmitter();
+                    this._uniqueIdSeq = 0;
                     this._options = _options || options_1.DEFAULT_RIKE_OPTIONS;
                     this._internals = {
                         defaultHttpOptions: defaultHttpOptions,
+                        generateUniqueId: function () {
+                            return "" + ++_this._uniqueIdSeq;
+                        }
                     };
                 }
                 Object.defineProperty(Rike.prototype, "options", {
@@ -780,6 +832,7 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                     this._target = _target;
                     this._dataType = _dataType;
                     this._rikeEvents = new core_1.EventEmitter();
+                    this._uniqueId = _internals.generateUniqueId();
                 }
                 Object.defineProperty(RikeTargetImpl.prototype, "rike", {
                     get: function () {
@@ -791,6 +844,13 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                 Object.defineProperty(RikeTargetImpl.prototype, "target", {
                     get: function () {
                         return this._target;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                Object.defineProperty(RikeTargetImpl.prototype, "uniqueId", {
+                    get: function () {
+                        return this._uniqueId;
                     },
                     enumerable: true,
                     configurable: true
@@ -1255,9 +1315,177 @@ System.register("ng2-rike/resource", ["@angular/http", "ng2-rike/data", "ng2-rik
         }
     }
 });
-System.register("ng2-rike", ["ng2-rike/rike", "ng2-rike/event", "ng2-rike/data", "ng2-rike/options", "ng2-rike/resource"], function(exports_6, context_6) {
+System.register("ng2-rike/status", [], function(exports_6, context_6) {
     "use strict";
     var __moduleName = context_6 && context_6.id;
+    var RikeStatus;
+    function labelOf(status, labels) {
+        if (!labels) {
+            return undefined;
+        }
+        var end = status.end;
+        if (!end) {
+            var processing = evalLabel(status, labels.processing);
+            return processing && { label: processing, processing: true };
+        }
+        if (end.cancel) {
+            var cancelled = evalLabel(status, labels.cancelled);
+            return cancelled && { label: cancelled, cancelled: true };
+        }
+        if (end.error) {
+            var failed = evalLabel(status, labels.failed);
+            return failed && { label: failed, failed: true };
+        }
+        var succeed = evalLabel(status, labels.succeed);
+        return succeed && { label: succeed, succeed: true };
+    }
+    function evalLabel(status, label) {
+        if (!label) {
+            return undefined;
+        }
+        if (typeof label !== "function") {
+            return label;
+        }
+        var labelFn = label;
+        return labelFn(status.start.target);
+    }
+    function combineLabels(combined, label) {
+        if (!label) {
+            return combined;
+        }
+        var lbl = label.label;
+        if (!combined) {
+            return {
+                labels: [lbl],
+                processing: label.processing,
+                failed: label.failed,
+                cancelled: label.cancelled,
+                succeed: label.succeed,
+            };
+        }
+        combined.processing = combined.processing || label.processing;
+        combined.failed = combined.failed || label.failed;
+        combined.cancelled = combined.cancelled || label.cancelled;
+        combined.succeed = combined.succeed || label.succeed;
+        for (var _i = 0, _a = combined.labels; _i < _a.length; _i++) {
+            var l = _a[_i];
+            if (l === lbl) {
+                return combined;
+            }
+        }
+        combined.labels.push(lbl);
+        return combined;
+    }
+    return {
+        setters:[],
+        execute: function() {
+            RikeStatus = (function () {
+                function RikeStatus() {
+                    this._targetStatuses = {};
+                    this._labels = {};
+                }
+                RikeStatus.prototype.subscribeOn = function (events) {
+                    var _this = this;
+                    events.subscribe(function (event) { return _this.applyEvent(event); });
+                };
+                RikeStatus.prototype.withLabels = function (target, labels) {
+                    var id;
+                    if (!labels) {
+                        id = "*";
+                        labels = target;
+                    }
+                    else {
+                        id = target.uniqueId;
+                    }
+                    this._combined = undefined;
+                    this._labels[id] = labels;
+                    return this;
+                };
+                Object.defineProperty(RikeStatus.prototype, "labels", {
+                    get: function () {
+                        return this.combined && this.combined.labels || [];
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                Object.defineProperty(RikeStatus.prototype, "processing", {
+                    get: function () {
+                        return this.combined && this.combined.processing || false;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                Object.defineProperty(RikeStatus.prototype, "failed", {
+                    get: function () {
+                        return this.combined && this.combined.failed || false;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                Object.defineProperty(RikeStatus.prototype, "cancelled", {
+                    get: function () {
+                        return this.combined && this.combined.cancelled || false;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                Object.defineProperty(RikeStatus.prototype, "succeed", {
+                    get: function () {
+                        return this.combined && this.combined.succeed || false;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                Object.defineProperty(RikeStatus.prototype, "combined", {
+                    get: function () {
+                        if (this._combined) {
+                            return this._combined;
+                        }
+                        var combined;
+                        for (var id in this._targetStatuses) {
+                            if (this._targetStatuses.hasOwnProperty(id)) {
+                                var targetStatus = this._targetStatuses[id];
+                                if (!targetStatus) {
+                                    continue;
+                                }
+                                combined = combineLabels(combined, this.labelFor(id, targetStatus));
+                            }
+                        }
+                        return this._combined = combined;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                RikeStatus.prototype.labelFor = function (id, status) {
+                    return labelOf(status, this._labels[id]) || labelOf(status, this._labels["*"]);
+                };
+                RikeStatus.prototype.applyEvent = function (event) {
+                    this._combined = undefined;
+                    var uniqueId = event.target.uniqueId;
+                    if (!event.complete) {
+                        this._targetStatuses[uniqueId] = {
+                            start: event,
+                        };
+                    }
+                    else {
+                        var targetStatus = this._targetStatuses[uniqueId];
+                        if (!targetStatus) {
+                            this._targetStatuses[uniqueId] = { start: event, end: event };
+                        }
+                        else {
+                            targetStatus.end = event;
+                        }
+                    }
+                };
+                return RikeStatus;
+            }());
+            exports_6("RikeStatus", RikeStatus);
+        }
+    }
+});
+System.register("ng2-rike", ["ng2-rike/rike", "ng2-rike/event", "ng2-rike/data", "ng2-rike/options", "ng2-rike/resource", "ng2-rike/status"], function(exports_7, context_7) {
+    "use strict";
+    var __moduleName = context_7 && context_7.id;
     var rike_1, event_3;
     var RIKE_PROVIDERS;
     var exportedNames_1 = {
@@ -1268,7 +1496,7 @@ System.register("ng2-rike", ["ng2-rike/rike", "ng2-rike/event", "ng2-rike/data",
         for(var n in m) {
             if (n !== "default"&& !exportedNames_1.hasOwnProperty(n)) exports[n] = m[n];
         }
-        exports_6(exports);
+        exports_7(exports);
     }
     return {
         setters:[
@@ -1288,6 +1516,9 @@ System.register("ng2-rike", ["ng2-rike/rike", "ng2-rike/event", "ng2-rike/data",
             },
             function (resource_1_1) {
                 exportStar_1(resource_1_1);
+            },
+            function (status_1_1) {
+                exportStar_1(status_1_1);
             }],
         execute: function() {
             /**
@@ -1298,16 +1529,16 @@ System.register("ng2-rike", ["ng2-rike/rike", "ng2-rike/event", "ng2-rike/data",
              *
              * @type {any[]}
              */
-            exports_6("RIKE_PROVIDERS", RIKE_PROVIDERS = [
+            exports_7("RIKE_PROVIDERS", RIKE_PROVIDERS = [
                 rike_1.Rike,
                 event_3.RikeEventSource.provide({ useExisting: rike_1.Rike }),
             ]);
         }
     }
 });
-System.register("ng2-rike/data.spec", ["@angular/http", "ng2-rike/data"], function(exports_7, context_7) {
+System.register("ng2-rike/data.spec", ["@angular/http", "ng2-rike/data"], function(exports_8, context_8) {
     "use strict";
-    var __moduleName = context_7 && context_7.id;
+    var __moduleName = context_8 && context_8.id;
     var http_4, data_4;
     var TestDataType;
     return {
@@ -1396,9 +1627,9 @@ System.register("ng2-rike/data.spec", ["@angular/http", "ng2-rike/data"], functi
         }
     }
 });
-System.register("ng2-rike/options.spec", ["ng2-rike/options"], function(exports_8, context_8) {
+System.register("ng2-rike/options.spec", ["ng2-rike/options"], function(exports_9, context_9) {
     "use strict";
-    var __moduleName = context_8 && context_8.id;
+    var __moduleName = context_9 && context_9.id;
     var options_4;
     return {
         setters:[
@@ -1435,9 +1666,9 @@ System.register("ng2-rike/options.spec", ["ng2-rike/options"], function(exports_
         }
     }
 });
-System.register("ng2-rike/rike.spec", ["@angular/http", "@angular/core/testing", "@angular/http/testing", "ng2-rike", "ng2-rike/rike", "ng2-rike/options", "ng2-rike/data"], function(exports_9, context_9) {
+System.register("ng2-rike/rike.spec", ["@angular/http", "@angular/core/testing", "@angular/http/testing", "ng2-rike", "ng2-rike/rike", "ng2-rike/options", "ng2-rike/data"], function(exports_10, context_10) {
     "use strict";
-    var __moduleName = context_9 && context_9.id;
+    var __moduleName = context_10 && context_10.id;
     var http_5, testing_1, testing_2, ng2_rike_1, rike_3, options_5, data_5;
     function addRikeProviders() {
         testing_1.addProviders([
@@ -1455,7 +1686,7 @@ System.register("ng2-rike/rike.spec", ["@angular/http", "@angular/core/testing",
             ng2_rike_1.RIKE_PROVIDERS,
         ]);
     }
-    exports_9("addRikeProviders", addRikeProviders);
+    exports_10("addRikeProviders", addRikeProviders);
     function requestMethodTest(method, value) {
         return function () { return expect(rike_3.requestMethod(value)).toBe(method); };
     }
@@ -1588,9 +1819,9 @@ System.register("ng2-rike/rike.spec", ["@angular/http", "@angular/core/testing",
         }
     }
 });
-System.register("ng2-rike/rike-operation.spec", ["@angular/http", "@angular/core/testing", "@angular/http/testing", "ng2-rike/rike", "ng2-rike/rike.spec"], function(exports_10, context_10) {
+System.register("ng2-rike/rike-operation.spec", ["@angular/http", "@angular/core/testing", "@angular/http/testing", "ng2-rike/rike", "ng2-rike/rike.spec"], function(exports_11, context_11) {
     "use strict";
-    var __moduleName = context_10 && context_10.id;
+    var __moduleName = context_11 && context_11.id;
     var http_6, testing_3, testing_4, rike_4, rike_spec_1;
     return {
         setters:[
@@ -1791,9 +2022,9 @@ System.register("ng2-rike/rike-operation.spec", ["@angular/http", "@angular/core
         }
     }
 });
-System.register("ng2-rike/rike-target.spec", ["@angular/core/testing", "@angular/http", "@angular/http/testing", "ng2-rike/rike.spec", "ng2-rike/rike", "ng2-rike/data"], function(exports_11, context_11) {
+System.register("ng2-rike/rike-target.spec", ["@angular/core/testing", "@angular/http", "@angular/http/testing", "ng2-rike/rike.spec", "ng2-rike/rike", "ng2-rike/data"], function(exports_12, context_12) {
     "use strict";
-    var __moduleName = context_11 && context_11.id;
+    var __moduleName = context_12 && context_12.id;
     var testing_5, http_7, testing_6, rike_spec_2, rike_5, data_6;
     return {
         setters:[

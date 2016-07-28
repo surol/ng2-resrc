@@ -59,6 +59,16 @@ declare module "ng2-rike/event" {
          */
         readonly abstract error?: any;
         /**
+         * Whether this is an operation cancel.
+         *
+         * @return {boolean} `true` if operation cancelled, or `false` otherwise.
+         */
+        readonly cancel: boolean;
+        /**
+         * The operation that cancelled this operation.
+         */
+        readonly abstract cancelledBy?: RikeOperationEvent;
+        /**
          * Operation result, if any.
          */
         readonly abstract result?: any;
@@ -72,6 +82,7 @@ declare module "ng2-rike/event" {
         readonly operation: RikeOperation<any, any>;
         readonly complete: boolean;
         readonly error: undefined;
+        readonly cancelledBy: undefined;
         readonly result: undefined;
     }
     /**
@@ -84,6 +95,7 @@ declare module "ng2-rike/event" {
         readonly operation: RikeOperation<any, any>;
         readonly complete: boolean;
         readonly error: undefined;
+        readonly cancelledBy: undefined;
         readonly result: any;
     }
     /**
@@ -98,15 +110,18 @@ declare module "ng2-rike/event" {
         readonly operation: RikeOperation<any, any>;
         readonly complete: boolean;
         readonly error: any;
+        readonly cancelledBy: RikeOperationEvent | undefined;
         readonly result: undefined;
     }
     /**
      * An event emitted when operation on a REST-like resource is cancelled.
      */
     export class RikeCancelEvent extends RikeErrorEvent {
-        private _cause?;
-        constructor(operation: RikeOperation<any, any>, _cause?: RikeOperationEvent);
-        readonly cause: RikeOperationEvent | undefined;
+        private _cancelledBy?;
+        constructor(operation: RikeOperation<any, any>, _cancelledBy?: RikeOperationEvent);
+        readonly error: RikeOperationEvent | undefined;
+        readonly cancel: boolean;
+        readonly cancelledBy: RikeOperationEvent | undefined;
     }
 }
 declare module "ng2-rike/options" {
@@ -301,6 +316,7 @@ declare module "ng2-rike/rike" {
         private readonly _options;
         private readonly _rikeEvents;
         private readonly _internals;
+        private _uniqueIdSeq;
         constructor(_http: Http, defaultHttpOptions: RequestOptions, _options?: RikeOptions);
         /**
          * Global REST-like resource access options.
@@ -385,6 +401,10 @@ declare module "ng2-rike/rike" {
          * This is the value passed to the [Rike.target] method.
          */
         readonly abstract target: any;
+        /**
+         * Unique target identifier.
+         */
+        readonly abstract uniqueId: string;
         /**
          * A currently evaluating operation.
          *
@@ -530,12 +550,40 @@ declare module "ng2-rike/resource" {
         protected objectUrl(baseUrl: string | undefined, id: any): string;
     }
 }
+declare module "ng2-rike/status" {
+    import { EventEmitter } from "@angular/core";
+    import { RikeTarget } from "ng2-rike/rike";
+    import { RikeEvent } from "ng2-rike/event";
+    export interface RikeStatusLabels<L> {
+        processing?: L | ((target: RikeTarget<any, any>) => L);
+        failed?: L | ((target: RikeTarget<any, any>) => L);
+        cancelled?: L | ((target: RikeTarget<any, any>) => L);
+        succeed?: L | ((target: RikeTarget<any, any>) => L);
+    }
+    export class RikeStatus<L> {
+        private _targetStatuses;
+        private _labels;
+        private _combined?;
+        subscribeOn(events: EventEmitter<RikeEvent>): void;
+        withLabels(labels: RikeStatusLabels<L>): this;
+        withLabels(target: RikeTarget<any, any>, labels: RikeStatusLabels<L>): this;
+        readonly labels: L[] | undefined;
+        readonly processing: boolean;
+        readonly failed: boolean;
+        readonly cancelled: boolean;
+        readonly succeed: boolean;
+        private readonly combined;
+        private labelFor(id, status);
+        private applyEvent(event);
+    }
+}
 declare module "ng2-rike" {
     export * from "ng2-rike/data";
     export * from "ng2-rike/event";
     export * from "ng2-rike/options";
     export * from "ng2-rike/resource";
     export * from "ng2-rike/rike";
+    export * from "ng2-rike/status";
     /**
      * Provides a basic set of providers to use REST-like services in application.
      *

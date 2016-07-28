@@ -51,11 +51,15 @@ export class Rike implements RikeEventSource {
     private readonly _options: RikeOptions;
     private readonly _rikeEvents = new EventEmitter<RikeEvent>();
     private readonly _internals: RikeInternals;
+    private _uniqueIdSeq = 0;
 
     constructor(private _http: Http, defaultHttpOptions: RequestOptions, @Optional() _options?: RikeOptions) {
         this._options = _options || DEFAULT_RIKE_OPTIONS;
         this._internals = {
             defaultHttpOptions,
+            generateUniqueId: () => {
+                return "" + ++this._uniqueIdSeq;
+            }
         }
     }
 
@@ -240,6 +244,11 @@ export abstract class RikeTarget<IN, OUT> implements RikeEventSource {
     abstract readonly target: any;
 
     /**
+     * Unique target identifier.
+     */
+    abstract readonly uniqueId: string;
+
+    /**
      * A currently evaluating operation.
      *
      * `undefined` if no operations currently in process, i.e. operation not started, cancelled, or completed, either
@@ -388,10 +397,13 @@ interface RikeInternals {
 
     readonly defaultHttpOptions: RequestOptions;
 
+    generateUniqueId(): string;
+
 }
 
 class RikeTargetImpl<IN, OUT> extends RikeTarget<IN, OUT> {
 
+    private _uniqueId: string;
     private _rikeEvents = new EventEmitter<RikeEvent>();
     private _baseUrl?: string;
     private _operation?: RikeOperationEvent;
@@ -405,6 +417,7 @@ class RikeTargetImpl<IN, OUT> extends RikeTarget<IN, OUT> {
         private _target: any,
         private _dataType: DataType<IN, OUT>) {
         super();
+        this._uniqueId = _internals.generateUniqueId();
     }
 
     get rike(): Rike {
@@ -413,6 +426,10 @@ class RikeTargetImpl<IN, OUT> extends RikeTarget<IN, OUT> {
 
     get target(): any {
         return this._target;
+    }
+
+    get uniqueId(): string {
+        return this._uniqueId;
     }
 
     get currentOperation(): RikeOperation<any, any> | undefined {
