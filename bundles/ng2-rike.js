@@ -2214,4 +2214,4 @@ System.register("ng2-rike", ["ng2-rike/rike", "ng2-rike/event", "@angular/core",
         }
     }
 });
-//# sourceMappingURL=ng2-rike.devel.js.map
+//# sourceMappingURL=ng2-rike.js.map
