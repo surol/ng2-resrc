@@ -1601,15 +1601,166 @@ System.register("ng2-rike/status.component", ["@angular/core", "ng2-rike/status"
         }
     }
 });
-System.register("ng2-rike/resource", ["@angular/http", "ng2-rike/protocol", "ng2-rike/event", "ng2-rike/options"], function(exports_7, context_7) {
+System.register("ng2-rike/error", ["@angular/http"], function(exports_7, context_7) {
     "use strict";
     var __moduleName = context_7 && context_7.id;
-    var http_3, protocol_2, event_2, options_2;
-    var Resource, RikeResource, CRUDResource;
+    var http_3;
+    var ErrorResponse;
+    /**
+     * Converts any object to `ErrorResponse`.
+     *
+     * If the `error` object is already of type `ErrorResponse` then just returns it.
+     *
+     * This function can be used as a [error handler][Protocol.handleError] to convert HTTP responses.
+     *
+     * @param error object to convert.
+     *
+     * @return {ErrorResponse} constructed error response.
+     */
+    function toErrorResponse(error) {
+        if (error instanceof ErrorResponse) {
+            // Error is already of the desired type.
+            return error;
+        }
+        if (error instanceof http_3.Response) {
+            var response = error;
+            var body = undefined;
+            // Attempt to parse JSON body
+            if (response.headers.get("Content-Type") === "application/json") {
+                try {
+                    body = response.json();
+                }
+                catch (e) {
+                    console.log("Failed to parse JSON error response", e);
+                }
+            }
+            var fieldErrors_1 = toFieldErrors(body);
+            if (fieldErrors_1) {
+                return new ErrorResponse({
+                    response: response,
+                    errors: fieldErrors_1,
+                });
+            }
+            return defaultErrorResponse(response);
+        }
+        // Error has `ErrorResponseOpts` interface?
+        var errorOpts = error;
+        if (errorOpts.response instanceof http_3.Response && errorOpts.errors instanceof Array) {
+            return new ErrorResponse(errorOpts);
+        }
+        var fieldErrors = toFieldErrors(error);
+        if (fieldErrors) {
+            return new ErrorResponse({
+                response: syntheticResponse(null),
+                errors: fieldErrors,
+            });
+        }
+        return defaultErrorResponse(syntheticResponse(error));
+    }
+    exports_7("toErrorResponse", toErrorResponse);
+    function syntheticResponse(error) {
+        var statusText = error != null ? error.toString() : null;
+        return new http_3.Response(new http_3.ResponseOptions({
+            type: http_3.ResponseType.Error,
+            status: 500,
+            statusText: statusText || "Unknown error"
+        }));
+    }
+    function defaultErrorResponse(response) {
+        var message = "ERROR " + response.status;
+        if (response.statusText && response.statusText.toLowerCase() != "ok") {
+            message += ": " + response.statusText;
+        }
+        return new ErrorResponse({
+            response: response,
+            errors: { "*": [{ code: "HTTP" + response.status, message: message }] },
+        });
+    }
+    function toFieldErrors(data) {
+        if (data == null) {
+            return;
+        }
+        if (data instanceof Array) {
+            var fieldErrors = data.map(toFieldError).filter(notEmptyError);
+            return fieldErrors.length ? { "*": fieldErrors } : undefined;
+        }
+        if (typeof data !== "object") {
+            var fieldErrors = [{ message: data.toString() }].filter(notEmptyError);
+            return fieldErrors.length ? { "*": fieldErrors } : undefined;
+        }
+        var errors = data;
+        var result = {};
+        var hasErrors = false;
+        for (var field in errors) {
+            if (errors.hasOwnProperty(field)) {
+                var errorArray = toFieldErrorArray(errors[field]);
+                if (errorArray.length) {
+                    result[field] = errorArray;
+                    hasErrors = true;
+                }
+            }
+        }
+        return hasErrors ? result : undefined;
+    }
+    function toFieldErrorArray(data) {
+        if (data == null) {
+            return [];
+        }
+        if (data instanceof Array) {
+            return data.map(toFieldError).filter(notEmptyError);
+        }
+        return [toFieldError(data)].filter(notEmptyError);
+    }
+    function toFieldError(data) {
+        if (data == null) {
+            return { message: "" };
+        }
+        var fieldError = data;
+        if (typeof fieldError.message === "string" && (fieldError.code == null || fieldError.code === "string")) {
+            return fieldError;
+        }
+        if (fieldError.message != null) {
+            return {
+                code: fieldError.code != null ? fieldError.code.toString() : undefined,
+                message: fieldError.message.toString(),
+            };
+        }
+        return { message: fieldError.toString() };
+    }
+    function notEmptyError(item) {
+        return !!item && (!!item.message || !!item.code);
+    }
     return {
         setters:[
             function (http_3_1) {
                 http_3 = http_3_1;
+            }],
+        execute: function() {
+            /**
+             * Error response.
+             *
+             * Any object can be converted to `ErrorResponse` with `toErrorResponse()` function.
+             */
+            ErrorResponse = (function () {
+                function ErrorResponse(opts) {
+                    this.response = opts.response;
+                    this.errors = opts.errors;
+                }
+                return ErrorResponse;
+            }());
+            exports_7("ErrorResponse", ErrorResponse);
+        }
+    }
+});
+System.register("ng2-rike/resource", ["@angular/http", "ng2-rike/protocol", "ng2-rike/event", "ng2-rike/options"], function(exports_8, context_8) {
+    "use strict";
+    var __moduleName = context_8 && context_8.id;
+    var http_4, protocol_2, event_2, options_2;
+    var Resource, RikeResource, CRUDResource;
+    return {
+        setters:[
+            function (http_4_1) {
+                http_4 = http_4_1;
             },
             function (protocol_2_1) {
                 protocol_2 = protocol_2_1;
@@ -1644,7 +1795,7 @@ System.register("ng2-rike/resource", ["@angular/http", "ng2-rike/protocol", "ng2
                 };
                 return Resource;
             }());
-            exports_7("Resource", Resource);
+            exports_8("Resource", Resource);
             RikeResource = (function () {
                 function RikeResource(_rike) {
                     this._rike = _rike;
@@ -1671,7 +1822,7 @@ System.register("ng2-rike/resource", ["@angular/http", "ng2-rike/protocol", "ng2
                 };
                 return RikeResource;
             }());
-            exports_7("RikeResource", RikeResource);
+            exports_8("RikeResource", RikeResource);
             CRUDResource = (function (_super) {
                 __extends(CRUDResource, _super);
                 function CRUDResource(rike) {
@@ -1708,14 +1859,14 @@ System.register("ng2-rike/resource", ["@angular/http", "ng2-rike/protocol", "ng2
                 };
                 CRUDResource.prototype.objectReadProtocol = function (id) {
                     var _this = this;
-                    return this.rikeTarget.protocol.prepareRequestWith(function (options) { return new http_3.RequestOptions(options).merge({
+                    return this.rikeTarget.protocol.prepareRequestWith(function (options) { return new http_4.RequestOptions(options).merge({
                         url: _this.objectUrl(options.url, id)
                     }); });
                 };
                 CRUDResource.prototype.objectUpdateProtocol = function (object) {
                     var _this = this;
                     return this.rikeTarget.protocol
-                        .updateRequestWith(function (object, options) { return new http_3.RequestOptions(options).merge({
+                        .updateRequestWith(function (object, options) { return new http_4.RequestOptions(options).merge({
                         url: _this.objectUrl(options.url, _this.objectId(object))
                     }); })
                         .readResponseWith(function (response) { return object; });
@@ -1723,7 +1874,7 @@ System.register("ng2-rike/resource", ["@angular/http", "ng2-rike/protocol", "ng2
                 CRUDResource.prototype.objectDeleteProtocol = function (object) {
                     var _this = this;
                     return this.rikeTarget.protocol
-                        .updateRequestWith(function (object, options) { return new http_3.RequestOptions(options).merge({
+                        .updateRequestWith(function (object, options) { return new http_4.RequestOptions(options).merge({
                         url: _this.objectUrl(options.url, _this.objectId(object))
                     }); })
                         .readResponseWith(function (response) { return object; });
@@ -1734,13 +1885,13 @@ System.register("ng2-rike/resource", ["@angular/http", "ng2-rike/protocol", "ng2
                 };
                 return CRUDResource;
             }(RikeResource));
-            exports_7("CRUDResource", CRUDResource);
+            exports_8("CRUDResource", CRUDResource);
         }
     }
 });
-System.register("ng2-rike", ["ng2-rike/rike", "ng2-rike/event", "@angular/core", "ng2-rike/status.component", "ng2-rike/options", "ng2-rike/protocol", "ng2-rike/resource", "ng2-rike/status"], function(exports_8, context_8) {
+System.register("ng2-rike", ["ng2-rike/rike", "ng2-rike/event", "@angular/core", "ng2-rike/status.component", "ng2-rike/error", "ng2-rike/options", "ng2-rike/protocol", "ng2-rike/resource", "ng2-rike/status"], function(exports_9, context_9) {
     "use strict";
-    var __moduleName = context_8 && context_8.id;
+    var __moduleName = context_9 && context_9.id;
     var rike_1, event_3, core_3, status_component_1;
     var RIKE_PROVIDERS;
     var exportedNames_1 = {
@@ -1751,7 +1902,7 @@ System.register("ng2-rike", ["ng2-rike/rike", "ng2-rike/event", "@angular/core",
         for(var n in m) {
             if (n !== "default"&& !exportedNames_1.hasOwnProperty(n)) exports[n] = m[n];
         }
-        exports_8(exports);
+        exports_9(exports);
     }
     return {
         setters:[
@@ -1769,6 +1920,9 @@ System.register("ng2-rike", ["ng2-rike/rike", "ng2-rike/event", "@angular/core",
             function (status_component_1_1) {
                 status_component_1 = status_component_1_1;
                 exportStar_1(status_component_1_1);
+            },
+            function (error_1_1) {
+                exportStar_1(error_1_1);
             },
             function (options_3_1) {
                 exportStar_1(options_3_1);
@@ -1791,7 +1945,7 @@ System.register("ng2-rike", ["ng2-rike/rike", "ng2-rike/event", "@angular/core",
              *
              * @type {any[]}
              */
-            exports_8("RIKE_PROVIDERS", RIKE_PROVIDERS = [
+            exports_9("RIKE_PROVIDERS", RIKE_PROVIDERS = [
                 rike_1.Rike,
                 event_3.RikeEventSource.provide({ useExisting: rike_1.Rike }),
                 {

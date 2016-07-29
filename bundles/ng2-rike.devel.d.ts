@@ -597,6 +597,73 @@ declare module "ng2-rike/status.component" {
         protected configureStatus(status: RikeStatus<L>): void;
     }
 }
+declare module "ng2-rike/error" {
+    import { Response } from "@angular/http";
+    /**
+     * Error response options interface.
+     */
+    export interface ErrorResponseOpts {
+        /**
+         * HTTP response.
+         */
+        readonly response: Response;
+        /**
+         * Field errors.
+         */
+        readonly errors: FieldErrors;
+    }
+    /**
+     * Error response.
+     *
+     * Any object can be converted to `ErrorResponse` with `toErrorResponse()` function.
+     */
+    export class ErrorResponse implements ErrorResponseOpts {
+        /**
+         * HTTP response.
+         */
+        readonly response: Response;
+        /**
+         * Field errors.
+         */
+        readonly errors: FieldErrors;
+        constructor(opts: ErrorResponseOpts);
+    }
+    /**
+     * Field errors.
+     *
+     * Any field of this object is an arrays of errors corresponding to this field. Such array should never be empty.
+     *
+     * The special case is field named `"*"`. It contains errors not related to particular field.
+     */
+    export interface FieldErrors {
+        [field: string]: FieldError[];
+    }
+    /**
+     * Field error.
+     */
+    export interface FieldError {
+        /**
+         * Optional error code.
+         */
+        code?: string;
+        /**
+         * Error message.
+         */
+        message: string;
+    }
+    /**
+     * Converts any object to `ErrorResponse`.
+     *
+     * If the `error` object is already of type `ErrorResponse` then just returns it.
+     *
+     * This function can be used as a [error handler][Protocol.handleError] to convert HTTP responses.
+     *
+     * @param error object to convert.
+     *
+     * @return {ErrorResponse} constructed error response.
+     */
+    export function toErrorResponse(error: any): ErrorResponse;
+}
 declare module "ng2-rike/resource" {
     import { Type } from "@angular/core";
     import { Observable } from "rxjs/Rx";
@@ -641,6 +708,7 @@ declare module "ng2-rike/resource" {
     }
 }
 declare module "ng2-rike" {
+    export * from "ng2-rike/error";
     export * from "ng2-rike/event";
     export * from "ng2-rike/options";
     export * from "ng2-rike/protocol";
