@@ -56,12 +56,12 @@ gulp.task('compile-with-tests', function(cb) {
         });
 });
 
-gulp.task('compile-all', ['compile-with-tests', 'compile-devel']);
+gulp.task('compile', ['compile-with-tests', 'compile-devel']);
 
 gulp.task('clean-bundle', function() {
     return del('bundles');
 });
 
-gulp.task('default', ['bundle-angular', 'compile-all']);
+gulp.task('default', ['bundle-angular', 'compile']);
 
 gulp.task('clean', ['clean-bundle']);

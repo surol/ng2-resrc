@@ -1,4 +1,148 @@
 /// <reference types="core-js" />
+declare module "ng2-rike/error" {
+    import { Response } from "@angular/http";
+    /**
+     * Error response options interface.
+     */
+    export interface ErrorResponseOpts {
+        /**
+         * HTTP response.
+         */
+        readonly response: Response;
+        /**
+         * Field errors.
+         */
+        readonly errors: FieldErrors;
+    }
+    /**
+     * Error response.
+     *
+     * Any object can be converted to `ErrorResponse` with `toErrorResponse()` function.
+     */
+    export class ErrorResponse implements ErrorResponseOpts {
+        /**
+         * HTTP response.
+         */
+        readonly response: Response;
+        /**
+         * Field errors.
+         */
+        readonly errors: FieldErrors;
+        constructor(opts: ErrorResponseOpts);
+    }
+    /**
+     * Field errors.
+     *
+     * Any field of this object is an arrays of errors corresponding to this field. Such array should never be empty.
+     *
+     * The special case is field named `"*"`. It contains errors not related to particular field.
+     */
+    export interface FieldErrors {
+        [field: string]: FieldError[];
+    }
+    /**
+     * Field error.
+     */
+    export interface FieldError {
+        /**
+         * Optional error code.
+         */
+        code?: string;
+        /**
+         * Error message.
+         */
+        message: string;
+    }
+    /**
+     * Converts any object to `ErrorResponse`.
+     *
+     * If the `error` object is already of type `ErrorResponse` then just returns it.
+     *
+     * This function can be used as a [error handler][Protocol.handleError] to convert HTTP responses.
+     *
+     * @param error object to convert.
+     *
+     * @return {ErrorResponse} constructed error response.
+     */
+    export function toErrorResponse(error: any): ErrorResponse;
+}
+declare module "ng2-rike/error-collector" {
+    import { FieldErrors } from "ng2-rike/error";
+    import { RikeEventSource } from "ng2-rike/event";
+    /**
+     * Field errors subscription.
+     *
+     * The `unsubscribe()` method should be called to stop receiving error notifications.
+     */
+    export interface ErrorSubscription {
+        /**
+         * After this method called the error notifications won't be sent to subscriber.
+         *
+         * This method should be called in order to release all resources associated with subscription.
+         */
+        unsubscribe(): void;
+    }
+    /**
+     * An error collecting service.
+     *
+     * It collects errors from all available [Rike event sources][RikeEventSource]. It uses `toFieldErrors()` method
+     * to build a `FieldErrors` instance to obtain errors from. Then it notifies all subscribers on when errors received or
+     * removed.
+     *
+     * This service is registered automatically along with every event source by [RikeEventSource.provide] method.
+     * But unlike event sources it is not a multi-provider.
+     */
+    export class ErrorCollector {
+        private _eventSources;
+        private readonly _emitters;
+        private readonly _targetErrors;
+        private _initialized;
+        constructor(_eventSources: RikeEventSource[]);
+        /**
+         * Adds subscription on errors corresponding to the given field.
+         *
+         * If the field name is `"*"`, then subscriber will be notified on error changes for all fields except those ones
+         * with existing subscriptions.
+         *
+         * @param field target field name.
+         * @param next function that will be called on every target field errors update.
+         * @param error function that will be called on errors.
+         * @param complete function that will be called when no more errors will be reported.
+         *
+         * @return {ErrorSubscription} subscription.
+         */
+        subscribe(field: string, next: ((errors: FieldErrors) => void), error?: (error: any) => void, complete?: () => void): ErrorSubscription;
+        /**
+         * Adds subscription on errors corresponding to all fields except those ones with existing subscriptions.
+         *
+         * Calling this method is the same as calling `subscribe("*", next, error, complete);`.
+         *
+         * @param next function that will be called on every errors update.
+         * @param error function that will be called on errors.
+         * @param complete function that will be called when no more errors will be reported.
+         *
+         * @return {ErrorSubscription} subscription.
+         */
+        subscribeOnRest(next: ((errors: FieldErrors) => void), error?: (error: any) => void, complete?: () => void): ErrorSubscription;
+        /**
+         * Converts arbitrary error to `FieldErrors`.
+         *
+         * This method uses [toErrorResponse] function by default. Override it if you are using custom error handler.
+         *
+         * @param error arbitrary error passed in [RikeEvent.error] field.
+         *
+         * @return {FieldErrors} field errors.
+         */
+        protected toFieldErrors(error: any): FieldErrors;
+        private fieldEmitter(field);
+        private init();
+        private handleEvent(event);
+        private handleError(error);
+        private targetErrors(target);
+        private clearTargetErrors(target);
+        private notify(field);
+    }
+}
 declare module "ng2-rike/event" {
     import { EventEmitter, Type } from "@angular/core";
     import { RikeTarget, RikeOperation } from "ng2-rike/rike";
@@ -26,7 +170,7 @@ declare module "ng2-rike/event" {
             useFactory?: Function;
             deps?: Object[];
             multi?: boolean;
-        }): any;
+        }): any[];
         /**
          * Rike events emitter.
          */
@@ -597,73 +741,6 @@ declare module "ng2-rike/status.component" {
         protected configureStatus(status: RikeStatus<L>): void;
     }
 }
-declare module "ng2-rike/error" {
-    import { Response } from "@angular/http";
-    /**
-     * Error response options interface.
-     */
-    export interface ErrorResponseOpts {
-        /**
-         * HTTP response.
-         */
-        readonly response: Response;
-        /**
-         * Field errors.
-         */
-        readonly errors: FieldErrors;
-    }
-    /**
-     * Error response.
-     *
-     * Any object can be converted to `ErrorResponse` with `toErrorResponse()` function.
-     */
-    export class ErrorResponse implements ErrorResponseOpts {
-        /**
-         * HTTP response.
-         */
-        readonly response: Response;
-        /**
-         * Field errors.
-         */
-        readonly errors: FieldErrors;
-        constructor(opts: ErrorResponseOpts);
-    }
-    /**
-     * Field errors.
-     *
-     * Any field of this object is an arrays of errors corresponding to this field. Such array should never be empty.
-     *
-     * The special case is field named `"*"`. It contains errors not related to particular field.
-     */
-    export interface FieldErrors {
-        [field: string]: FieldError[];
-    }
-    /**
-     * Field error.
-     */
-    export interface FieldError {
-        /**
-         * Optional error code.
-         */
-        code?: string;
-        /**
-         * Error message.
-         */
-        message: string;
-    }
-    /**
-     * Converts any object to `ErrorResponse`.
-     *
-     * If the `error` object is already of type `ErrorResponse` then just returns it.
-     *
-     * This function can be used as a [error handler][Protocol.handleError] to convert HTTP responses.
-     *
-     * @param error object to convert.
-     *
-     * @return {ErrorResponse} constructed error response.
-     */
-    export function toErrorResponse(error: any): ErrorResponse;
-}
 declare module "ng2-rike/resource" {
     import { Type } from "@angular/core";
     import { Observable } from "rxjs/Rx";
@@ -709,6 +786,7 @@ declare module "ng2-rike/resource" {
 }
 declare module "ng2-rike" {
     export * from "ng2-rike/error";
+    export * from "ng2-rike/error-collector";
     export * from "ng2-rike/event";
     export * from "ng2-rike/options";
     export * from "ng2-rike/protocol";

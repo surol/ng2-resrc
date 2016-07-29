@@ -1,0 +1,297 @@
+import {Injectable, EventEmitter} from "@angular/core";
+import {FieldErrors, FieldError, toErrorResponse} from "./error";
+import {RikeEventSource, RikeEvent, RikeErrorEvent} from "./event";
+import {RikeTarget} from "./rike";
+
+/**
+ * Field errors subscription.
+ *
+ * The `unsubscribe()` method should be called to stop receiving error notifications.
+ */
+export interface ErrorSubscription {
+
+    /**
+     * After this method called the error notifications won't be sent to subscriber.
+     *
+     * This method should be called in order to release all resources associated with subscription.
+     */
+    unsubscribe(): void;
+
+}
+
+/**
+ * An error collecting service.
+ *
+ * It collects errors from all available [Rike event sources][RikeEventSource]. It uses `toFieldErrors()` method
+ * to build a `FieldErrors` instance to obtain errors from. Then it notifies all subscribers on when errors received or
+ * removed.
+ *
+ * This service is registered automatically along with every event source by [RikeEventSource.provide] method.
+ * But unlike event sources it is not a multi-provider.
+ */
+@Injectable()
+export class ErrorCollector {
+
+    private readonly _emitters: {[field: string]: FieldEmitter} = {};
+    private readonly _targetErrors: {[target: string]: TargetErrors} = {};
+    private _initialized = false;
+
+    constructor(private _eventSources: RikeEventSource[]) {
+    }
+
+    /**
+     * Adds subscription on errors corresponding to the given field.
+     *
+     * If the field name is `"*"`, then subscriber will be notified on error changes for all fields except those ones
+     * with existing subscriptions.
+     *
+     * @param field target field name.
+     * @param next function that will be called on every target field errors update.
+     * @param error function that will be called on errors.
+     * @param complete function that will be called when no more errors will be reported.
+     *
+     * @return {ErrorSubscription} subscription.
+     */
+    public subscribe(
+        field: string,
+        next: ((errors: FieldErrors) => void),
+        error?: (error: any) => void,
+        complete?: () => void): ErrorSubscription {
+        this.init();
+        return this.fieldEmitter(field).subscribe(next, error, complete);
+    }
+
+    /**
+     * Adds subscription on errors corresponding to all fields except those ones with existing subscriptions.
+     *
+     * Calling this method is the same as calling `subscribe("*", next, error, complete);`.
+     *
+     * @param next function that will be called on every errors update.
+     * @param error function that will be called on errors.
+     * @param complete function that will be called when no more errors will be reported.
+     *
+     * @return {ErrorSubscription} subscription.
+     */
+    public subscribeOnRest(
+        next: ((errors: FieldErrors) => void),
+        error?: (error: any) => void,
+        complete?: () => void): ErrorSubscription {
+        return this.subscribe("*", next, error, complete);
+    }
+
+    //noinspection JSMethodCanBeStatic
+    /**
+     * Converts arbitrary error to `FieldErrors`.
+     *
+     * This method uses [toErrorResponse] function by default. Override it if you are using custom error handler.
+     *
+     * @param error arbitrary error passed in [RikeEvent.error] field.
+     *
+     * @return {FieldErrors} field errors.
+     */
+    protected toFieldErrors(error: any): FieldErrors {
+        return toErrorResponse(error).errors;
+    }
+
+    private fieldEmitter(field: string) {
+        return this._emitters[field] || (this._emitters[field] = new FieldEmitter(field, this._emitters));
+    }
+
+    private init() {
+        if (this._initialized) {
+            return;
+        }
+
+        this._initialized = true;
+        for (let src of this._eventSources) {
+            src.rikeEvents.subscribe(
+                (event: RikeEvent) => this.handleEvent(event),
+                (error: RikeErrorEvent) => this.handleError(error));
+        }
+    }
+
+    private handleEvent(event: RikeEvent) {
+
+        let affectedFields: {[field: string]: any};
+        const error = event.error;
+
+        if (!error) {
+            affectedFields = this.clearTargetErrors(event.target);
+        } else {
+            affectedFields = this.targetErrors(event.target).addAll(this.toFieldErrors(error));
+        }
+
+        for (let field in affectedFields) {
+            if (affectedFields.hasOwnProperty(field)) {
+                this.notify(field);
+            }
+        }
+    }
+
+    private handleError(error: RikeErrorEvent) {
+        this.targetErrors(error.target).add("*", {message: error.error.toString()});
+        this.notify("*");
+    }
+
+    private targetErrors(target: RikeTarget<any, any>): TargetErrors {
+
+        const id = target.uniqueId;
+
+        return this._targetErrors[id] || (this._targetErrors[id] = new TargetErrors(target, this._emitters));
+    }
+
+    private clearTargetErrors(target: RikeTarget<any, any>): {[field: string]: any} {
+
+        const id = target.uniqueId;
+        const targetErrors = this._targetErrors[id];
+
+        if (!targetErrors) {
+            return [];
+        }
+
+        delete this._targetErrors[id];
+
+        return targetErrors.fieldsWithErrors;
+    }
+
+    private notify(field: string) {
+
+        let emitter = this._emitters[field];
+
+        if (!emitter) {
+            return;
+        }
+
+        const errors: FieldErrors = {};
+
+        for (let id in this._targetErrors) {
+            if (this._targetErrors.hasOwnProperty(id)) {
+                this._targetErrors[id].appendTo(field, errors);
+            }
+        }
+
+        emitter.emit(errors);
+    }
+
+}
+
+class FieldEmitter {
+
+    private _emitter = new EventEmitter<FieldErrors>();
+    private _counter = 0;
+
+    constructor(
+        private _field: string,
+        private _emitters: {[field: string]: FieldEmitter}) {
+    }
+
+    subscribe(
+        next: ((errors: FieldErrors) => void),
+        error?: (error: any) => void,
+        complete?: () => void): ErrorSubscription {
+
+        const subscr: ErrorSubscription = this._emitter.subscribe(next, error, complete);
+
+        this._counter++;
+
+        return new ErrorSubscr(this, subscr);
+    }
+
+    emit(errors: FieldErrors) {
+        this._emitter.emit(errors);
+    }
+
+    unsubscribed() {
+        if (!--this._counter) {
+            delete this._emitters[this._field];
+        }
+    }
+
+}
+
+class ErrorSubscr implements ErrorSubscription {
+
+    constructor(
+        private _emitter: FieldEmitter,
+        private _subscription?: ErrorSubscription) {
+    }
+
+    unsubscribe(): void {
+        if (!this._subscription) {
+            return;
+        }
+        try {
+            this._subscription.unsubscribe();
+        } finally {
+            delete this._subscription;
+            this._emitter.unsubscribed();
+        }
+    }
+
+}
+
+class TargetErrors {
+
+    private _errors: FieldErrors;
+
+    constructor(
+        public target: RikeTarget<any, any>,
+        private _emitters: {[field: string]: any},
+        errors?: FieldErrors) {
+        this._errors = errors || {};
+    }
+
+    get fieldsWithErrors(): {[field: string]: any} {
+        return this._errors;
+    }
+
+    add(field: string, ...errors: FieldError[]) {
+
+        const existing = this._errors[field];
+
+        if (!existing) {
+            this._errors[field] = existing;
+        } else {
+            this._errors[field].push(...errors);
+        }
+    }
+
+    addAll(errors: FieldErrors): {[field: string]: any} {
+        for (let field in errors) {
+            if (errors.hasOwnProperty(field)) {
+                this.add(field, ...errors[field]);
+            }
+        }
+        return errors;
+    }
+
+    appendTo(field: string, out: FieldErrors) {
+        if (field !== "*") {
+            // Append errors for the given field.
+            appendErrorsTo(field, out, this._errors[field]);
+            return;
+        }
+
+        // Append errors for all fields except the ones with subscribers.
+        for (let f in this._errors) {
+            if (this._errors.hasOwnProperty(f) && !this._emitters[f]) {
+                appendErrorsTo(f, out, this._errors[f]);
+            }
+        }
+    }
+
+}
+
+function appendErrorsTo(field: string, fieldErrors: FieldErrors, errors: FieldError[] | undefined) {
+    if (!errors || !errors.length) {
+        return;
+    }
+
+    const errs = fieldErrors[field];
+
+    if (errs) {
+        errs.push(...errors);
+    } else {
+        fieldErrors[field] = errors;
+    }
+}

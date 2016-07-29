@@ -4,6 +4,7 @@ import {RikeEventSource} from "./ng2-rike/event";
 import {PLATFORM_DIRECTIVES} from "@angular/core";
 import {RikeStatusComponent} from "./ng2-rike/status.component";
 export * from "./ng2-rike/error";
+export * from "./ng2-rike/error-collector";
 export * from "./ng2-rike/event";
 export * from "./ng2-rike/options";
 export * from "./ng2-rike/protocol";

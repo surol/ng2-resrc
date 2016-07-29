@@ -1,8 +1,3 @@
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -12,15 +7,422 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
-System.register("ng2-rike/event", [], function(exports_1, context_1) {
+System.register("ng2-rike/error", ["@angular/http"], function(exports_1, context_1) {
     "use strict";
     var __moduleName = context_1 && context_1.id;
+    var http_1;
+    var ErrorResponse;
+    /**
+     * Converts any object to `ErrorResponse`.
+     *
+     * If the `error` object is already of type `ErrorResponse` then just returns it.
+     *
+     * This function can be used as a [error handler][Protocol.handleError] to convert HTTP responses.
+     *
+     * @param error object to convert.
+     *
+     * @return {ErrorResponse} constructed error response.
+     */
+    function toErrorResponse(error) {
+        if (error instanceof ErrorResponse) {
+            // Error is already of the desired type.
+            return error;
+        }
+        if (error instanceof http_1.Response) {
+            var response = error;
+            var body = undefined;
+            // Attempt to parse JSON body
+            if (response.headers.get("Content-Type") === "application/json") {
+                try {
+                    body = response.json();
+                }
+                catch (e) {
+                    console.log("Failed to parse JSON error response", e);
+                }
+            }
+            var fieldErrors_1 = toFieldErrors(body);
+            if (fieldErrors_1) {
+                return new ErrorResponse({
+                    response: response,
+                    errors: fieldErrors_1,
+                });
+            }
+            return defaultErrorResponse(response);
+        }
+        // Error has `ErrorResponseOpts` interface?
+        var errorOpts = error;
+        if (errorOpts.response instanceof http_1.Response && errorOpts.errors instanceof Array) {
+            return new ErrorResponse(errorOpts);
+        }
+        var fieldErrors = toFieldErrors(error);
+        if (fieldErrors) {
+            return new ErrorResponse({
+                response: syntheticResponse(null),
+                errors: fieldErrors,
+            });
+        }
+        return defaultErrorResponse(syntheticResponse(error));
+    }
+    exports_1("toErrorResponse", toErrorResponse);
+    function syntheticResponse(error) {
+        var statusText = error != null ? error.toString() : null;
+        return new http_1.Response(new http_1.ResponseOptions({
+            type: http_1.ResponseType.Error,
+            status: 500,
+            statusText: statusText || "Unknown error"
+        }));
+    }
+    function defaultErrorResponse(response) {
+        var message = "ERROR " + response.status;
+        if (response.statusText && response.statusText.toLowerCase() != "ok") {
+            message += ": " + response.statusText;
+        }
+        return new ErrorResponse({
+            response: response,
+            errors: { "*": [{ code: "HTTP" + response.status, message: message }] },
+        });
+    }
+    function toFieldErrors(data) {
+        if (data == null) {
+            return;
+        }
+        if (data instanceof Array) {
+            var fieldErrors = data.map(toFieldError).filter(notEmptyError);
+            return fieldErrors.length ? { "*": fieldErrors } : undefined;
+        }
+        if (typeof data !== "object") {
+            var fieldErrors = [{ message: data.toString() }].filter(notEmptyError);
+            return fieldErrors.length ? { "*": fieldErrors } : undefined;
+        }
+        var errors = data;
+        var result = {};
+        var hasErrors = false;
+        for (var field in errors) {
+            if (errors.hasOwnProperty(field)) {
+                var errorArray = toFieldErrorArray(errors[field]);
+                if (errorArray.length) {
+                    result[field] = errorArray;
+                    hasErrors = true;
+                }
+            }
+        }
+        return hasErrors ? result : undefined;
+    }
+    function toFieldErrorArray(data) {
+        if (data == null) {
+            return [];
+        }
+        if (data instanceof Array) {
+            return data.map(toFieldError).filter(notEmptyError);
+        }
+        return [toFieldError(data)].filter(notEmptyError);
+    }
+    function toFieldError(data) {
+        if (data == null) {
+            return { message: "" };
+        }
+        var fieldError = data;
+        if (typeof fieldError.message === "string" && (fieldError.code == null || fieldError.code === "string")) {
+            return fieldError;
+        }
+        if (fieldError.message != null) {
+            return {
+                code: fieldError.code != null ? fieldError.code.toString() : undefined,
+                message: fieldError.message.toString(),
+            };
+        }
+        return { message: fieldError.toString() };
+    }
+    function notEmptyError(item) {
+        return !!item && (!!item.message || !!item.code);
+    }
+    return {
+        setters:[
+            function (http_1_1) {
+                http_1 = http_1_1;
+            }],
+        execute: function() {
+            /**
+             * Error response.
+             *
+             * Any object can be converted to `ErrorResponse` with `toErrorResponse()` function.
+             */
+            ErrorResponse = (function () {
+                function ErrorResponse(opts) {
+                    this.response = opts.response;
+                    this.errors = opts.errors;
+                }
+                return ErrorResponse;
+            }());
+            exports_1("ErrorResponse", ErrorResponse);
+        }
+    }
+});
+System.register("ng2-rike/error-collector", ["@angular/core", "ng2-rike/error"], function(exports_2, context_2) {
+    "use strict";
+    var __moduleName = context_2 && context_2.id;
+    var core_1, error_1;
+    var ErrorCollector, FieldEmitter, ErrorSubscr, TargetErrors;
+    function appendErrorsTo(field, fieldErrors, errors) {
+        if (!errors || !errors.length) {
+            return;
+        }
+        var errs = fieldErrors[field];
+        if (errs) {
+            errs.push.apply(errs, errors);
+        }
+        else {
+            fieldErrors[field] = errors;
+        }
+    }
+    return {
+        setters:[
+            function (core_1_1) {
+                core_1 = core_1_1;
+            },
+            function (error_1_1) {
+                error_1 = error_1_1;
+            }],
+        execute: function() {
+            /**
+             * An error collecting service.
+             *
+             * It collects errors from all available [Rike event sources][RikeEventSource]. It uses `toFieldErrors()` method
+             * to build a `FieldErrors` instance to obtain errors from. Then it notifies all subscribers on when errors received or
+             * removed.
+             *
+             * This service is registered automatically along with every event source by [RikeEventSource.provide] method.
+             * But unlike event sources it is not a multi-provider.
+             */
+            ErrorCollector = (function () {
+                function ErrorCollector(_eventSources) {
+                    this._eventSources = _eventSources;
+                    this._emitters = {};
+                    this._targetErrors = {};
+                    this._initialized = false;
+                }
+                /**
+                 * Adds subscription on errors corresponding to the given field.
+                 *
+                 * If the field name is `"*"`, then subscriber will be notified on error changes for all fields except those ones
+                 * with existing subscriptions.
+                 *
+                 * @param field target field name.
+                 * @param next function that will be called on every target field errors update.
+                 * @param error function that will be called on errors.
+                 * @param complete function that will be called when no more errors will be reported.
+                 *
+                 * @return {ErrorSubscription} subscription.
+                 */
+                ErrorCollector.prototype.subscribe = function (field, next, error, complete) {
+                    this.init();
+                    return this.fieldEmitter(field).subscribe(next, error, complete);
+                };
+                /**
+                 * Adds subscription on errors corresponding to all fields except those ones with existing subscriptions.
+                 *
+                 * Calling this method is the same as calling `subscribe("*", next, error, complete);`.
+                 *
+                 * @param next function that will be called on every errors update.
+                 * @param error function that will be called on errors.
+                 * @param complete function that will be called when no more errors will be reported.
+                 *
+                 * @return {ErrorSubscription} subscription.
+                 */
+                ErrorCollector.prototype.subscribeOnRest = function (next, error, complete) {
+                    return this.subscribe("*", next, error, complete);
+                };
+                //noinspection JSMethodCanBeStatic
+                /**
+                 * Converts arbitrary error to `FieldErrors`.
+                 *
+                 * This method uses [toErrorResponse] function by default. Override it if you are using custom error handler.
+                 *
+                 * @param error arbitrary error passed in [RikeEvent.error] field.
+                 *
+                 * @return {FieldErrors} field errors.
+                 */
+                ErrorCollector.prototype.toFieldErrors = function (error) {
+                    return error_1.toErrorResponse(error).errors;
+                };
+                ErrorCollector.prototype.fieldEmitter = function (field) {
+                    return this._emitters[field] || (this._emitters[field] = new FieldEmitter(field, this._emitters));
+                };
+                ErrorCollector.prototype.init = function () {
+                    var _this = this;
+                    if (this._initialized) {
+                        return;
+                    }
+                    this._initialized = true;
+                    for (var _i = 0, _a = this._eventSources; _i < _a.length; _i++) {
+                        var src = _a[_i];
+                        src.rikeEvents.subscribe(function (event) { return _this.handleEvent(event); }, function (error) { return _this.handleError(error); });
+                    }
+                };
+                ErrorCollector.prototype.handleEvent = function (event) {
+                    var affectedFields;
+                    var error = event.error;
+                    if (!error) {
+                        affectedFields = this.clearTargetErrors(event.target);
+                    }
+                    else {
+                        affectedFields = this.targetErrors(event.target).addAll(this.toFieldErrors(error));
+                    }
+                    for (var field in affectedFields) {
+                        if (affectedFields.hasOwnProperty(field)) {
+                            this.notify(field);
+                        }
+                    }
+                };
+                ErrorCollector.prototype.handleError = function (error) {
+                    this.targetErrors(error.target).add("*", { message: error.error.toString() });
+                    this.notify("*");
+                };
+                ErrorCollector.prototype.targetErrors = function (target) {
+                    var id = target.uniqueId;
+                    return this._targetErrors[id] || (this._targetErrors[id] = new TargetErrors(target, this._emitters));
+                };
+                ErrorCollector.prototype.clearTargetErrors = function (target) {
+                    var id = target.uniqueId;
+                    var targetErrors = this._targetErrors[id];
+                    if (!targetErrors) {
+                        return [];
+                    }
+                    delete this._targetErrors[id];
+                    return targetErrors.fieldsWithErrors;
+                };
+                ErrorCollector.prototype.notify = function (field) {
+                    var emitter = this._emitters[field];
+                    if (!emitter) {
+                        return;
+                    }
+                    var errors = {};
+                    for (var id in this._targetErrors) {
+                        if (this._targetErrors.hasOwnProperty(id)) {
+                            this._targetErrors[id].appendTo(field, errors);
+                        }
+                    }
+                    emitter.emit(errors);
+                };
+                ErrorCollector = __decorate([
+                    core_1.Injectable(), 
+                    __metadata('design:paramtypes', [Array])
+                ], ErrorCollector);
+                return ErrorCollector;
+            }());
+            exports_2("ErrorCollector", ErrorCollector);
+            FieldEmitter = (function () {
+                function FieldEmitter(_field, _emitters) {
+                    this._field = _field;
+                    this._emitters = _emitters;
+                    this._emitter = new core_1.EventEmitter();
+                    this._counter = 0;
+                }
+                FieldEmitter.prototype.subscribe = function (next, error, complete) {
+                    var subscr = this._emitter.subscribe(next, error, complete);
+                    this._counter++;
+                    return new ErrorSubscr(this, subscr);
+                };
+                FieldEmitter.prototype.emit = function (errors) {
+                    this._emitter.emit(errors);
+                };
+                FieldEmitter.prototype.unsubscribed = function () {
+                    if (!--this._counter) {
+                        delete this._emitters[this._field];
+                    }
+                };
+                return FieldEmitter;
+            }());
+            ErrorSubscr = (function () {
+                function ErrorSubscr(_emitter, _subscription) {
+                    this._emitter = _emitter;
+                    this._subscription = _subscription;
+                }
+                ErrorSubscr.prototype.unsubscribe = function () {
+                    if (!this._subscription) {
+                        return;
+                    }
+                    try {
+                        this._subscription.unsubscribe();
+                    }
+                    finally {
+                        delete this._subscription;
+                        this._emitter.unsubscribed();
+                    }
+                };
+                return ErrorSubscr;
+            }());
+            TargetErrors = (function () {
+                function TargetErrors(target, _emitters, errors) {
+                    this.target = target;
+                    this._emitters = _emitters;
+                    this._errors = errors || {};
+                }
+                Object.defineProperty(TargetErrors.prototype, "fieldsWithErrors", {
+                    get: function () {
+                        return this._errors;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                TargetErrors.prototype.add = function (field) {
+                    var errors = [];
+                    for (var _i = 1; _i < arguments.length; _i++) {
+                        errors[_i - 1] = arguments[_i];
+                    }
+                    var existing = this._errors[field];
+                    if (!existing) {
+                        this._errors[field] = existing;
+                    }
+                    else {
+                        (_a = this._errors[field]).push.apply(_a, errors);
+                    }
+                    var _a;
+                };
+                TargetErrors.prototype.addAll = function (errors) {
+                    for (var field in errors) {
+                        if (errors.hasOwnProperty(field)) {
+                            this.add.apply(this, [field].concat(errors[field]));
+                        }
+                    }
+                    return errors;
+                };
+                TargetErrors.prototype.appendTo = function (field, out) {
+                    if (field !== "*") {
+                        // Append errors for the given field.
+                        appendErrorsTo(field, out, this._errors[field]);
+                        return;
+                    }
+                    // Append errors for all fields except the ones with subscribers.
+                    for (var f in this._errors) {
+                        if (this._errors.hasOwnProperty(f) && !this._emitters[f]) {
+                            appendErrorsTo(f, out, this._errors[f]);
+                        }
+                    }
+                };
+                return TargetErrors;
+            }());
+        }
+    }
+});
+System.register("ng2-rike/event", ["ng2-rike/error-collector"], function(exports_3, context_3) {
+    "use strict";
+    var __moduleName = context_3 && context_3.id;
+    var error_collector_1;
     var RikeEventSource, RikeEvent, RikeOperationEvent, RikeSuccessEvent, RikeErrorEvent, RikeCancelEvent;
     return {
-        setters:[],
+        setters:[
+            function (error_collector_1_1) {
+                error_collector_1 = error_collector_1_1;
+            }],
         execute: function() {
             /**
              * REST-like resource access event emitter.
@@ -43,20 +445,23 @@ System.register("ng2-rike/event", [], function(exports_1, context_1) {
                  */
                 RikeEventSource.provide = function (_a) {
                     var useClass = _a.useClass, useValue = _a.useValue, useExisting = _a.useExisting, useFactory = _a.useFactory, deps = _a.deps;
-                    return {
-                        provide: RikeEventSource,
-                        multi: true,
-                        useClass: useClass,
-                        useValue: useValue,
-                        useExisting: useExisting,
-                        useFactory: useFactory,
-                        deps: deps,
-                    };
+                    return [
+                        error_collector_1.ErrorCollector,
+                        {
+                            provide: RikeEventSource,
+                            multi: true,
+                            useClass: useClass,
+                            useValue: useValue,
+                            useExisting: useExisting,
+                            useFactory: useFactory,
+                            deps: deps,
+                        },
+                    ];
                 };
                 ;
                 return RikeEventSource;
             }());
-            exports_1("RikeEventSource", RikeEventSource);
+            exports_3("RikeEventSource", RikeEventSource);
             /**
              * Basic REST-like resource access event.
              *
@@ -89,7 +494,7 @@ System.register("ng2-rike/event", [], function(exports_1, context_1) {
                 });
                 return RikeEvent;
             }());
-            exports_1("RikeEvent", RikeEvent);
+            exports_3("RikeEvent", RikeEvent);
             /**
              * An event emitted when operation on a REST-like resource is started.
              */
@@ -136,7 +541,7 @@ System.register("ng2-rike/event", [], function(exports_1, context_1) {
                 });
                 return RikeOperationEvent;
             }(RikeEvent));
-            exports_1("RikeOperationEvent", RikeOperationEvent);
+            exports_3("RikeOperationEvent", RikeOperationEvent);
             /**
              * An event emitted when operation on a REST-like resource is successfully completed.
              */
@@ -184,7 +589,7 @@ System.register("ng2-rike/event", [], function(exports_1, context_1) {
                 });
                 return RikeSuccessEvent;
             }(RikeEvent));
-            exports_1("RikeSuccessEvent", RikeSuccessEvent);
+            exports_3("RikeSuccessEvent", RikeSuccessEvent);
             /**
              * An event emitted when operation on a REST-like resource is failed.
              *
@@ -234,7 +639,7 @@ System.register("ng2-rike/event", [], function(exports_1, context_1) {
                 });
                 return RikeErrorEvent;
             }(RikeEvent));
-            exports_1("RikeErrorEvent", RikeErrorEvent);
+            exports_3("RikeErrorEvent", RikeErrorEvent);
             /**
              * An event emitted when operation on a REST-like resource is cancelled.
              */
@@ -267,13 +672,13 @@ System.register("ng2-rike/event", [], function(exports_1, context_1) {
                 });
                 return RikeCancelEvent;
             }(RikeErrorEvent));
-            exports_1("RikeCancelEvent", RikeCancelEvent);
+            exports_3("RikeCancelEvent", RikeCancelEvent);
         }
     }
 });
-System.register("ng2-rike/status", [], function(exports_2, context_2) {
+System.register("ng2-rike/status", [], function(exports_4, context_4) {
     "use strict";
-    var __moduleName = context_2 && context_2.id;
+    var __moduleName = context_4 && context_4.id;
     var DEFAULT_STATUS_LABELS, RikeStatus;
     function labelOf(status, labels) {
         if (!labels) {
@@ -335,7 +740,7 @@ System.register("ng2-rike/status", [], function(exports_2, context_2) {
     return {
         setters:[],
         execute: function() {
-            exports_2("DEFAULT_STATUS_LABELS", DEFAULT_STATUS_LABELS = {
+            exports_4("DEFAULT_STATUS_LABELS", DEFAULT_STATUS_LABELS = {
                 "*": {
                     processing: "Processing",
                     failed: "Error",
@@ -470,13 +875,13 @@ System.register("ng2-rike/status", [], function(exports_2, context_2) {
                 };
                 return RikeStatus;
             }());
-            exports_2("RikeStatus", RikeStatus);
+            exports_4("RikeStatus", RikeStatus);
         }
     }
 });
-System.register("ng2-rike/options", ["ng2-rike/status"], function(exports_3, context_3) {
+System.register("ng2-rike/options", ["ng2-rike/status"], function(exports_5, context_5) {
     "use strict";
-    var __moduleName = context_3 && context_3.id;
+    var __moduleName = context_5 && context_5.id;
     var status_1;
     var RikeOptions, BaseRikeOptions, DEFAULT_RIKE_OPTIONS;
     /**
@@ -500,7 +905,7 @@ System.register("ng2-rike/options", ["ng2-rike/status"], function(exports_3, con
         }
         return baseUrl + "/" + url;
     }
-    exports_3("relativeUrl", relativeUrl);
+    exports_5("relativeUrl", relativeUrl);
     return {
         setters:[
             function (status_1_1) {
@@ -530,7 +935,7 @@ System.register("ng2-rike/options", ["ng2-rike/status"], function(exports_3, con
                 };
                 return RikeOptions;
             }());
-            exports_3("RikeOptions", RikeOptions);
+            exports_5("RikeOptions", RikeOptions);
             /**
              * Basic [global resource options][RikeOptions] implementation.
              *
@@ -572,25 +977,25 @@ System.register("ng2-rike/options", ["ng2-rike/status"], function(exports_3, con
                 });
                 return BaseRikeOptions;
             }(RikeOptions));
-            exports_3("BaseRikeOptions", BaseRikeOptions);
+            exports_5("BaseRikeOptions", BaseRikeOptions);
             /**
              * Default resource options.
              *
              * @type {RikeOptions}
              */
-            exports_3("DEFAULT_RIKE_OPTIONS", DEFAULT_RIKE_OPTIONS = new BaseRikeOptions());
+            exports_5("DEFAULT_RIKE_OPTIONS", DEFAULT_RIKE_OPTIONS = new BaseRikeOptions());
         }
     }
 });
-System.register("ng2-rike/protocol", ["@angular/http"], function(exports_4, context_4) {
+System.register("ng2-rike/protocol", ["@angular/http"], function(exports_6, context_6) {
     "use strict";
-    var __moduleName = context_4 && context_4.id;
-    var http_1;
+    var __moduleName = context_6 && context_6.id;
+    var http_2;
     var Protocol, PrepareRequestProtocol, WriteRequestProtocol, ReadResponseProtocol, HandleErrorProtocol, JsonProtocol, JSON_PROTOCOL, jsonProtocol, HttpProtocol, HTTP_PROTOCOL;
     return {
         setters:[
-            function (http_1_1) {
-                http_1 = http_1_1;
+            function (http_2_1) {
+                http_2 = http_2_1;
             }],
         execute: function() {
             /**
@@ -685,7 +1090,7 @@ System.register("ng2-rike/protocol", ["@angular/http"], function(exports_4, cont
                 };
                 return Protocol;
             }());
-            exports_4("Protocol", Protocol);
+            exports_6("Protocol", Protocol);
             PrepareRequestProtocol = (function (_super) {
                 __extends(PrepareRequestProtocol, _super);
                 function PrepareRequestProtocol(_protocol, _prepare, _after) {
@@ -777,13 +1182,13 @@ System.register("ng2-rike/protocol", ["@angular/http"], function(exports_4, cont
                     _super.apply(this, arguments);
                 }
                 JsonProtocol.prototype.writeRequest = function (request, options) {
-                    var opts = new http_1.RequestOptions(options).merge({ body: JSON.stringify(request) });
+                    var opts = new http_2.RequestOptions(options).merge({ body: JSON.stringify(request) });
                     var headers;
                     if (opts.headers) {
                         headers = opts.headers;
                     }
                     else {
-                        opts.headers = headers = new http_1.Headers();
+                        opts.headers = headers = new http_2.Headers();
                     }
                     headers.set("Content-Type", "application/json");
                     return opts;
@@ -800,20 +1205,20 @@ System.register("ng2-rike/protocol", ["@angular/http"], function(exports_4, cont
              *
              * @type {Protocol<any>}
              */
-            exports_4("JSON_PROTOCOL", JSON_PROTOCOL = new JsonProtocol());
+            exports_6("JSON_PROTOCOL", JSON_PROTOCOL = new JsonProtocol());
             /**
              * Returns JSON protocol.
              *
              * Sends and receives the data of the given type as JSON over HTTP.
              */
-            exports_4("jsonProtocol", jsonProtocol = function () { return JSON_PROTOCOL; });
+            exports_6("jsonProtocol", jsonProtocol = function () { return JSON_PROTOCOL; });
             HttpProtocol = (function (_super) {
                 __extends(HttpProtocol, _super);
                 function HttpProtocol() {
                     _super.apply(this, arguments);
                 }
                 HttpProtocol.prototype.writeRequest = function (request, options) {
-                    return new http_1.RequestOptions(options).merge({ body: request });
+                    return new http_2.RequestOptions(options).merge({ body: request });
                 };
                 HttpProtocol.prototype.readResponse = function (response) {
                     return response;
@@ -827,14 +1232,14 @@ System.register("ng2-rike/protocol", ["@angular/http"], function(exports_4, cont
              *
              * @type {Protocol<any, Response>}
              */
-            exports_4("HTTP_PROTOCOL", HTTP_PROTOCOL = new HttpProtocol());
+            exports_6("HTTP_PROTOCOL", HTTP_PROTOCOL = new HttpProtocol());
         }
     }
 });
-System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "ng2-rike/event", "ng2-rike/options", "ng2-rike/protocol"], function(exports_5, context_5) {
+System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "ng2-rike/event", "ng2-rike/options", "ng2-rike/protocol"], function(exports_7, context_7) {
     "use strict";
-    var __moduleName = context_5 && context_5.id;
-    var core_1, http_2, Rx_1, event_1, options_1, protocol_1;
+    var __moduleName = context_7 && context_7.id;
+    var core_2, http_3, Rx_1, event_1, options_1, protocol_1;
     var REQUEST_METHODS, Rike, RikeTarget, RikeOperation, RikeTargetImpl, RikeOperationImpl;
     function requestMethod(method) {
         if (typeof method !== "string") {
@@ -846,14 +1251,14 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
         }
         throw new Error("Unsupported HTTP request method: " + method);
     }
-    exports_5("requestMethod", requestMethod);
+    exports_7("requestMethod", requestMethod);
     return {
         setters:[
-            function (core_1_1) {
-                core_1 = core_1_1;
+            function (core_2_1) {
+                core_2 = core_2_1;
             },
-            function (http_2_1) {
-                http_2 = http_2_1;
+            function (http_3_1) {
+                http_3 = http_3_1;
             },
             function (Rx_1_1) {
                 Rx_1 = Rx_1_1;
@@ -869,13 +1274,13 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
             }],
         execute: function() {
             REQUEST_METHODS = {
-                "GET": http_2.RequestMethod.Get,
-                "POST": http_2.RequestMethod.Post,
-                "PUT": http_2.RequestMethod.Put,
-                "DELETE": http_2.RequestMethod.Delete,
-                "OPTIONS": http_2.RequestMethod.Options,
-                "HEAD": http_2.RequestMethod.Head,
-                "PATCH": http_2.RequestMethod.Patch,
+                "GET": http_3.RequestMethod.Get,
+                "POST": http_3.RequestMethod.Post,
+                "PUT": http_3.RequestMethod.Put,
+                "DELETE": http_3.RequestMethod.Delete,
+                "OPTIONS": http_3.RequestMethod.Options,
+                "HEAD": http_3.RequestMethod.Head,
+                "PATCH": http_3.RequestMethod.Patch,
             };
             /**
              * REST-like resource operations service.
@@ -890,7 +1295,7 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                 function Rike(_http, defaultHttpOptions, _options) {
                     var _this = this;
                     this._http = _http;
-                    this._rikeEvents = new core_1.EventEmitter();
+                    this._rikeEvents = new core_2.EventEmitter();
                     this._uniqueIdSeq = 0;
                     this._options = _options || options_1.DEFAULT_RIKE_OPTIONS;
                     this._internals = {
@@ -1039,13 +1444,13 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                     });
                 };
                 Rike = __decorate([
-                    core_1.Injectable(),
-                    __param(2, core_1.Optional()), 
-                    __metadata('design:paramtypes', [http_2.Http, http_2.RequestOptions, options_1.RikeOptions])
+                    core_2.Injectable(),
+                    __param(2, core_2.Optional()), 
+                    __metadata('design:paramtypes', [http_3.Http, http_3.RequestOptions, options_1.RikeOptions])
                 ], Rike);
                 return Rike;
             }());
-            exports_5("Rike", Rike);
+            exports_7("Rike", Rike);
             /**
              * REST-like operations target.
              *
@@ -1075,7 +1480,7 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                 };
                 return RikeTarget;
             }());
-            exports_5("RikeTarget", RikeTarget);
+            exports_7("RikeTarget", RikeTarget);
             //noinspection ReservedWordAsName
             /**
              * REST-like resource operation.
@@ -1114,7 +1519,7 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                 };
                 return RikeOperation;
             }());
-            exports_5("RikeOperation", RikeOperation);
+            exports_7("RikeOperation", RikeOperation);
             RikeTargetImpl = (function (_super) {
                 __extends(RikeTargetImpl, _super);
                 function RikeTargetImpl(_rike, _internals, _target, _protocol) {
@@ -1123,7 +1528,7 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                     this._internals = _internals;
                     this._target = _target;
                     this._protocol = _protocol;
-                    this._rikeEvents = new core_1.EventEmitter();
+                    this._rikeEvents = new core_2.EventEmitter();
                     this._uniqueId = _internals.generateUniqueId();
                 }
                 Object.defineProperty(RikeTargetImpl.prototype, "rike", {
@@ -1372,7 +1777,7 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                 RikeOperationImpl.prototype.get = function (url, options) {
                     try {
                         this.startOperation();
-                        options = this.requestOptions(http_2.RequestMethod.Get, url, options);
+                        options = this.requestOptions(http_3.RequestMethod.Get, url, options);
                         return this.wrapResponse(this.internals.get(this.requestUrl(options), options));
                     }
                     catch (e) {
@@ -1383,7 +1788,7 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                 RikeOperationImpl.prototype.post = function (request, url, options) {
                     try {
                         this.startOperation();
-                        options = this.writeRequest(request, this.requestOptions(http_2.RequestMethod.Post, url, options));
+                        options = this.writeRequest(request, this.requestOptions(http_3.RequestMethod.Post, url, options));
                         return this.wrapResponse(this.internals.post(this.requestUrl(options), options.body, options));
                     }
                     catch (e) {
@@ -1394,7 +1799,7 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                 RikeOperationImpl.prototype.put = function (request, url, options) {
                     try {
                         this.startOperation();
-                        options = this.writeRequest(request, this.requestOptions(http_2.RequestMethod.Put, url, options));
+                        options = this.writeRequest(request, this.requestOptions(http_3.RequestMethod.Put, url, options));
                         return this.wrapResponse(this.internals.put(this.requestUrl(options), options.body, options));
                     }
                     catch (e) {
@@ -1406,7 +1811,7 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                 RikeOperationImpl.prototype.delete = function (url, options) {
                     try {
                         this.startOperation();
-                        options = this.requestOptions(http_2.RequestMethod.Delete, url, options);
+                        options = this.requestOptions(http_3.RequestMethod.Delete, url, options);
                         return this.wrapResponse(this.internals.delete(this.requestUrl(options), options));
                     }
                     catch (e) {
@@ -1417,7 +1822,7 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                 RikeOperationImpl.prototype.patch = function (request, url, options) {
                     try {
                         this.startOperation();
-                        options = this.writeRequest(request, this.requestOptions(http_2.RequestMethod.Patch, url, options));
+                        options = this.writeRequest(request, this.requestOptions(http_3.RequestMethod.Patch, url, options));
                         return this.wrapResponse(this.internals.patch(this.requestUrl(options), options.body, options));
                     }
                     catch (e) {
@@ -1428,7 +1833,7 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                 RikeOperationImpl.prototype.head = function (url, options) {
                     try {
                         this.startOperation();
-                        options = this.requestOptions(http_2.RequestMethod.Head, url, options);
+                        options = this.requestOptions(http_3.RequestMethod.Head, url, options);
                         return this.wrapResponse(this.internals.head(this.requestUrl(options), options));
                     }
                     catch (e) {
@@ -1447,7 +1852,7 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                         options = { url: url, method: method };
                     }
                     else {
-                        options = new http_2.RequestOptions(options).merge({ url: url, method: method });
+                        options = new http_3.RequestOptions(options).merge({ url: url, method: method });
                     }
                     options = this.options.merge(options);
                     if (options.url == null) {
@@ -1477,15 +1882,15 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
         }
     }
 });
-System.register("ng2-rike/status.component", ["@angular/core", "ng2-rike/status"], function(exports_6, context_6) {
+System.register("ng2-rike/status.component", ["@angular/core", "ng2-rike/status"], function(exports_8, context_8) {
     "use strict";
-    var __moduleName = context_6 && context_6.id;
-    var core_2, status_2;
+    var __moduleName = context_8 && context_8.id;
+    var core_3, status_2;
     var RikeStatusComponent;
     return {
         setters:[
-            function (core_2_1) {
-                core_2 = core_2_1;
+            function (core_3_1) {
+                core_3 = core_3_1;
             },
             function (status_2_1) {
                 status_2 = status_2_1;
@@ -1578,15 +1983,15 @@ System.register("ng2-rike/status.component", ["@angular/core", "ng2-rike/status"
                     }
                 };
                 __decorate([
-                    core_2.Input(), 
+                    core_3.Input(), 
                     __metadata('design:type', status_2.RikeStatus)
                 ], RikeStatusComponent.prototype, "rikeStatus", null);
                 __decorate([
-                    core_2.Input(), 
+                    core_3.Input(), 
                     __metadata('design:type', Object)
                 ], RikeStatusComponent.prototype, "rikeStatusLabels", null);
                 RikeStatusComponent = __decorate([
-                    core_2.Component({
+                    core_3.Component({
                         selector: '[rikeStatus]',
                         template: "{{text}}",
                         host: {
@@ -1597,164 +2002,13 @@ System.register("ng2-rike/status.component", ["@angular/core", "ng2-rike/status"
                 ], RikeStatusComponent);
                 return RikeStatusComponent;
             }());
-            exports_6("RikeStatusComponent", RikeStatusComponent);
+            exports_8("RikeStatusComponent", RikeStatusComponent);
         }
     }
 });
-System.register("ng2-rike/error", ["@angular/http"], function(exports_7, context_7) {
+System.register("ng2-rike/resource", ["@angular/http", "ng2-rike/protocol", "ng2-rike/event", "ng2-rike/options"], function(exports_9, context_9) {
     "use strict";
-    var __moduleName = context_7 && context_7.id;
-    var http_3;
-    var ErrorResponse;
-    /**
-     * Converts any object to `ErrorResponse`.
-     *
-     * If the `error` object is already of type `ErrorResponse` then just returns it.
-     *
-     * This function can be used as a [error handler][Protocol.handleError] to convert HTTP responses.
-     *
-     * @param error object to convert.
-     *
-     * @return {ErrorResponse} constructed error response.
-     */
-    function toErrorResponse(error) {
-        if (error instanceof ErrorResponse) {
-            // Error is already of the desired type.
-            return error;
-        }
-        if (error instanceof http_3.Response) {
-            var response = error;
-            var body = undefined;
-            // Attempt to parse JSON body
-            if (response.headers.get("Content-Type") === "application/json") {
-                try {
-                    body = response.json();
-                }
-                catch (e) {
-                    console.log("Failed to parse JSON error response", e);
-                }
-            }
-            var fieldErrors_1 = toFieldErrors(body);
-            if (fieldErrors_1) {
-                return new ErrorResponse({
-                    response: response,
-                    errors: fieldErrors_1,
-                });
-            }
-            return defaultErrorResponse(response);
-        }
-        // Error has `ErrorResponseOpts` interface?
-        var errorOpts = error;
-        if (errorOpts.response instanceof http_3.Response && errorOpts.errors instanceof Array) {
-            return new ErrorResponse(errorOpts);
-        }
-        var fieldErrors = toFieldErrors(error);
-        if (fieldErrors) {
-            return new ErrorResponse({
-                response: syntheticResponse(null),
-                errors: fieldErrors,
-            });
-        }
-        return defaultErrorResponse(syntheticResponse(error));
-    }
-    exports_7("toErrorResponse", toErrorResponse);
-    function syntheticResponse(error) {
-        var statusText = error != null ? error.toString() : null;
-        return new http_3.Response(new http_3.ResponseOptions({
-            type: http_3.ResponseType.Error,
-            status: 500,
-            statusText: statusText || "Unknown error"
-        }));
-    }
-    function defaultErrorResponse(response) {
-        var message = "ERROR " + response.status;
-        if (response.statusText && response.statusText.toLowerCase() != "ok") {
-            message += ": " + response.statusText;
-        }
-        return new ErrorResponse({
-            response: response,
-            errors: { "*": [{ code: "HTTP" + response.status, message: message }] },
-        });
-    }
-    function toFieldErrors(data) {
-        if (data == null) {
-            return;
-        }
-        if (data instanceof Array) {
-            var fieldErrors = data.map(toFieldError).filter(notEmptyError);
-            return fieldErrors.length ? { "*": fieldErrors } : undefined;
-        }
-        if (typeof data !== "object") {
-            var fieldErrors = [{ message: data.toString() }].filter(notEmptyError);
-            return fieldErrors.length ? { "*": fieldErrors } : undefined;
-        }
-        var errors = data;
-        var result = {};
-        var hasErrors = false;
-        for (var field in errors) {
-            if (errors.hasOwnProperty(field)) {
-                var errorArray = toFieldErrorArray(errors[field]);
-                if (errorArray.length) {
-                    result[field] = errorArray;
-                    hasErrors = true;
-                }
-            }
-        }
-        return hasErrors ? result : undefined;
-    }
-    function toFieldErrorArray(data) {
-        if (data == null) {
-            return [];
-        }
-        if (data instanceof Array) {
-            return data.map(toFieldError).filter(notEmptyError);
-        }
-        return [toFieldError(data)].filter(notEmptyError);
-    }
-    function toFieldError(data) {
-        if (data == null) {
-            return { message: "" };
-        }
-        var fieldError = data;
-        if (typeof fieldError.message === "string" && (fieldError.code == null || fieldError.code === "string")) {
-            return fieldError;
-        }
-        if (fieldError.message != null) {
-            return {
-                code: fieldError.code != null ? fieldError.code.toString() : undefined,
-                message: fieldError.message.toString(),
-            };
-        }
-        return { message: fieldError.toString() };
-    }
-    function notEmptyError(item) {
-        return !!item && (!!item.message || !!item.code);
-    }
-    return {
-        setters:[
-            function (http_3_1) {
-                http_3 = http_3_1;
-            }],
-        execute: function() {
-            /**
-             * Error response.
-             *
-             * Any object can be converted to `ErrorResponse` with `toErrorResponse()` function.
-             */
-            ErrorResponse = (function () {
-                function ErrorResponse(opts) {
-                    this.response = opts.response;
-                    this.errors = opts.errors;
-                }
-                return ErrorResponse;
-            }());
-            exports_7("ErrorResponse", ErrorResponse);
-        }
-    }
-});
-System.register("ng2-rike/resource", ["@angular/http", "ng2-rike/protocol", "ng2-rike/event", "ng2-rike/options"], function(exports_8, context_8) {
-    "use strict";
-    var __moduleName = context_8 && context_8.id;
+    var __moduleName = context_9 && context_9.id;
     var http_4, protocol_2, event_2, options_2;
     var Resource, RikeResource, CRUDResource;
     return {
@@ -1795,7 +2049,7 @@ System.register("ng2-rike/resource", ["@angular/http", "ng2-rike/protocol", "ng2
                 };
                 return Resource;
             }());
-            exports_8("Resource", Resource);
+            exports_9("Resource", Resource);
             RikeResource = (function () {
                 function RikeResource(_rike) {
                     this._rike = _rike;
@@ -1822,7 +2076,7 @@ System.register("ng2-rike/resource", ["@angular/http", "ng2-rike/protocol", "ng2
                 };
                 return RikeResource;
             }());
-            exports_8("RikeResource", RikeResource);
+            exports_9("RikeResource", RikeResource);
             CRUDResource = (function (_super) {
                 __extends(CRUDResource, _super);
                 function CRUDResource(rike) {
@@ -1885,14 +2139,14 @@ System.register("ng2-rike/resource", ["@angular/http", "ng2-rike/protocol", "ng2
                 };
                 return CRUDResource;
             }(RikeResource));
-            exports_8("CRUDResource", CRUDResource);
+            exports_9("CRUDResource", CRUDResource);
         }
     }
 });
-System.register("ng2-rike", ["ng2-rike/rike", "ng2-rike/event", "@angular/core", "ng2-rike/status.component", "ng2-rike/error", "ng2-rike/options", "ng2-rike/protocol", "ng2-rike/resource", "ng2-rike/status"], function(exports_9, context_9) {
+System.register("ng2-rike", ["ng2-rike/rike", "ng2-rike/event", "@angular/core", "ng2-rike/status.component", "ng2-rike/error", "ng2-rike/error-collector", "ng2-rike/options", "ng2-rike/protocol", "ng2-rike/resource", "ng2-rike/status"], function(exports_10, context_10) {
     "use strict";
-    var __moduleName = context_9 && context_9.id;
-    var rike_1, event_3, core_3, status_component_1;
+    var __moduleName = context_10 && context_10.id;
+    var rike_1, event_3, core_4, status_component_1;
     var RIKE_PROVIDERS;
     var exportedNames_1 = {
         'RIKE_PROVIDERS': true
@@ -1902,7 +2156,7 @@ System.register("ng2-rike", ["ng2-rike/rike", "ng2-rike/event", "@angular/core",
         for(var n in m) {
             if (n !== "default"&& !exportedNames_1.hasOwnProperty(n)) exports[n] = m[n];
         }
-        exports_9(exports);
+        exports_10(exports);
     }
     return {
         setters:[
@@ -1914,15 +2168,18 @@ System.register("ng2-rike", ["ng2-rike/rike", "ng2-rike/event", "@angular/core",
                 event_3 = event_3_1;
                 exportStar_1(event_3_1);
             },
-            function (core_3_1) {
-                core_3 = core_3_1;
+            function (core_4_1) {
+                core_4 = core_4_1;
             },
             function (status_component_1_1) {
                 status_component_1 = status_component_1_1;
                 exportStar_1(status_component_1_1);
             },
-            function (error_1_1) {
-                exportStar_1(error_1_1);
+            function (error_2_1) {
+                exportStar_1(error_2_1);
+            },
+            function (error_collector_2_1) {
+                exportStar_1(error_collector_2_1);
             },
             function (options_3_1) {
                 exportStar_1(options_3_1);
@@ -1945,11 +2202,11 @@ System.register("ng2-rike", ["ng2-rike/rike", "ng2-rike/event", "@angular/core",
              *
              * @type {any[]}
              */
-            exports_9("RIKE_PROVIDERS", RIKE_PROVIDERS = [
+            exports_10("RIKE_PROVIDERS", RIKE_PROVIDERS = [
                 rike_1.Rike,
                 event_3.RikeEventSource.provide({ useExisting: rike_1.Rike }),
                 {
-                    provide: core_3.PLATFORM_DIRECTIVES,
+                    provide: core_4.PLATFORM_DIRECTIVES,
                     useValue: status_component_1.RikeStatusComponent,
                     multi: true,
                 }
