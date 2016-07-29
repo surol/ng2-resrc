@@ -10,7 +10,7 @@ import {
     RikeEventSource
 } from "./event";
 import {RikeOptions, DEFAULT_RIKE_OPTIONS, relativeUrl} from "./options";
-import {DataType, HTTP_RESPONSE_DATA_TYPE, jsonDataType} from "./data";
+import {Protocol, HTTP_PROTOCOL, jsonProtocol} from "./protocol";
 import {RikeStatusLabels, DEFAULT_STATUS_LABELS} from "./status";
 
 const REQUEST_METHODS: {[name: string]: number} = {
@@ -146,36 +146,36 @@ export class Rike implements RikeEventSource {
     }
 
     /**
-     * Constructs operation target, which operations produce HTTP responses ([HTTP_RESPONSE_DATA_TYPE]).
+     * Constructs operation target which operates over [HTTP protocol][HTTP_PROTOCOL].
      *
-     * Arbitrary data type can be used as a request body.
+     * Arbitrary value can be used as a request body.
      *
      * @param target arbitrary target value.
      *
-     * @returns {RikeTargetImpl} new operation target.
+     * @returns {RikeTarget} new operation target.
      */
     target(target: any): RikeTarget<any, Response>;
 
     /**
-     * Constructs operations target, which operates on the given data type.
+     * Constructs operations target which operates over the given protocol.
      *
      * @param target arbitrary target value.
-     * @param dataType operations data type.
+     * @param protocol operations protocol.
      *
-     * @return {RikeTargetImpl<T>} new operations target.
+     * @return {RikeTarget<IN, OUT>} new operations target.
      */
-    target<IN, OUT>(target: any, dataType: DataType<IN, OUT>): RikeTarget<IN, OUT>;
+    target<IN, OUT>(target: any, protocol: Protocol<IN, OUT>): RikeTarget<IN, OUT>;
 
-    target(target: any, dataType?: DataType<any, any>): RikeTarget<any, any> {
+    target(target: any, protocol?: Protocol<any, any>): RikeTarget<any, any> {
 
-        let type = dataType || HTTP_RESPONSE_DATA_TYPE;
+        let proto = protocol || HTTP_PROTOCOL;
 
-        if (!type.handleError) {
+        if (!proto.handleError) {
 
             const defaultErrorHandler = this.options.defaultErrorHandler;
 
             if (defaultErrorHandler) {
-                type = type.handleErrorWith(defaultErrorHandler);
+                proto = proto.handleErrorWith(defaultErrorHandler);
             }
         }
 
@@ -183,7 +183,7 @@ export class Rike implements RikeEventSource {
             this,
             this._internals,
             target,
-            type || HTTP_RESPONSE_DATA_TYPE);
+            proto || HTTP_PROTOCOL);
 
         rikeTarget.rikeEvents.subscribe(
             (event: RikeEvent) => this._rikeEvents.emit(event),
@@ -194,14 +194,14 @@ export class Rike implements RikeEventSource {
     }
 
     /**
-     * Constructs operations target, which operates on the given data type passing it as JSON over HTTP.
+     * Constructs operations target which operates over [JSON protocol][jsonProtocol].
      *
      * @param target arbitrary target value.
      *
      * @return {RikeTarget<T>} new operations target.
      */
     json<T>(target: any): RikeTarget<T, T> {
-        return this.target(target, jsonDataType<T>());
+        return this.target(target, jsonProtocol<T>());
     }
 
     /**
@@ -265,7 +265,7 @@ export class Rike implements RikeEventSource {
  * REST-like operations target.
  *
  * Operation targets are created using [Rike.target] method. The actual operations should be created first with
- * _operation_ method.
+ * `operation` method.
  *
  * Only one operation can be performed on a target at a time. Whenever a new operation on the same target is initiated,
  * the previous one is cancelled.
@@ -306,11 +306,11 @@ export abstract class RikeTarget<IN, OUT> implements RikeEventSource {
     abstract readonly rikeEvents: EventEmitter<RikeEvent>;
 
     /**
-     * An operations data type to use by default.
+     * An operations protocol to use by default.
      *
-     * This is the data type based on the one passed to [Rike.target] method, which honors the default error handler.
+     * This is a protocol based on the one passed to [Rike.target] method, which honors the default error handler.
      */
-    abstract readonly dataType: DataType<IN, OUT>;
+    abstract readonly protocol: Protocol<IN, OUT>;
 
     /**
      * Base URL to use by operations.
@@ -327,31 +327,35 @@ export abstract class RikeTarget<IN, OUT> implements RikeEventSource {
     abstract withBaseUrl(url?: string): this;
 
     /**
-     * Constructs an operation on this target, which produces responses of type `T`.
-     *
-     * The target data type (_dataType_) passed to the [Rike.target] will be used to encode/decode operation data.
+     * Constructs an operation on this target which operates over the target's `protocol`.
      *
      * @param name operation name.
+     *
+     * @return {RikeOperation<IN, OUT>} new operation.
      */
     abstract operation(name: string): RikeOperation<IN, OUT>;
 
     /**
-     * Constructs an operation on this target, which produces responses of the given type.
+     * Constructs an operation on this target which operates over the given protocol.
      *
      * @param name operation name.
-     * @param dataType operation data type.
+     * @param protocol operation protocol.
+     *
+     * @return {RikeOperation<IN, OUT>} new operation.
      */
-    abstract operation<IN, OUT>(name: string, dataType: DataType<IN, OUT>): RikeOperation<IN, OUT>;
+    abstract operation<IN, OUT>(name: string, protocol: Protocol<IN, OUT>): RikeOperation<IN, OUT>;
 
     /**
-     * Constructs an operations on this target, which operates on the given data type passing it as JSON over HTTP.
+     * Constructs JSON operation on this target.
+     *
+     * It operates over [JSON protocol][jsonProtocol].
      *
      * @param name operation name.
      *
-     * @return {RikeTarget<T>} new operations target.
+     * @return {RikeOperation<T, T>} new operation.
      */
     json<T>(name: string): RikeOperation<T, T> {
-        return this.operation(name, jsonDataType<T>());
+        return this.operation(name, jsonProtocol<T>());
     }
 
     /**
@@ -367,7 +371,7 @@ export abstract class RikeTarget<IN, OUT> implements RikeEventSource {
 /**
  * REST-like resource operation.
  *
- * It basically mimics the `Http` service interface, but also honors global Rike options, and emits events.
+ * It operates over the given protocol and emits events.
  *
  * To initiate operation just call any of the HTTP access methods. Note that operation always belongs to its target
  * and thus two operations could not be initiated simultaneously.
@@ -388,12 +392,12 @@ export abstract class RikeOperation<IN, OUT> {
     abstract readonly name: string;
 
     /**
-     * Operation data type.
+     * Operation protocol.
      *
-     * This data type is based on the one passed to the [RikeTarget.operation], but also honors the default data type
+     * This protocol is based on the one passed to the [RikeTarget.operation], but also honors the default protocol
      * set for target.
      */
-    abstract readonly dataType: DataType<IN, OUT>;
+    abstract readonly protocol: Protocol<IN, OUT>;
 
     abstract readonly options: RequestOptions;
 
@@ -474,7 +478,7 @@ class RikeTargetImpl<IN, OUT> extends RikeTarget<IN, OUT> {
         private _rike: Rike,
         private _internals: RikeInternals,
         private _target: any,
-        private _dataType: DataType<IN, OUT>) {
+        private _protocol: Protocol<IN, OUT>) {
         super();
         this._uniqueId = _internals.generateUniqueId();
     }
@@ -503,8 +507,8 @@ class RikeTargetImpl<IN, OUT> extends RikeTarget<IN, OUT> {
         return this._internals;
     }
 
-    get dataType(): DataType<IN, OUT> {
-        return this._dataType;
+    get protocol(): Protocol<IN, OUT> {
+        return this._protocol;
     }
 
     get baseUrl(): string | undefined {
@@ -556,13 +560,13 @@ class RikeTargetImpl<IN, OUT> extends RikeTarget<IN, OUT> {
         return true;
     }
 
-    operation(name: string, dataType?: DataType<any, any>): RikeOperation<any, any> {
+    operation(name: string, protocol?: Protocol<any, any>): RikeOperation<any, any> {
         return new RikeOperationImpl(
             this,
             name,
-            !dataType ? this.dataType : (
-                this.dataType as DataType<any, any> === HTTP_RESPONSE_DATA_TYPE
-                    ? dataType : dataType.prepareRequestWith(options => this.dataType.prepareRequest(options))));
+            !protocol ? this.protocol : (
+                this.protocol as Protocol<any, any> === HTTP_PROTOCOL
+                    ? protocol : protocol.prepareRequestWith(options => this.protocol.prepareRequest(options))));
     }
 
     startOperation(operation: RikeOperation<any, any>): void {
@@ -595,7 +599,7 @@ class RikeTargetImpl<IN, OUT> extends RikeTarget<IN, OUT> {
                 httpResponse => {
                     try {
 
-                        const response = operation.dataType.readResponse(httpResponse);
+                        const response = operation.protocol.readResponse(httpResponse);
 
                         responseObserver.next(response);
                         this._rikeEvents.emit(new RikeSuccessEvent(operation, response));
@@ -639,7 +643,7 @@ class RikeOperationImpl<IN, OUT> extends RikeOperation<IN, OUT> {
     constructor(
         private _target: RikeTargetImpl<any, any>,
         private _name: string,
-        private _dataType: DataType<IN, OUT>) {
+        private _protocol: Protocol<IN, OUT>) {
         super();
         this._options = _target.internals.defaultHttpOptions.merge();
     }
@@ -660,8 +664,8 @@ class RikeOperationImpl<IN, OUT> extends RikeOperation<IN, OUT> {
         return this._name;
     }
 
-    get dataType(): DataType<IN, OUT> {
-        return this._dataType;
+    get protocol(): Protocol<IN, OUT> {
+        return this._protocol;
     }
 
     withOptions(options?: RequestOptionsArgs): this {
@@ -786,11 +790,11 @@ class RikeOperationImpl<IN, OUT> extends RikeOperation<IN, OUT> {
             options.url = relativeUrl(this.target.baseUrl, options.url);
         }
 
-        return this.dataType.prepareRequest(options);
+        return this.protocol.prepareRequest(options);
     }
 
     private writeRequest(request: IN, options: RequestOptionsArgs): RequestOptionsArgs {
-        options = this.dataType.writeRequest(request, options);
+        options = this.protocol.writeRequest(request, options);
         return options;
     }
 

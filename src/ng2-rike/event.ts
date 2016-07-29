@@ -164,7 +164,7 @@ export class RikeSuccessEvent extends RikeEvent {
 /**
  * An event emitted when operation on a REST-like resource is failed.
  *
- * An object of this type is also reported as error when some internal exception occurs.
+ * An object of this type is also reported as an error when some internal exception occurs.
  */
 export class RikeErrorEvent extends RikeEvent {
 

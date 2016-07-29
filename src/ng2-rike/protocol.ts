@@ -1,16 +1,15 @@
-import {Response, RequestOptionsArgs, Request, RequestOptions} from "@angular/http";
+import {Response, RequestOptionsArgs, RequestOptions} from "@angular/http";
 
 /**
- * REST-like operations data type.
+ * REST-like operations protocol.
  *
- * It is used by REST-like operations to encode operation requests to HTTP, and to decode operation responses from HTTP.
- *
- * Some of the data types may support only request or response operations, but not both.
+ * It is used by REST-like operations to encode operation requests to HTTP, decode operation responses from HTTP,
+ * and handle errors.
  *
  * `IN` is operation request type.
  * `OUT` is operation response type.
  */
-export abstract class DataType<IN, OUT> {
+export abstract class Protocol<IN, OUT> {
 
     //noinspection JSMethodCanBeStatic
     /**
@@ -18,8 +17,8 @@ export abstract class DataType<IN, OUT> {
      *
      * The `options` passed have at least `url` and `method` fields set.
      *
-     * This method is called for each HTTP request before _writeRequest_ method. When default data type is set for
-     * operation target, this method is called first on the default data type, and then - on the operation data type.
+     * This method is called for each HTTP request before _writeRequest_ method. When default protocol is set for
+     * operation target, this method is called first on the default protocol, and then - on the operation protocol.
      *
      * @param options original HTTP request options.
      *
@@ -31,18 +30,18 @@ export abstract class DataType<IN, OUT> {
     }
 
     /**
-     * Constructs new data type based on this one, which prepares the request with the given function.
+     * Constructs new protocol based on this one, which prepares the request with the given function.
      *
      * @param prepare a request preparation function invoked in addition to `this.prepareRequest` method.
      * @param after `true` to call the `prepare` function after `this.prepareRequest` method,
      * otherwise it will be called before `this.prepareRequest()` method
      *
-     * @return {DataType<IN, OUT>} new data type.
+     * @return {Protocol<IN, OUT>} new protocol.
      */
     prepareRequestWith(
         prepare: (options: RequestOptionsArgs) => RequestOptionsArgs,
-        after?: boolean): DataType<IN, OUT> {
-        return new PrepareRequestDataType<IN, OUT>(this, prepare, after);
+        after?: boolean): Protocol<IN, OUT> {
+        return new PrepareRequestProtocol<IN, OUT>(this, prepare, after);
     }
 
     /**
@@ -50,7 +49,7 @@ export abstract class DataType<IN, OUT> {
      *
      * This method is invoked only for HTTP request methods that expect request body.
      *
-     * The `options` are the result of `prepareRequest` method invocation. It is expected that the result options will
+     * The `options` are the result of `prepareRequest` method invocation. It is expected the result options to
      * contain a `body` field set.
      *
      * @param request operation request to encode
@@ -61,31 +60,31 @@ export abstract class DataType<IN, OUT> {
     abstract writeRequest(request: IN, options: RequestOptionsArgs): RequestOptionsArgs;
 
     /**
-     * Constructs new data type based on this one, which writes the request with the given function.
+     * Constructs new protocol based on this one, which writes the request with the given function.
      *
      * @param writeRequest new request writer function.
      *
-     * @return {DataType<IN, OUT>} new data type.
+     * @return {Protocol<IN, OUT>} new protocol.
      */
     writeRequestWith<IN>(
-        writeRequest: (request: IN, options: RequestOptionsArgs) => RequestOptionsArgs): DataType<IN, OUT> {
-        return new WriteRequestDataType<IN, OUT>(this, writeRequest);
+        writeRequest: (request: IN, options: RequestOptionsArgs) => RequestOptionsArgs): Protocol<IN, OUT> {
+        return new WriteRequestProtocol<IN, OUT>(this, writeRequest);
     }
 
     /**
-     * Constructs new data type based on this one, which updates request options with the given function. The request
+     * Constructs new protocol based on this one, which updates request options with the given function. The request
      * will be written with original `writeRequest()` method.
      *
      * @param updateRequest a function updating request options in addition to `this.writeRequest()` method.
      * @param after `true` to invoke `updateRequest` function after `this.writeRequest()` method, otherwise it will be
      * invoked before the `this.writeRequest()` method.
      *
-     * @return {DataType<IN, OUT>} new data type.
+     * @return {Protocol<IN, OUT>} new protocol.
      */
     updateRequestWith(
         updateRequest: (request: IN, options: RequestOptionsArgs) => RequestOptionsArgs,
-        after?: boolean): DataType<IN, OUT> {
-        return new WriteRequestDataType<IN, OUT>(this, (request, args) => {
+        after?: boolean): Protocol<IN, OUT> {
+        return new WriteRequestProtocol<IN, OUT>(this, (request, args) => {
             if (!after) {
                 return this.writeRequest(request, updateRequest(request, args));
             }
@@ -103,14 +102,14 @@ export abstract class DataType<IN, OUT> {
     abstract readResponse(response: Response): OUT;
 
     /**
-     * Constructs new data type based on this one, which reads responses with the given function.
+     * Constructs new protocol based on this one, which reads responses with the given function.
      *
      * @param readResponse new response reader function.
      *
-     * @return {DataType<IN, OUT>} new data type.
+     * @return {Protocol<IN, OUT>} new protocol.
      */
-    readResponseWith<OUT>(readResponse: (response: Response) => OUT): DataType<IN, OUT> {
-        return new ReadResponseDataType<IN, OUT>(this, readResponse);
+    readResponseWith<OUT>(readResponse: (response: Response) => OUT): Protocol<IN, OUT> {
+        return new ReadResponseProtocol<IN, OUT>(this, readResponse);
     }
 
     /**
@@ -125,17 +124,19 @@ export abstract class DataType<IN, OUT> {
     abstract readonly handleError?: (error: any) => any;
 
     /**
-     * Constructs new data type base on this one, which handles errors with the given function.
+     * Constructs new protocol based on this one, which handles errors with the given function.
+     *
      * @param errorHandler
-     * @return {HandleErrorDataType<IN, OUT>}
+     *
+     * @return {Protocol<IN, OUT>} new protocol.
      */
-    handleErrorWith(errorHandler: (error: any) => any): DataType<IN, OUT> {
-        return new HandleErrorDataType<IN, OUT>(this, errorHandler);
+    handleErrorWith(errorHandler: (error: any) => any): Protocol<IN, OUT> {
+        return new HandleErrorProtocol<IN, OUT>(this, errorHandler);
     }
 
 }
 
-export abstract class RequestBodyType<T> extends DataType<T, T> {
+export abstract class RequestBodyProtocol<T> extends Protocol<T, T> {
 
     handleError?: (error: any) => any;
 
@@ -147,48 +148,48 @@ export abstract class RequestBodyType<T> extends DataType<T, T> {
 
 }
 
-class PrepareRequestDataType<IN, OUT> extends DataType<IN, OUT> {
+class PrepareRequestProtocol<IN, OUT> extends Protocol<IN, OUT> {
 
     readonly handleError?: (error: any) => any;
 
     constructor(
-        private _dataType: DataType<IN, OUT>,
+        private _protocol: Protocol<IN, OUT>,
         private _prepare: (options: RequestOptionsArgs) => RequestOptionsArgs,
         private _after?: boolean) {
         super();
-        this.handleError = this._dataType.handleError;
+        this.handleError = this._protocol.handleError;
     }
 
     prepareRequest(options: RequestOptionsArgs): RequestOptionsArgs {
         if (this._after) {
-            return this._prepare(this._dataType.prepareRequest(options));
+            return this._prepare(this._protocol.prepareRequest(options));
         }
-        return this._dataType.prepareRequest(this._prepare(options));
+        return this._protocol.prepareRequest(this._prepare(options));
     }
 
     writeRequest(request: IN, options: RequestOptionsArgs): RequestOptionsArgs {
-        return this._dataType.writeRequest(request, options);
+        return this._protocol.writeRequest(request, options);
     }
 
     readResponse(response: Response): OUT {
-        return this._dataType.readResponse(response);
+        return this._protocol.readResponse(response);
     }
 
 }
 
-class WriteRequestDataType<IN, OUT> extends DataType<IN, OUT> {
+class WriteRequestProtocol<IN, OUT> extends Protocol<IN, OUT> {
 
     readonly handleError?: (error: any) => any;
 
     constructor(
-        private _responseType: DataType<any, OUT>,
+        private _responseProtocol: Protocol<any, OUT>,
         private _writeRequest: (request: IN, options: RequestOptionsArgs) => RequestOptionsArgs) {
         super();
-        this.handleError = this._responseType.handleError;
+        this.handleError = this._responseProtocol.handleError;
     }
 
     prepareRequest(options: RequestOptionsArgs): RequestOptionsArgs {
-        return this._responseType.prepareRequest(options);
+        return this._responseProtocol.prepareRequest(options);
     }
 
     writeRequest(request: IN, options: RequestOptionsArgs): RequestOptionsArgs {
@@ -196,63 +197,63 @@ class WriteRequestDataType<IN, OUT> extends DataType<IN, OUT> {
     }
 
     readResponse(response: Response): OUT {
-        return this._responseType.readResponse(response);
+        return this._responseProtocol.readResponse(response);
     }
 
 }
 
-class ReadResponseDataType<IN, OUT> extends DataType<IN, OUT> {
+class ReadResponseProtocol<IN, OUT> extends Protocol<IN, OUT> {
 
     readonly handleError?: (error: any) => any;
 
-    constructor(private _requestType: DataType<IN, any>, private _readResponse: (response: Response) => OUT) {
+    constructor(private _requestProtocol: Protocol<IN, any>, private _readResponse: (response: Response) => OUT) {
         super();
-        this.handleError = this._requestType.handleError;
+        this.handleError = this._requestProtocol.handleError;
     }
 
     prepareRequest(options: RequestOptionsArgs): RequestOptionsArgs {
-        return this._requestType.prepareRequest(options);
+        return this._requestProtocol.prepareRequest(options);
     }
 
     writeRequest(request: IN, options: RequestOptionsArgs): RequestOptionsArgs {
-        return this._requestType.writeRequest(request, options);
+        return this._requestProtocol.writeRequest(request, options);
     }
 
     readResponse(response: Response): OUT {
         return this._readResponse(response);
     }
 
-    readResponseWith<OUT>(readResponse: (response: Response) => OUT): DataType<IN, OUT> {
-        return new ReadResponseDataType<IN, OUT>(this._requestType, readResponse);
+    readResponseWith<OUT>(readResponse: (response: Response) => OUT): Protocol<IN, OUT> {
+        return new ReadResponseProtocol<IN, OUT>(this._requestProtocol, readResponse);
     }
 
 }
 
-class HandleErrorDataType<IN, OUT> extends DataType<IN, OUT> {
+class HandleErrorProtocol<IN, OUT> extends Protocol<IN, OUT> {
 
-    constructor(private _dataType: DataType<IN, OUT>, public handleError: (error: any) => any) {
+    constructor(private _protocol: Protocol<IN, OUT>, public handleError: (error: any) => any) {
         super();
     }
 
     prepareRequest(options: RequestOptionsArgs): RequestOptionsArgs {
-        return this._dataType.prepareRequest(options);
+        return this._protocol.prepareRequest(options);
     }
 
     writeRequest(request: IN, options: RequestOptionsArgs): RequestOptionsArgs {
-        return this._dataType.writeRequest(request, options);
+        return this._protocol.writeRequest(request, options);
     }
 
     readResponse(response: Response): OUT {
-        return this._dataType.readResponse(response);
+        return this._protocol.readResponse(response);
     }
 
-    handleErrorWith(errorHandler: (error: any) => any): DataType<IN, OUT> {
-        return new HandleErrorDataType(this._dataType, errorHandler);
+    handleErrorWith(errorHandler: (error: any) => any): Protocol<IN, OUT> {
+        return new HandleErrorProtocol(this._protocol, errorHandler);
     }
 
 }
 
-class JsonDataType<T> extends RequestBodyType<T> {
+class JsonProtocol<T> extends RequestBodyProtocol<T> {
 
     writeBody(request: T): string {
         return JSON.stringify(request);
@@ -265,22 +266,22 @@ class JsonDataType<T> extends RequestBodyType<T> {
 }
 
 /**
- * JSON data type.
+ * JSON protocol.
  *
  * Sends and receives arbitrary data as JSON over HTTP.
  *
- * @type {DataType<any>}
+ * @type {Protocol<any>}
  */
-export const JSON_DATA_TYPE: DataType<any, any> = new JsonDataType<any>();
+export const JSON_PROTOCOL: Protocol<any, any> = new JsonProtocol<any>();
 
 /**
- * Returns JSON data type.
+ * Returns JSON protocol.
  *
  * Sends and receives the data of the given type as JSON over HTTP.
  */
-export const jsonDataType: (<T>() => DataType<T, T>) = () => JSON_DATA_TYPE;
+export const jsonProtocol: (<T>() => Protocol<T, T>) = () => JSON_PROTOCOL;
 
-class HttpResponseDataType extends DataType<any, Response> {
+class HttpProtocol extends Protocol<any, Response> {
 
     readonly handleError?: (error: any) => any;
 
@@ -295,10 +296,10 @@ class HttpResponseDataType extends DataType<any, Response> {
 }
 
 /**
- * HTTP response data type.
+ * HTTP protocol.
  *
  * The request type is any. It is used as request body.
  *
- * @type {DataType<any, Response>}
+ * @type {Protocol<any, Response>}
  */
-export const HTTP_RESPONSE_DATA_TYPE: DataType<any, Response> = new HttpResponseDataType();
+export const HTTP_PROTOCOL: Protocol<any, Response> = new HttpProtocol();

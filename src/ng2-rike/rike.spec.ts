@@ -13,7 +13,7 @@ import {MockBackend, MockConnection} from "@angular/http/testing";
 import {RIKE_PROVIDERS} from "../ng2-rike";
 import {Rike, requestMethod} from "./rike";
 import {RikeOptions, BaseRikeOptions} from "./options";
-import {HTTP_RESPONSE_DATA_TYPE, JSON_DATA_TYPE, jsonDataType} from "./data";
+import {HTTP_PROTOCOL, JSON_PROTOCOL, jsonProtocol} from "./protocol";
 import {Observable} from "rxjs/Rx";
 
 export function addRikeProviders() {
@@ -117,13 +117,13 @@ describe("Rike", () => {
             });
     });
 
-    it("creates target of the default type", () => {
+    it("creates target with the protocol", () => {
 
         const targetId = "target1";
         const target = rike.target(targetId);
 
         expect(target.target).toBe(targetId);
-        expect(target.dataType).toBe(HTTP_RESPONSE_DATA_TYPE);
+        expect(target.protocol).toBe(HTTP_PROTOCOL);
     });
 
     it("creates JSON target", () => {
@@ -132,19 +132,19 @@ describe("Rike", () => {
         const target = rike.json(targetId);
 
         expect(target.target).toBe(targetId);
-        expect(target.dataType).toBe(JSON_DATA_TYPE);
+        expect(target.protocol).toBe(JSON_PROTOCOL);
     });
 
-    it("creates target of specified type", () => {
+    it("creates target with specified protocol", () => {
 
-        const dataType = jsonDataType<string>()
+        const protocol = jsonProtocol<string>()
             .writeRequestWith((val: number, opts: RequestOptionsArgs) =>
                 new RequestOptions(opts).merge({body: JSON.stringify(val)}));
         const targetId = "target1";
-        const target = rike.target(targetId, dataType);
+        const target = rike.target(targetId, protocol);
 
         expect(target.target).toBe(targetId);
-        expect(target.dataType).toBe(dataType);
+        expect(target.protocol).toBe(protocol);
     });
 });
 

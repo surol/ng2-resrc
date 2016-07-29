@@ -1,7 +1,7 @@
 import {Type} from "@angular/core";
 import {RequestOptions} from "@angular/http";
 import {Observable} from "rxjs/Rx";
-import {DataType, JSON_DATA_TYPE, jsonDataType} from "./data";
+import {Protocol, JSON_PROTOCOL, jsonProtocol} from "./protocol";
 import {RikeEventSource} from "./event";
 import {relativeUrl} from "./options";
 import {RikeTarget, Rike} from "./rike";
@@ -60,7 +60,7 @@ export abstract class RikeResource implements Resource {
     }
 
     protected createRikeTarget(): RikeTarget<any, any> {
-        return this.rike.target(this, JSON_DATA_TYPE);
+        return this.rike.target(this, JSON_PROTOCOL);
     }
 
 }
@@ -80,47 +80,47 @@ export abstract class CRUDResource<T> extends RikeResource {
     }
 
     create(object: T): Observable<T> {
-        return this.rikeTarget.operation("create", this.objectCreateDataType(object)).post(object);
+        return this.rikeTarget.operation("create", this.objectCreateProtocol(object)).post(object);
     }
 
     read(id: any): Observable<T> {
-        return this.rikeTarget.operation("read", this.objectReadDataType(id)).get();
+        return this.rikeTarget.operation("read", this.objectReadProtocol(id)).get();
     }
 
     update(object: T): Observable<T> {
-        return this.rikeTarget.operation("update", this.objectUpdateDataType(object)).put(object);
+        return this.rikeTarget.operation("update", this.objectUpdateProtocol(object)).put(object);
     }
 
     //noinspection ReservedWordAsName
     delete(object: T): Observable<any> {
-        return this.rikeTarget.operation("delete", this.objectDeleteDataType(object)).delete();
+        return this.rikeTarget.operation("delete", this.objectDeleteProtocol(object)).delete();
     }
 
     protected createRikeTarget(): RikeTarget<T, T> {
-        return this.rike.target(this, jsonDataType<T>());
+        return this.rike.target(this, jsonProtocol<T>());
     }
 
-    protected objectCreateDataType(object: T): DataType<any, T> {
-        return this.rikeTarget.dataType.readResponseWith(response => object);
+    protected objectCreateProtocol(object: T): Protocol<any, T> {
+        return this.rikeTarget.protocol.readResponseWith(response => object);
     }
 
-    protected objectReadDataType(id: any): DataType<any, T> {
-        return this.rikeTarget.dataType.prepareRequestWith(
+    protected objectReadProtocol(id: any): Protocol<any, T> {
+        return this.rikeTarget.protocol.prepareRequestWith(
             options => new RequestOptions(options).merge({
                 url: this.objectUrl(options.url, id)
             }));
     }
 
-    protected objectUpdateDataType(object: T): DataType<T, T> {
-        return this.rikeTarget.dataType
+    protected objectUpdateProtocol(object: T): Protocol<T, T> {
+        return this.rikeTarget.protocol
             .updateRequestWith((object, options) => new RequestOptions(options).merge({
                 url: this.objectUrl(options.url, this.objectId(object))
             }))
             .readResponseWith(response => object);
     }
 
-    protected objectDeleteDataType(object: T): DataType<T, any> {
-        return this.rikeTarget.dataType
+    protected objectDeleteProtocol(object: T): Protocol<T, any> {
+        return this.rikeTarget.protocol
             .updateRequestWith((object, options) => new RequestOptions(options).merge({
                 url: this.objectUrl(options.url, this.objectId(object))
             }))

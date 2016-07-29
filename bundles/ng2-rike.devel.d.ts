@@ -101,7 +101,7 @@ declare module "ng2-rike/event" {
     /**
      * An event emitted when operation on a REST-like resource is failed.
      *
-     * An object of this type is also reported as error when some internal exception occurs.
+     * An object of this type is also reported as an error when some internal exception occurs.
      */
     export class RikeErrorEvent extends RikeEvent {
         private _operation;
@@ -231,26 +231,25 @@ declare module "ng2-rike/options" {
      */
     export const DEFAULT_RIKE_OPTIONS: RikeOptions;
 }
-declare module "ng2-rike/data" {
+declare module "ng2-rike/protocol" {
     import { Response, RequestOptionsArgs } from "@angular/http";
     /**
-     * REST-like operations data type.
+     * REST-like operations protocol.
      *
-     * It is used by REST-like operations to encode operation requests to HTTP, and to decode operation responses from HTTP.
-     *
-     * Some of the data types may support only request or response operations, but not both.
+     * It is used by REST-like operations to encode operation requests to HTTP, decode operation responses from HTTP,
+     * and handle errors.
      *
      * `IN` is operation request type.
      * `OUT` is operation response type.
      */
-    export abstract class DataType<IN, OUT> {
+    export abstract class Protocol<IN, OUT> {
         /**
          * Prepares HTTP request.
          *
          * The `options` passed have at least `url` and `method` fields set.
          *
-         * This method is called for each HTTP request before _writeRequest_ method. When default data type is set for
-         * operation target, this method is called first on the default data type, and then - on the operation data type.
+         * This method is called for each HTTP request before _writeRequest_ method. When default protocol is set for
+         * operation target, this method is called first on the default protocol, and then - on the operation protocol.
          *
          * @param options original HTTP request options.
          *
@@ -259,21 +258,21 @@ declare module "ng2-rike/data" {
          */
         prepareRequest(options: RequestOptionsArgs): RequestOptionsArgs;
         /**
-         * Constructs new data type based on this one, which prepares the request with the given function.
+         * Constructs new protocol based on this one, which prepares the request with the given function.
          *
          * @param prepare a request preparation function invoked in addition to `this.prepareRequest` method.
          * @param after `true` to call the `prepare` function after `this.prepareRequest` method,
          * otherwise it will be called before `this.prepareRequest()` method
          *
-         * @return {DataType<IN, OUT>} new data type.
+         * @return {Protocol<IN, OUT>} new protocol.
          */
-        prepareRequestWith(prepare: (options: RequestOptionsArgs) => RequestOptionsArgs, after?: boolean): DataType<IN, OUT>;
+        prepareRequestWith(prepare: (options: RequestOptionsArgs) => RequestOptionsArgs, after?: boolean): Protocol<IN, OUT>;
         /**
          * Writes operation request as HTTP request.
          *
          * This method is invoked only for HTTP request methods that expect request body.
          *
-         * The `options` are the result of `prepareRequest` method invocation. It is expected that the result options will
+         * The `options` are the result of `prepareRequest` method invocation. It is expected the result options to
          * contain a `body` field set.
          *
          * @param request operation request to encode
@@ -283,24 +282,24 @@ declare module "ng2-rike/data" {
          */
         abstract writeRequest(request: IN, options: RequestOptionsArgs): RequestOptionsArgs;
         /**
-         * Constructs new data type based on this one, which writes the request with the given function.
+         * Constructs new protocol based on this one, which writes the request with the given function.
          *
          * @param writeRequest new request writer function.
          *
-         * @return {DataType<IN, OUT>} new data type.
+         * @return {Protocol<IN, OUT>} new protocol.
          */
-        writeRequestWith<IN>(writeRequest: (request: IN, options: RequestOptionsArgs) => RequestOptionsArgs): DataType<IN, OUT>;
+        writeRequestWith<IN>(writeRequest: (request: IN, options: RequestOptionsArgs) => RequestOptionsArgs): Protocol<IN, OUT>;
         /**
-         * Constructs new data type based on this one, which updates request options with the given function. The request
+         * Constructs new protocol based on this one, which updates request options with the given function. The request
          * will be written with original `writeRequest()` method.
          *
          * @param updateRequest a function updating request options in addition to `this.writeRequest()` method.
          * @param after `true` to invoke `updateRequest` function after `this.writeRequest()` method, otherwise it will be
          * invoked before the `this.writeRequest()` method.
          *
-         * @return {DataType<IN, OUT>} new data type.
+         * @return {Protocol<IN, OUT>} new protocol.
          */
-        updateRequestWith(updateRequest: (request: IN, options: RequestOptionsArgs) => RequestOptionsArgs, after?: boolean): DataType<IN, OUT>;
+        updateRequestWith(updateRequest: (request: IN, options: RequestOptionsArgs) => RequestOptionsArgs, after?: boolean): Protocol<IN, OUT>;
         /**
          * Reads operation response from HTTP response.
          *
@@ -310,13 +309,13 @@ declare module "ng2-rike/data" {
          */
         abstract readResponse(response: Response): OUT;
         /**
-         * Constructs new data type based on this one, which reads responses with the given function.
+         * Constructs new protocol based on this one, which reads responses with the given function.
          *
          * @param readResponse new response reader function.
          *
-         * @return {DataType<IN, OUT>} new data type.
+         * @return {Protocol<IN, OUT>} new protocol.
          */
-        readResponseWith<OUT>(readResponse: (response: Response) => OUT): DataType<IN, OUT>;
+        readResponseWith<OUT>(readResponse: (response: Response) => OUT): Protocol<IN, OUT>;
         /**
          * Handles HTTP error.
          *
@@ -328,39 +327,41 @@ declare module "ng2-rike/data" {
          */
         readonly abstract handleError?: (error: any) => any;
         /**
-         * Constructs new data type base on this one, which handles errors with the given function.
+         * Constructs new protocol based on this one, which handles errors with the given function.
+         *
          * @param errorHandler
-         * @return {HandleErrorDataType<IN, OUT>}
+         *
+         * @return {Protocol<IN, OUT>} new protocol.
          */
-        handleErrorWith(errorHandler: (error: any) => any): DataType<IN, OUT>;
+        handleErrorWith(errorHandler: (error: any) => any): Protocol<IN, OUT>;
     }
-    export abstract class RequestBodyType<T> extends DataType<T, T> {
+    export abstract class RequestBodyProtocol<T> extends Protocol<T, T> {
         handleError?: (error: any) => any;
         writeRequest(request: T, options: RequestOptionsArgs): RequestOptionsArgs;
         abstract writeBody(request: T): any;
     }
     /**
-     * JSON data type.
+     * JSON protocol.
      *
      * Sends and receives arbitrary data as JSON over HTTP.
      *
-     * @type {DataType<any>}
+     * @type {Protocol<any>}
      */
-    export const JSON_DATA_TYPE: DataType<any, any>;
+    export const JSON_PROTOCOL: Protocol<any, any>;
     /**
-     * Returns JSON data type.
+     * Returns JSON protocol.
      *
      * Sends and receives the data of the given type as JSON over HTTP.
      */
-    export const jsonDataType: (<T>() => DataType<T, T>);
+    export const jsonProtocol: (<T>() => Protocol<T, T>);
     /**
-     * HTTP response data type.
+     * HTTP protocol.
      *
      * The request type is any. It is used as request body.
      *
-     * @type {DataType<any, Response>}
+     * @type {Protocol<any, Response>}
      */
-    export const HTTP_RESPONSE_DATA_TYPE: DataType<any, Response>;
+    export const HTTP_PROTOCOL: Protocol<any, Response>;
 }
 declare module "ng2-rike/rike" {
     import { EventEmitter } from "@angular/core";
@@ -368,7 +369,7 @@ declare module "ng2-rike/rike" {
     import { Observable } from "rxjs/Rx";
     import { RikeEvent, RikeEventSource } from "ng2-rike/event";
     import { RikeOptions } from "ng2-rike/options";
-    import { DataType } from "ng2-rike/data";
+    import { Protocol } from "ng2-rike/protocol";
     export function requestMethod(method: string | RequestMethod): RequestMethod;
     /**
      * REST-like resource operations service.
@@ -406,26 +407,26 @@ declare module "ng2-rike/rike" {
         patch(url: string, body: any, options?: RequestOptionsArgs): Observable<Response>;
         head(url: string, options?: RequestOptionsArgs): Observable<Response>;
         /**
-         * Constructs operation target, which operations produce HTTP responses ([HTTP_RESPONSE_DATA_TYPE]).
+         * Constructs operation target which operates over [HTTP protocol][HTTP_PROTOCOL].
          *
-         * Arbitrary data type can be used as a request body.
+         * Arbitrary value can be used as a request body.
          *
          * @param target arbitrary target value.
          *
-         * @returns {RikeTargetImpl} new operation target.
+         * @returns {RikeTarget} new operation target.
          */
         target(target: any): RikeTarget<any, Response>;
         /**
-         * Constructs operations target, which operates on the given data type.
+         * Constructs operations target which operates over the given protocol.
          *
          * @param target arbitrary target value.
-         * @param dataType operations data type.
+         * @param protocol operations protocol.
          *
-         * @return {RikeTargetImpl<T>} new operations target.
+         * @return {RikeTarget<IN, OUT>} new operations target.
          */
-        target<IN, OUT>(target: any, dataType: DataType<IN, OUT>): RikeTarget<IN, OUT>;
+        target<IN, OUT>(target: any, protocol: Protocol<IN, OUT>): RikeTarget<IN, OUT>;
         /**
-         * Constructs operations target, which operates on the given data type passing it as JSON over HTTP.
+         * Constructs operations target which operates over [JSON protocol][jsonProtocol].
          *
          * @param target arbitrary target value.
          *
@@ -454,7 +455,7 @@ declare module "ng2-rike/rike" {
      * REST-like operations target.
      *
      * Operation targets are created using [Rike.target] method. The actual operations should be created first with
-     * _operation_ method.
+     * `operation` method.
      *
      * Only one operation can be performed on a target at a time. Whenever a new operation on the same target is initiated,
      * the previous one is cancelled.
@@ -489,11 +490,11 @@ declare module "ng2-rike/rike" {
          */
         readonly abstract rikeEvents: EventEmitter<RikeEvent>;
         /**
-         * An operations data type to use by default.
+         * An operations protocol to use by default.
          *
-         * This is the data type based on the one passed to [Rike.target] method, which honors the default error handler.
+         * This is a protocol based on the one passed to [Rike.target] method, which honors the default error handler.
          */
-        readonly abstract dataType: DataType<IN, OUT>;
+        readonly abstract protocol: Protocol<IN, OUT>;
         /**
          * Base URL to use by operations.
          */
@@ -507,26 +508,30 @@ declare module "ng2-rike/rike" {
          */
         abstract withBaseUrl(url?: string): this;
         /**
-         * Constructs an operation on this target, which produces responses of type `T`.
-         *
-         * The target data type (_dataType_) passed to the [Rike.target] will be used to encode/decode operation data.
+         * Constructs an operation on this target which operates over the target's `protocol`.
          *
          * @param name operation name.
+         *
+         * @return {RikeOperation<IN, OUT>} new operation.
          */
         abstract operation(name: string): RikeOperation<IN, OUT>;
         /**
-         * Constructs an operation on this target, which produces responses of the given type.
+         * Constructs an operation on this target which operates over the given protocol.
          *
          * @param name operation name.
-         * @param dataType operation data type.
+         * @param protocol operation protocol.
+         *
+         * @return {RikeOperation<IN, OUT>} new operation.
          */
-        abstract operation<IN, OUT>(name: string, dataType: DataType<IN, OUT>): RikeOperation<IN, OUT>;
+        abstract operation<IN, OUT>(name: string, protocol: Protocol<IN, OUT>): RikeOperation<IN, OUT>;
         /**
-         * Constructs an operations on this target, which operates on the given data type passing it as JSON over HTTP.
+         * Constructs JSON operation on this target.
+         *
+         * It operates over [JSON protocol][jsonProtocol].
          *
          * @param name operation name.
          *
-         * @return {RikeTarget<T>} new operations target.
+         * @return {RikeOperation<T, T>} new operation.
          */
         json<T>(name: string): RikeOperation<T, T>;
         /**
@@ -539,7 +544,7 @@ declare module "ng2-rike/rike" {
     /**
      * REST-like resource operation.
      *
-     * It basically mimics the `Http` service interface, but also honors global Rike options, and emits events.
+     * It operates over the given protocol and emits events.
      *
      * To initiate operation just call any of the HTTP access methods. Note that operation always belongs to its target
      * and thus two operations could not be initiated simultaneously.
@@ -557,12 +562,12 @@ declare module "ng2-rike/rike" {
          */
         readonly abstract name: string;
         /**
-         * Operation data type.
+         * Operation protocol.
          *
-         * This data type is based on the one passed to the [RikeTarget.operation], but also honors the default data type
+         * This protocol is based on the one passed to the [RikeTarget.operation], but also honors the default protocol
          * set for target.
          */
-        readonly abstract dataType: DataType<IN, OUT>;
+        readonly abstract protocol: Protocol<IN, OUT>;
         readonly abstract options: RequestOptions;
         abstract withOptions(options?: RequestOptionsArgs): this;
         readonly url: string | undefined;
@@ -600,7 +605,7 @@ declare module "ng2-rike/status.component" {
 declare module "ng2-rike/resource" {
     import { Type } from "@angular/core";
     import { Observable } from "rxjs/Rx";
-    import { DataType } from "ng2-rike/data";
+    import { Protocol } from "ng2-rike/protocol";
     import { RikeTarget, Rike } from "ng2-rike/rike";
     export abstract class Resource {
         static provide({provide, useClass, useValue, useExisting, useFactory, deps}: {
@@ -632,18 +637,18 @@ declare module "ng2-rike/resource" {
         update(object: T): Observable<T>;
         delete(object: T): Observable<any>;
         protected createRikeTarget(): RikeTarget<T, T>;
-        protected objectCreateDataType(object: T): DataType<any, T>;
-        protected objectReadDataType(id: any): DataType<any, T>;
-        protected objectUpdateDataType(object: T): DataType<T, T>;
-        protected objectDeleteDataType(object: T): DataType<T, any>;
+        protected objectCreateProtocol(object: T): Protocol<any, T>;
+        protected objectReadProtocol(id: any): Protocol<any, T>;
+        protected objectUpdateProtocol(object: T): Protocol<T, T>;
+        protected objectDeleteProtocol(object: T): Protocol<T, any>;
         protected abstract objectId(object: T): any;
         protected objectUrl(baseUrl: string | undefined, id: any): string;
     }
 }
 declare module "ng2-rike" {
-    export * from "ng2-rike/data";
     export * from "ng2-rike/event";
     export * from "ng2-rike/options";
+    export * from "ng2-rike/protocol";
     export * from "ng2-rike/resource";
     export * from "ng2-rike/rike";
     export * from "ng2-rike/status";

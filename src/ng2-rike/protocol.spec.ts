@@ -1,5 +1,5 @@
 import {RequestOptionsArgs, Response, RequestOptions, URLSearchParams, ResponseOptions} from "@angular/http";
-import {DataType} from "./data";
+import {Protocol} from "./protocol";
 
 interface In {
     request: string;
@@ -19,7 +19,7 @@ interface Out2 {
     response2: string;
 }
 
-class TestDataType extends DataType<In, Out> {
+class TestProtocol extends Protocol<In, Out> {
 
     readonly handleError?: (error: any) => any;
 
@@ -44,14 +44,14 @@ class TestDataType extends DataType<In, Out> {
 
 }
 
-describe("DataType", () => {
+describe("Protocol", () => {
 
-    const dataType = new TestDataType();
+    const protocol = new TestProtocol();
 
     it("prepares request before", () => {
 
-        const type = dataType.prepareRequestWith(opts => new RequestOptions(opts).merge({search: "updated=true"}));
-        const opts = type.prepareRequest({});
+        const proto = protocol.prepareRequestWith(opts => new RequestOptions(opts).merge({search: "updated=true"}));
+        const opts = proto.prepareRequest({});
 
         expect(opts.url).toBe("/request");
         expect(opts.search && opts.search.toString()).toEqual("prepared=true");
@@ -59,10 +59,10 @@ describe("DataType", () => {
 
     it("prepares request after", () => {
 
-        const type = dataType.prepareRequestWith(
+        const proto = protocol.prepareRequestWith(
             opts => new RequestOptions(opts).merge({search: "updated=true"}),
             true);
-        const opts = type.prepareRequest({});
+        const opts = proto.prepareRequest({});
 
         expect(opts.url).toBe("/request");
         expect(opts.search && opts.search.toString()).toEqual("updated=true");
@@ -70,10 +70,10 @@ describe("DataType", () => {
 
     it("writes request", () => {
 
-        const type = dataType.writeRequestWith((request: In2, opts: RequestOptionsArgs) => {
+        const proto = protocol.writeRequestWith((request: In2, opts: RequestOptionsArgs) => {
             return new RequestOptions(opts).merge({body: request.request2});
         });
-        const opts = type.writeRequest({request2: "request2"}, {});
+        const opts = proto.writeRequest({request2: "request2"}, {});
 
         expect(opts.body).toBe("request2");
 
@@ -81,12 +81,12 @@ describe("DataType", () => {
 
     it("updates request before it is written", () => {
 
-        const type = dataType.updateRequestWith((request, opts) => {
+        const proto = protocol.updateRequestWith((request, opts) => {
             request.update = "update1";
             request.written = "rewritten1";
             return new RequestOptions(opts).merge({body: request});
         });
-        const opts = type.writeRequest({request: "request1"}, {});
+        const opts = proto.writeRequest({request: "request1"}, {});
         const body = opts.body as In;
 
         expect(body.request).toBe("request1");
@@ -96,14 +96,14 @@ describe("DataType", () => {
 
     it("updates request after it is written", () => {
 
-        const type = dataType.updateRequestWith(
+        const proto = protocol.updateRequestWith(
             (request, opts) => {
                 request.update = "update1";
                 request.written = "rewritten1";
                 return new RequestOptions(opts).merge({body: request});
             },
             true);
-        const opts = type.writeRequest({request: "request1"}, {});
+        const opts = proto.writeRequest({request: "request1"}, {});
         const body = opts.body as In;
 
         expect(body.request).toBe("request1");
@@ -113,22 +113,22 @@ describe("DataType", () => {
 
     it("reads response", () => {
 
-        const type = dataType.readResponseWith(() => {
+        const proto = protocol.readResponseWith(() => {
             return {
                 response2: "response2"
             } as Out2
         });
-        const response = type.readResponse(new Response(new ResponseOptions()));
+        const response = proto.readResponse(new Response(new ResponseOptions()));
 
         expect(response.response2).toBe("response2");
     });
 
     it("handles error", () => {
 
-        const type = dataType.handleErrorWith(error => {
+        const proto = protocol.handleErrorWith(error => {
             return {error};
         });
-        const error: {error: any} = type.handleError!("abc");
+        const error: {error: any} = proto.handleError!("abc");
 
         expect(error.error).toBe("abc");
     });

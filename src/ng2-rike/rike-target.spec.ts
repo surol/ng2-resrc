@@ -3,7 +3,7 @@ import {Response, RequestOptionsArgs, RequestOptions, ResponseOptions} from "@an
 import {MockBackend, MockConnection} from "@angular/http/testing";
 import {addRikeProviders} from "./rike.spec";
 import {Rike, RikeTarget} from "./rike";
-import {JSON_DATA_TYPE, jsonDataType} from "./data";
+import {JSON_PROTOCOL, jsonProtocol} from "./protocol";
 
 describe("RikeTarget", () => {
 
@@ -31,13 +31,13 @@ describe("RikeTarget", () => {
         expect(t.baseUrl).toBe("target-url");
     });
 
-    it("creates operation of the target type", () => {
+    it("creates operation over the target protocol", () => {
 
         const op = target.operation("operation1");
 
         expect(op.target).toBe(target);
         expect(op.name).toBe("operation1");
-        expect(op.dataType).toBe(target.dataType);
+        expect(op.protocol).toBe(target.protocol);
     });
 
     it("creates JSON operation", () => {
@@ -46,19 +46,19 @@ describe("RikeTarget", () => {
 
         expect(op.target).toBe(target);
         expect(op.name).toBe("jsonOperation");
-        expect(op.dataType).toBe(JSON_DATA_TYPE);
+        expect(op.protocol).toBe(JSON_PROTOCOL);
     });
 
-    it("creates target of specified type", () => {
+    it("creates operation over specified protocol", () => {
 
-        const dataType = jsonDataType<string>()
+        const proto = jsonProtocol<string>()
             .writeRequestWith((val: number, opts: RequestOptionsArgs) =>
                 new RequestOptions(opts).merge({body: JSON.stringify(val)}));
-        const op = target.operation("customOperation", dataType);
+        const op = target.operation("customOperation", proto);
 
         expect(op.target).toBe(target);
         expect(op.name).toBe("customOperation");
-        expect(op.dataType).toBe(dataType);
+        expect(op.protocol).toBe(proto);
     });
 
     it("current operation updated on request", done => {
