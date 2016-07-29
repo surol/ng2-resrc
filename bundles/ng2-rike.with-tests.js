@@ -587,7 +587,7 @@ System.register("ng2-rike/protocol", ["@angular/http"], function(exports_4, cont
     "use strict";
     var __moduleName = context_4 && context_4.id;
     var http_1;
-    var Protocol, RequestBodyProtocol, PrepareRequestProtocol, WriteRequestProtocol, ReadResponseProtocol, HandleErrorProtocol, JsonProtocol, JSON_PROTOCOL, jsonProtocol, HttpProtocol, HTTP_PROTOCOL;
+    var Protocol, PrepareRequestProtocol, WriteRequestProtocol, ReadResponseProtocol, HandleErrorProtocol, JsonProtocol, JSON_PROTOCOL, jsonProtocol, HttpProtocol, HTTP_PROTOCOL;
     return {
         setters:[
             function (http_1_1) {
@@ -687,17 +687,6 @@ System.register("ng2-rike/protocol", ["@angular/http"], function(exports_4, cont
                 return Protocol;
             }());
             exports_4("Protocol", Protocol);
-            RequestBodyProtocol = (function (_super) {
-                __extends(RequestBodyProtocol, _super);
-                function RequestBodyProtocol() {
-                    _super.apply(this, arguments);
-                }
-                RequestBodyProtocol.prototype.writeRequest = function (request, options) {
-                    return new http_1.RequestOptions(options).merge({ body: this.writeBody(request) });
-                };
-                return RequestBodyProtocol;
-            }(Protocol));
-            exports_4("RequestBodyProtocol", RequestBodyProtocol);
             PrepareRequestProtocol = (function (_super) {
                 __extends(PrepareRequestProtocol, _super);
                 function PrepareRequestProtocol(_protocol, _prepare, _after) {
@@ -788,14 +777,23 @@ System.register("ng2-rike/protocol", ["@angular/http"], function(exports_4, cont
                 function JsonProtocol() {
                     _super.apply(this, arguments);
                 }
-                JsonProtocol.prototype.writeBody = function (request) {
-                    return JSON.stringify(request);
+                JsonProtocol.prototype.writeRequest = function (request, options) {
+                    var opts = new http_1.RequestOptions(options).merge({ body: JSON.stringify(request) });
+                    var headers;
+                    if (opts.headers) {
+                        headers = opts.headers;
+                    }
+                    else {
+                        opts.headers = headers = new http_1.Headers();
+                    }
+                    headers.set("Content-Type", "application/json");
+                    return opts;
                 };
                 JsonProtocol.prototype.readResponse = function (response) {
                     return response.json();
                 };
                 return JsonProtocol;
-            }(RequestBodyProtocol));
+            }(Protocol));
             /**
              * JSON protocol.
              *
@@ -1938,6 +1936,28 @@ System.register("ng2-rike/protocol.spec", ["@angular/http", "ng2-rike/protocol"]
                     });
                     var error = proto.handleError("abc");
                     expect(error.error).toBe("abc");
+                });
+            });
+            describe("JSON protocol", function () {
+                var protocol = protocol_4.JSON_PROTOCOL;
+                it("writes request", function () {
+                    var request = { request: "some value", numeric: 13 };
+                    var opts = protocol.writeRequest(request, {});
+                    var response = JSON.parse(opts.body);
+                    expect(opts.headers.get("Content-Type")).toBe("application/json");
+                    expect(response.request).toBe(request.request);
+                    expect(response.numeric).toBe(request.numeric);
+                });
+                it("reads response", function () {
+                    var value = {
+                        request: "Request1",
+                        numeric: 333,
+                    };
+                    var read = protocol.readResponse(new http_4.Response(new http_4.ResponseOptions({
+                        body: JSON.stringify(value),
+                    })));
+                    expect(read.request).toBe(value.request);
+                    expect(read.numeric).toBe(value.numeric);
                 });
             });
         }

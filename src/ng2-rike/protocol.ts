@@ -1,4 +1,4 @@
-import {Response, RequestOptionsArgs, RequestOptions} from "@angular/http";
+import {Response, RequestOptionsArgs, RequestOptions, Headers} from "@angular/http";
 
 /**
  * REST-like operations protocol.
@@ -136,18 +136,6 @@ export abstract class Protocol<IN, OUT> {
 
 }
 
-export abstract class RequestBodyProtocol<T> extends Protocol<T, T> {
-
-    handleError?: (error: any) => any;
-
-    writeRequest(request: T, options: RequestOptionsArgs): RequestOptionsArgs {
-        return new RequestOptions(options).merge({body: this.writeBody(request)});
-    }
-
-    abstract writeBody(request: T): any;
-
-}
-
 class PrepareRequestProtocol<IN, OUT> extends Protocol<IN, OUT> {
 
     readonly handleError?: (error: any) => any;
@@ -253,10 +241,24 @@ class HandleErrorProtocol<IN, OUT> extends Protocol<IN, OUT> {
 
 }
 
-class JsonProtocol<T> extends RequestBodyProtocol<T> {
+class JsonProtocol<T> extends Protocol<T, T> {
 
-    writeBody(request: T): string {
-        return JSON.stringify(request);
+    readonly handleError?: undefined;
+
+    writeRequest(request: T, options: RequestOptionsArgs): RequestOptionsArgs {
+
+        const opts = new RequestOptions(options).merge({body: JSON.stringify(request)});
+
+        let headers: Headers;
+
+        if (opts.headers) {
+            headers = opts.headers;
+        } else {
+            opts.headers = headers = new Headers();
+        }
+        headers.set("Content-Type", "application/json");
+
+        return opts;
     }
 
     readResponse(response: Response): T {
@@ -283,7 +285,7 @@ export const jsonProtocol: (<T>() => Protocol<T, T>) = () => JSON_PROTOCOL;
 
 class HttpProtocol extends Protocol<any, Response> {
 
-    readonly handleError?: (error: any) => any;
+    readonly handleError?: undefined;
 
     writeRequest(request: any, options: RequestOptionsArgs): RequestOptionsArgs {
         return new RequestOptions(options).merge({body: request});

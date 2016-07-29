@@ -335,11 +335,6 @@ declare module "ng2-rike/protocol" {
          */
         handleErrorWith(errorHandler: (error: any) => any): Protocol<IN, OUT>;
     }
-    export abstract class RequestBodyProtocol<T> extends Protocol<T, T> {
-        handleError?: (error: any) => any;
-        writeRequest(request: T, options: RequestOptionsArgs): RequestOptionsArgs;
-        abstract writeBody(request: T): any;
-    }
     /**
      * JSON protocol.
      *

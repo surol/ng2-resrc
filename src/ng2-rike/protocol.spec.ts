@@ -1,10 +1,11 @@
 import {RequestOptionsArgs, Response, RequestOptions, URLSearchParams, ResponseOptions} from "@angular/http";
-import {Protocol} from "./protocol";
+import {Protocol, JSON_PROTOCOL} from "./protocol";
 
 interface In {
     request: string;
     update?: string;
     written?: string;
+    numeric?: number;
 }
 
 interface In2 {
@@ -131,5 +132,35 @@ describe("Protocol", () => {
         const error: {error: any} = proto.handleError!("abc");
 
         expect(error.error).toBe("abc");
+    });
+});
+
+describe("JSON protocol", () => {
+
+    const protocol = JSON_PROTOCOL;
+
+    it("writes request", () => {
+
+        const request: In = {request: "some value", numeric: 13};
+        const opts = protocol.writeRequest(request, {});
+        const response: In = JSON.parse(opts.body);
+
+        expect(opts.headers!.get("Content-Type")).toBe("application/json");
+        expect(response.request).toBe(request.request);
+        expect(response.numeric).toBe(request.numeric);
+    });
+
+    it("reads response", () => {
+
+        const value: In = {
+            request: "Request1",
+            numeric: 333,
+        };
+        const read: In = protocol.readResponse(new Response(new ResponseOptions({
+            body: JSON.stringify(value),
+        })));
+
+        expect(read.request).toBe(value.request);
+        expect(read.numeric).toBe(value.numeric);
     });
 });
