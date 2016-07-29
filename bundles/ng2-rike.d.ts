@@ -273,9 +273,9 @@ declare module "ng2-rike/status" {
     import { RikeTarget } from "ng2-rike/rike";
     import { RikeEvent } from "ng2-rike/event";
     export const DEFAULT_STATUS_LABELS: {
-        [operation: string]: RikeStatusLabels<any>;
+        [operation: string]: StatusLabels<any>;
     };
-    export interface RikeStatusLabels<L> {
+    export interface StatusLabels<L> {
         processing?: L | ((target: RikeTarget<any, any>) => L);
         failed?: L | ((target: RikeTarget<any, any>) => L);
         cancelled?: L | ((target: RikeTarget<any, any>) => L);
@@ -286,8 +286,8 @@ declare module "ng2-rike/status" {
         private _labels;
         private _combined?;
         subscribeOn(events: EventEmitter<RikeEvent>): void;
-        withLabels(labels: RikeStatusLabels<L>): this;
-        withLabels(operation: string, labels: RikeStatusLabels<L>): this;
+        withLabels(labels: StatusLabels<L>): this;
+        withLabels(operation: string, labels: StatusLabels<L>): this;
         readonly labels: L[];
         readonly processing: boolean;
         readonly failed: boolean;
@@ -299,7 +299,7 @@ declare module "ng2-rike/status" {
     }
 }
 declare module "ng2-rike/options" {
-    import { RikeStatusLabels } from "ng2-rike/status";
+    import { StatusLabels } from "ng2-rike/status";
     /**
      * Constructs URL relative to base URL.
      *
@@ -326,7 +326,7 @@ declare module "ng2-rike/options" {
          * Rike operation status labels to use by default.
          */
         readonly defaultStatusLabels?: {
-            [operation: string]: RikeStatusLabels<any>;
+            [operation: string]: StatusLabels<any>;
         };
     }
     /**
@@ -341,7 +341,7 @@ declare module "ng2-rike/options" {
         readonly abstract baseUrl?: string;
         readonly abstract defaultErrorHandler?: (error: any) => any;
         abstract defaultStatusLabels?: {
-            [operation: string]: RikeStatusLabels<any>;
+            [operation: string]: StatusLabels<any>;
         };
         /**
          * Constructs URL relative to `baseUrl`.
@@ -365,7 +365,7 @@ declare module "ng2-rike/options" {
         readonly baseUrl: string | undefined;
         readonly defaultErrorHandler: ((error: any) => any) | undefined;
         readonly defaultStatusLabels: {
-            [operation: string]: RikeStatusLabels<any>;
+            [operation: string]: StatusLabels<any>;
         } | undefined;
     }
     /**
@@ -724,16 +724,16 @@ declare module "ng2-rike/rike" {
     }
 }
 declare module "ng2-rike/status.component" {
-    import { RikeStatusLabels, RikeStatus } from "ng2-rike/status";
+    import { StatusLabels, RikeStatus } from "ng2-rike/status";
     import { RikeEventSource } from "ng2-rike/event";
-    export class RikeStatusComponent<L> {
+    export class StatusComponent<L> {
         private _eventSources;
         private _statusLabels?;
         private _rikeStatus?;
         private _labelText;
         constructor(_eventSources: RikeEventSource[]);
         rikeStatus: RikeStatus<L>;
-        rikeStatusLabels: RikeStatusLabels<L> | undefined;
+        rikeStatusLabels: StatusLabels<L> | undefined;
         rikeStatusLabelText: (label: L) => string;
         readonly cssClass: any;
         readonly text: string | undefined;

@@ -1,5 +1,5 @@
 import {Component, Input} from "@angular/core";
-import {RikeStatusLabels, RikeStatus} from "./status";
+import {StatusLabels, RikeStatus} from "./status";
 import {RikeEventSource} from "./event";
 
 @Component({
@@ -9,9 +9,9 @@ import {RikeEventSource} from "./event";
         '[ngClass]': 'cssClass'
     }
 })
-export class RikeStatusComponent<L> {
+export class StatusComponent<L> {
 
-    private _statusLabels?: RikeStatusLabels<L>;
+    private _statusLabels?: StatusLabels<L>;
     private _rikeStatus?: RikeStatus<L>;
     private _labelText: (label: L) => string = label => label.toString();
 
@@ -27,12 +27,12 @@ export class RikeStatusComponent<L> {
         this._rikeStatus = status;
     }
 
-    get rikeStatusLabels(): RikeStatusLabels<L> | undefined {
+    get rikeStatusLabels(): StatusLabels<L> | undefined {
         return this._statusLabels;
     }
 
     @Input()
-    set rikeStatusLabels(labels: RikeStatusLabels<L> | undefined) {
+    set rikeStatusLabels(labels: StatusLabels<L> | undefined) {
         this._rikeStatus = undefined;
         this._statusLabels = labels;
     }

@@ -1,4 +1,4 @@
-import {RikeStatusLabels, DEFAULT_STATUS_LABELS} from "./status";
+import {StatusLabels, DEFAULT_STATUS_LABELS} from "./status";
 /**
  * Constructs URL relative to base URL.
  *
@@ -39,7 +39,7 @@ export interface RikeOptionsArgs {
     /**
      * Rike operation status labels to use by default.
      */
-    readonly defaultStatusLabels?: {[operation: string]: RikeStatusLabels<any>};
+    readonly defaultStatusLabels?: {[operation: string]: StatusLabels<any>};
 
 }
 
@@ -57,7 +57,7 @@ export abstract class RikeOptions implements RikeOptionsArgs {
 
     abstract readonly defaultErrorHandler?: (error: any) => any;
 
-    abstract defaultStatusLabels?: {[operation: string]: RikeStatusLabels<any>};
+    abstract defaultStatusLabels?: {[operation: string]: StatusLabels<any>};
 
     /**
      * Constructs URL relative to `baseUrl`.
@@ -102,7 +102,7 @@ export class BaseRikeOptions extends RikeOptions {
         return this._defaultErrorHandler;
     }
 
-    get defaultStatusLabels():{[operation: string]: RikeStatusLabels<any>} | undefined {
+    get defaultStatusLabels():{[operation: string]: StatusLabels<any>} | undefined {
         return this._defaultStatusLabels;
     }
 

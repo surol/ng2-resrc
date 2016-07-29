@@ -2,7 +2,7 @@ import {EventEmitter} from "@angular/core";
 import {RikeTarget} from "./rike";
 import {RikeEvent} from "./event";
 
-export const DEFAULT_STATUS_LABELS: {[operation: string]: RikeStatusLabels<any>} = {
+export const DEFAULT_STATUS_LABELS: {[operation: string]: StatusLabels<any>} = {
     "*": {
         processing: "Processing",
         failed: "Error",
@@ -32,7 +32,7 @@ export const DEFAULT_STATUS_LABELS: {[operation: string]: RikeStatusLabels<any>}
     },
 };
 
-export interface RikeStatusLabels<L> {
+export interface StatusLabels<L> {
     processing?: L | ((target: RikeTarget<any, any>) => L);
     failed?: L | ((target: RikeTarget<any, any>) => L);
     cancelled?: L | ((target: RikeTarget<any, any>) => L);
@@ -42,24 +42,24 @@ export interface RikeStatusLabels<L> {
 export class RikeStatus<L> {
 
     private _targetStatuses: {[targetId: string]: TargetStatus} = {};
-    private _labels: {[operation: string]: RikeStatusLabels<L>} = {};
+    private _labels: {[operation: string]: StatusLabels<L>} = {};
     private _combined?: CombinedStatus<L>;
 
     subscribeOn(events: EventEmitter<RikeEvent>) {
         events.subscribe((event: RikeEvent) => this.applyEvent(event));
     }
 
-    withLabels(labels: RikeStatusLabels<L>): this;
+    withLabels(labels: StatusLabels<L>): this;
 
-    withLabels(operation: string, labels: RikeStatusLabels<L>): this;
+    withLabels(operation: string, labels: StatusLabels<L>): this;
 
-    withLabels(operation: string, labels?: RikeStatusLabels<L>): this {
+    withLabels(operation: string, labels?: StatusLabels<L>): this {
 
         let id: string;
 
         if (!labels) {
             id = "*";
-            labels = operation as RikeStatusLabels<L>;
+            labels = operation as StatusLabels<L>;
         } else {
             id = operation;
         }
@@ -172,7 +172,7 @@ interface CombinedStatus<L> {
     succeed?: boolean;
 }
 
-function labelOf<L>(status: TargetStatus, labels?: RikeStatusLabels<L>): StatusLabel<L> | undefined {
+function labelOf<L>(status: TargetStatus, labels?: StatusLabels<L>): StatusLabel<L> | undefined {
     if (!labels) {
         return undefined;
     }

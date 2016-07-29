@@ -1887,7 +1887,7 @@ System.register("ng2-rike/status.component", ["@angular/core", "ng2-rike/status"
     "use strict";
     var __moduleName = context_8 && context_8.id;
     var core_3, status_2;
-    var RikeStatusComponent;
+    var StatusComponent;
     return {
         setters:[
             function (core_3_1) {
@@ -1897,12 +1897,12 @@ System.register("ng2-rike/status.component", ["@angular/core", "ng2-rike/status"
                 status_2 = status_2_1;
             }],
         execute: function() {
-            RikeStatusComponent = (function () {
-                function RikeStatusComponent(_eventSources) {
+            StatusComponent = (function () {
+                function StatusComponent(_eventSources) {
                     this._eventSources = _eventSources;
                     this._labelText = function (label) { return label.toString(); };
                 }
-                Object.defineProperty(RikeStatusComponent.prototype, "rikeStatus", {
+                Object.defineProperty(StatusComponent.prototype, "rikeStatus", {
                     get: function () {
                         return this._rikeStatus || (this._rikeStatus = this.createStatus());
                     },
@@ -1912,7 +1912,7 @@ System.register("ng2-rike/status.component", ["@angular/core", "ng2-rike/status"
                     enumerable: true,
                     configurable: true
                 });
-                Object.defineProperty(RikeStatusComponent.prototype, "rikeStatusLabels", {
+                Object.defineProperty(StatusComponent.prototype, "rikeStatusLabels", {
                     get: function () {
                         return this._statusLabels;
                     },
@@ -1923,7 +1923,7 @@ System.register("ng2-rike/status.component", ["@angular/core", "ng2-rike/status"
                     enumerable: true,
                     configurable: true
                 });
-                Object.defineProperty(RikeStatusComponent.prototype, "rikeStatusLabelText", {
+                Object.defineProperty(StatusComponent.prototype, "rikeStatusLabelText", {
                     get: function () {
                         return this._labelText;
                     },
@@ -1933,7 +1933,7 @@ System.register("ng2-rike/status.component", ["@angular/core", "ng2-rike/status"
                     enumerable: true,
                     configurable: true
                 });
-                Object.defineProperty(RikeStatusComponent.prototype, "cssClass", {
+                Object.defineProperty(StatusComponent.prototype, "cssClass", {
                     get: function () {
                         return {
                             "rike-status": true,
@@ -1946,7 +1946,7 @@ System.register("ng2-rike/status.component", ["@angular/core", "ng2-rike/status"
                     enumerable: true,
                     configurable: true
                 });
-                Object.defineProperty(RikeStatusComponent.prototype, "text", {
+                Object.defineProperty(StatusComponent.prototype, "text", {
                     get: function () {
                         var labels = this.rikeStatus.labels;
                         if (!labels.length) {
@@ -1969,12 +1969,12 @@ System.register("ng2-rike/status.component", ["@angular/core", "ng2-rike/status"
                     enumerable: true,
                     configurable: true
                 });
-                RikeStatusComponent.prototype.createStatus = function () {
+                StatusComponent.prototype.createStatus = function () {
                     var status = new status_2.RikeStatus();
                     this.configureStatus(status);
                     return status;
                 };
-                RikeStatusComponent.prototype.configureStatus = function (status) {
+                StatusComponent.prototype.configureStatus = function (status) {
                     if (this.rikeStatusLabels) {
                         status.withLabels(this.rikeStatusLabels);
                     }
@@ -1986,12 +1986,12 @@ System.register("ng2-rike/status.component", ["@angular/core", "ng2-rike/status"
                 __decorate([
                     core_3.Input(), 
                     __metadata('design:type', status_2.RikeStatus)
-                ], RikeStatusComponent.prototype, "rikeStatus", null);
+                ], StatusComponent.prototype, "rikeStatus", null);
                 __decorate([
                     core_3.Input(), 
                     __metadata('design:type', Object)
-                ], RikeStatusComponent.prototype, "rikeStatusLabels", null);
-                RikeStatusComponent = __decorate([
+                ], StatusComponent.prototype, "rikeStatusLabels", null);
+                StatusComponent = __decorate([
                     core_3.Component({
                         selector: '[rikeStatus]',
                         template: "{{text}}",
@@ -2000,10 +2000,10 @@ System.register("ng2-rike/status.component", ["@angular/core", "ng2-rike/status"
                         }
                     }), 
                     __metadata('design:paramtypes', [Array])
-                ], RikeStatusComponent);
-                return RikeStatusComponent;
+                ], StatusComponent);
+                return StatusComponent;
             }());
-            exports_8("RikeStatusComponent", RikeStatusComponent);
+            exports_8("StatusComponent", StatusComponent);
         }
     }
 });
@@ -2144,10 +2144,10 @@ System.register("ng2-rike/resource", ["@angular/http", "ng2-rike/protocol", "ng2
         }
     }
 });
-System.register("ng2-rike", ["ng2-rike/rike", "ng2-rike/event", "@angular/core", "ng2-rike/status.component", "ng2-rike/error", "ng2-rike/error-collector", "ng2-rike/options", "ng2-rike/protocol", "ng2-rike/resource", "ng2-rike/status"], function(exports_10, context_10) {
+System.register("ng2-rike", ["@angular/core", "ng2-rike/rike", "ng2-rike/event", "ng2-rike/status.component", "ng2-rike/error", "ng2-rike/error-collector", "ng2-rike/options", "ng2-rike/protocol", "ng2-rike/resource", "ng2-rike/status"], function(exports_10, context_10) {
     "use strict";
     var __moduleName = context_10 && context_10.id;
-    var rike_1, event_3, core_4, status_component_1;
+    var core_4, rike_1, event_3, status_component_1;
     var RIKE_PROVIDERS;
     var exportedNames_1 = {
         'RIKE_PROVIDERS': true
@@ -2161,6 +2161,9 @@ System.register("ng2-rike", ["ng2-rike/rike", "ng2-rike/event", "@angular/core",
     }
     return {
         setters:[
+            function (core_4_1) {
+                core_4 = core_4_1;
+            },
             function (rike_1_1) {
                 rike_1 = rike_1_1;
                 exportStar_1(rike_1_1);
@@ -2168,9 +2171,6 @@ System.register("ng2-rike", ["ng2-rike/rike", "ng2-rike/event", "@angular/core",
             function (event_3_1) {
                 event_3 = event_3_1;
                 exportStar_1(event_3_1);
-            },
-            function (core_4_1) {
-                core_4 = core_4_1;
             },
             function (status_component_1_1) {
                 status_component_1 = status_component_1_1;
@@ -2208,7 +2208,7 @@ System.register("ng2-rike", ["ng2-rike/rike", "ng2-rike/event", "@angular/core",
                 event_3.RikeEventSource.provide({ useExisting: rike_1.Rike }),
                 {
                     provide: core_4.PLATFORM_DIRECTIVES,
-                    useValue: status_component_1.RikeStatusComponent,
+                    useValue: status_component_1.StatusComponent,
                     multi: true,
                 }
             ]);
