@@ -1,6 +1,6 @@
-import {EventEmitter} from "@angular/core";
+import {EventEmitter, Injectable, Optional} from "@angular/core";
 import {RikeTarget} from "./rike";
-import {RikeEvent} from "./event";
+import {RikeEvent, RikeEventSource} from "./event";
 
 export const DEFAULT_STATUS_LABELS: {[operation: string]: StatusLabels<any>} = {
     "*": {
@@ -39,11 +39,20 @@ export interface StatusLabels<L> {
     succeed?: L | ((target: RikeTarget<any, any>) => L);
 }
 
+@Injectable()
 export class RikeStatus<L> {
 
     private _targetStatuses: {[targetId: string]: TargetStatus} = {};
     private _labels: {[operation: string]: StatusLabels<L>} = {};
     private _combined?: CombinedStatus<L>;
+
+    constructor(@Optional() eventSources?: RikeEventSource[]) {
+        if (eventSources) {
+            for (let esrc of eventSources) {
+                this.subscribeOn(esrc.rikeEvents);
+            }
+        }
+    }
 
     subscribeOn(events: EventEmitter<RikeEvent>) {
         events.subscribe((event: RikeEvent) => this.applyEvent(event));

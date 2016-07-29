@@ -2,10 +2,12 @@
 import {PLATFORM_DIRECTIVES} from "@angular/core";
 import {Rike} from "./ng2-rike/rike";
 import {RikeEventSource} from "./ng2-rike/event";
-import {StatusComponent} from "./ng2-rike/status.component";
+import {RikeStatusComponent} from "./ng2-rike/status.component";
+import {RikeErrorsComponent} from "./ng2-rike/errors.component";
 
 export * from "./ng2-rike/error";
 export * from "./ng2-rike/error-collector";
+export * from "./ng2-rike/errors.component";
 export * from "./ng2-rike/event";
 export * from "./ng2-rike/options";
 export * from "./ng2-rike/protocol";
@@ -27,7 +29,12 @@ export const RIKE_PROVIDERS: any[] = [
     RikeEventSource.provide({useExisting: Rike}),
     {
         provide: PLATFORM_DIRECTIVES,
-        useValue: StatusComponent,
+        useValue: RikeStatusComponent,
+        multi: true,
+    },
+    {
+        provide: PLATFORM_DIRECTIVES,
+        useValue: RikeErrorsComponent,
         multi: true,
     }
 ];

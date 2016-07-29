@@ -3,13 +3,13 @@ import {StatusLabels, RikeStatus} from "./status";
 import {RikeEventSource} from "./event";
 
 @Component({
-    selector: '[rikeStatus]',
+    selector: '[rikeStatus],[rikeStatusLabels],[rikeStatusLabelText]',
     template: `{{text}}`,
     host: {
         '[ngClass]': 'cssClass'
     }
 })
-export class StatusComponent<L> {
+export class RikeStatusComponent<L> {
 
     private _statusLabels?: StatusLabels<L>;
     private _rikeStatus?: RikeStatus<L>;

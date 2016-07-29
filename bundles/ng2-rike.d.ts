@@ -67,8 +67,10 @@ declare module "ng2-rike/error" {
     export function toErrorResponse(error: any): ErrorResponse;
 }
 declare module "ng2-rike/error-collector" {
+    import { EventEmitter } from "@angular/core";
+    import { AnonymousSubscription } from "rxjs/Subscription";
     import { FieldErrors } from "ng2-rike/error";
-    import { RikeEventSource } from "ng2-rike/event";
+    import { RikeEventSource, RikeEvent } from "ng2-rike/event";
     /**
      * Field errors subscription.
      *
@@ -81,6 +83,12 @@ declare module "ng2-rike/error-collector" {
          * This method should be called in order to release all resources associated with subscription.
          */
         unsubscribe(): void;
+        /**
+         * Request field errors to be updated by notifying the subscriber.
+         *
+         * Does nothing after `unsubscribe()` method called.
+         */
+        refresh(): this;
     }
     /**
      * An error collecting service.
@@ -91,15 +99,24 @@ declare module "ng2-rike/error-collector" {
      *
      * This service is registered automatically along with every event source by [RikeEventSource.provide] method.
      * But unlike event sources it is not a multi-provider.
+     *
+     * An instance of this class could be created on its own. Then it is necessary to subscribe it on Rike events with
+     * `subscribeOn` method.
      */
     export class ErrorCollector {
-        private _eventSources;
+        private _eventSources?;
         private readonly _emitters;
         private readonly _targetErrors;
         private _initialized;
-        constructor(_eventSources: RikeEventSource[]);
+        constructor(_eventSources?: RikeEventSource[]);
         /**
-         * Adds subscription on errors corresponding to the given field.
+         * Subscribes this collector on the given Rike events emitter.
+         *
+         * @param events Rike events emitter to subscribe on.
+         */
+        subscribeOn(events: EventEmitter<RikeEvent>): AnonymousSubscription;
+        /**
+         * Adds subscription for errors corresponding to the given field.
          *
          * If the field name is `"*"`, then subscriber will be notified on error changes for all fields except those ones
          * with existing subscriptions.
@@ -113,7 +130,7 @@ declare module "ng2-rike/error-collector" {
          */
         subscribe(field: string, next: ((errors: FieldErrors) => void), error?: (error: any) => void, complete?: () => void): ErrorSubscription;
         /**
-         * Adds subscription on errors corresponding to all fields except those ones with existing subscriptions.
+         * Adds subscription for errors corresponding to all fields except those ones with existing subscriptions.
          *
          * Calling this method is the same as calling `subscribe("*", next, error, complete);`.
          *
@@ -123,7 +140,7 @@ declare module "ng2-rike/error-collector" {
          *
          * @return {ErrorSubscription} subscription.
          */
-        subscribeOnRest(next: ((errors: FieldErrors) => void), error?: (error: any) => void, complete?: () => void): ErrorSubscription;
+        subscribeForRest(next: ((errors: FieldErrors) => void), error?: (error: any) => void, complete?: () => void): ErrorSubscription;
         /**
          * Converts arbitrary error to `FieldErrors`.
          *
@@ -141,6 +158,37 @@ declare module "ng2-rike/error-collector" {
         private targetErrors(target);
         private clearTargetErrors(target);
         private notify(field);
+    }
+}
+declare module "ng2-rike/status" {
+    import { EventEmitter } from "@angular/core";
+    import { RikeTarget } from "ng2-rike/rike";
+    import { RikeEvent, RikeEventSource } from "ng2-rike/event";
+    export const DEFAULT_STATUS_LABELS: {
+        [operation: string]: StatusLabels<any>;
+    };
+    export interface StatusLabels<L> {
+        processing?: L | ((target: RikeTarget<any, any>) => L);
+        failed?: L | ((target: RikeTarget<any, any>) => L);
+        cancelled?: L | ((target: RikeTarget<any, any>) => L);
+        succeed?: L | ((target: RikeTarget<any, any>) => L);
+    }
+    export class RikeStatus<L> {
+        private _targetStatuses;
+        private _labels;
+        private _combined?;
+        constructor(eventSources?: RikeEventSource[]);
+        subscribeOn(events: EventEmitter<RikeEvent>): void;
+        withLabels(labels: StatusLabels<L>): this;
+        withLabels(operation: string, labels: StatusLabels<L>): this;
+        readonly labels: L[];
+        readonly processing: boolean;
+        readonly failed: boolean;
+        readonly cancelled: boolean;
+        readonly succeed: boolean;
+        private readonly combined;
+        private labelFor(status);
+        private applyEvent(event);
     }
 }
 declare module "ng2-rike/event" {
@@ -266,36 +314,6 @@ declare module "ng2-rike/event" {
         readonly error: RikeOperationEvent | undefined;
         readonly cancel: boolean;
         readonly cancelledBy: RikeOperationEvent | undefined;
-    }
-}
-declare module "ng2-rike/status" {
-    import { EventEmitter } from "@angular/core";
-    import { RikeTarget } from "ng2-rike/rike";
-    import { RikeEvent } from "ng2-rike/event";
-    export const DEFAULT_STATUS_LABELS: {
-        [operation: string]: StatusLabels<any>;
-    };
-    export interface StatusLabels<L> {
-        processing?: L | ((target: RikeTarget<any, any>) => L);
-        failed?: L | ((target: RikeTarget<any, any>) => L);
-        cancelled?: L | ((target: RikeTarget<any, any>) => L);
-        succeed?: L | ((target: RikeTarget<any, any>) => L);
-    }
-    export class RikeStatus<L> {
-        private _targetStatuses;
-        private _labels;
-        private _combined?;
-        subscribeOn(events: EventEmitter<RikeEvent>): void;
-        withLabels(labels: StatusLabels<L>): this;
-        withLabels(operation: string, labels: StatusLabels<L>): this;
-        readonly labels: L[];
-        readonly processing: boolean;
-        readonly failed: boolean;
-        readonly cancelled: boolean;
-        readonly succeed: boolean;
-        private readonly combined;
-        private labelFor(status);
-        private applyEvent(event);
     }
 }
 declare module "ng2-rike/options" {
@@ -726,7 +744,7 @@ declare module "ng2-rike/rike" {
 declare module "ng2-rike/status.component" {
     import { StatusLabels, RikeStatus } from "ng2-rike/status";
     import { RikeEventSource } from "ng2-rike/event";
-    export class StatusComponent<L> {
+    export class RikeStatusComponent<L> {
         private _eventSources;
         private _statusLabels?;
         private _rikeStatus?;
@@ -739,6 +757,28 @@ declare module "ng2-rike/status.component" {
         readonly text: string | undefined;
         protected createStatus(): RikeStatus<L>;
         protected configureStatus(status: RikeStatus<L>): void;
+    }
+}
+declare module "ng2-rike/errors.component" {
+    import { OnInit, OnDestroy } from "@angular/core";
+    import { ErrorCollector } from "ng2-rike/error-collector";
+    import { FieldErrors, FieldError } from "ng2-rike/error";
+    export class RikeErrorsComponent implements OnInit, OnDestroy {
+        private _collector?;
+        private _rikeErrorsField;
+        private _errors;
+        private _init;
+        private _subscription?;
+        constructor(_collector?: ErrorCollector);
+        rikeErrorsField: string;
+        rikeErrors: ErrorCollector;
+        readonly errors: FieldError[];
+        ngOnInit(): void;
+        ngOnDestroy(): void;
+        protected createCollector(): ErrorCollector;
+        protected updateErrors(errors: FieldErrors): void;
+        private subscribe();
+        private unsubscribe();
     }
 }
 declare module "ng2-rike/resource" {
@@ -787,6 +827,7 @@ declare module "ng2-rike/resource" {
 declare module "ng2-rike" {
     export * from "ng2-rike/error";
     export * from "ng2-rike/error-collector";
+    export * from "ng2-rike/errors.component";
     export * from "ng2-rike/event";
     export * from "ng2-rike/options";
     export * from "ng2-rike/protocol";

@@ -1,6 +1,7 @@
 import {EventEmitter, Type} from "@angular/core";
 import {RikeTarget, RikeOperation} from "./rike";
 import {ErrorCollector} from "./error-collector";
+import {RikeStatus} from "./status";
 
 /**
  * REST-like resource access event emitter.
@@ -29,6 +30,7 @@ export abstract class RikeEventSource {
         multi?: boolean;
     }): any[] {
         return [
+            RikeStatus,
             ErrorCollector,
             {
                 provide: RikeEventSource,

@@ -1,4 +1,5 @@
-import {Injectable, EventEmitter} from "@angular/core";
+import {Injectable, EventEmitter, Optional} from "@angular/core";
+import {AnonymousSubscription} from "rxjs/Subscription";
 import {FieldErrors, FieldError, toErrorResponse} from "./error";
 import {RikeEventSource, RikeEvent, RikeErrorEvent} from "./event";
 import {RikeTarget} from "./rike";
@@ -17,6 +18,13 @@ export interface ErrorSubscription {
      */
     unsubscribe(): void;
 
+    /**
+     * Request field errors to be updated by notifying the subscriber.
+     *
+     * Does nothing after `unsubscribe()` method called.
+     */
+    refresh(): this;
+
 }
 
 /**
@@ -28,6 +36,9 @@ export interface ErrorSubscription {
  *
  * This service is registered automatically along with every event source by [RikeEventSource.provide] method.
  * But unlike event sources it is not a multi-provider.
+ *
+ * An instance of this class could be created on its own. Then it is necessary to subscribe it on Rike events with
+ * `subscribeOn` method.
  */
 @Injectable()
 export class ErrorCollector {
@@ -36,11 +47,22 @@ export class ErrorCollector {
     private readonly _targetErrors: {[target: string]: TargetErrors} = {};
     private _initialized = false;
 
-    constructor(private _eventSources: RikeEventSource[]) {
+    constructor(@Optional() private _eventSources?: RikeEventSource[]) {
     }
 
     /**
-     * Adds subscription on errors corresponding to the given field.
+     * Subscribes this collector on the given Rike events emitter.
+     *
+     * @param events Rike events emitter to subscribe on.
+     */
+    public subscribeOn(events: EventEmitter<RikeEvent>): AnonymousSubscription {
+        return events.subscribe(
+            (event: RikeEvent) => this.handleEvent(event),
+            (error: RikeErrorEvent) => this.handleError(error));
+    }
+
+    /**
+     * Adds subscription for errors corresponding to the given field.
      *
      * If the field name is `"*"`, then subscriber will be notified on error changes for all fields except those ones
      * with existing subscriptions.
@@ -62,7 +84,7 @@ export class ErrorCollector {
     }
 
     /**
-     * Adds subscription on errors corresponding to all fields except those ones with existing subscriptions.
+     * Adds subscription for errors corresponding to all fields except those ones with existing subscriptions.
      *
      * Calling this method is the same as calling `subscribe("*", next, error, complete);`.
      *
@@ -72,7 +94,7 @@ export class ErrorCollector {
      *
      * @return {ErrorSubscription} subscription.
      */
-    public subscribeOnRest(
+    public subscribeForRest(
         next: ((errors: FieldErrors) => void),
         error?: (error: any) => void,
         complete?: () => void): ErrorSubscription {
@@ -94,7 +116,8 @@ export class ErrorCollector {
     }
 
     private fieldEmitter(field: string) {
-        return this._emitters[field] || (this._emitters[field] = new FieldEmitter(field, this._emitters));
+        return this._emitters[field] || (
+            this._emitters[field] = new FieldEmitter(field, this._emitters, this._targetErrors));
     }
 
     private init() {
@@ -103,10 +126,10 @@ export class ErrorCollector {
         }
 
         this._initialized = true;
-        for (let src of this._eventSources) {
-            src.rikeEvents.subscribe(
-                (event: RikeEvent) => this.handleEvent(event),
-                (error: RikeErrorEvent) => this.handleError(error));
+        if (this._eventSources) {
+            for (let src of this._eventSources) {
+                this.subscribeOn(src.rikeEvents);
+            }
         }
     }
 
@@ -156,21 +179,11 @@ export class ErrorCollector {
 
     private notify(field: string) {
 
-        let emitter = this._emitters[field];
+        const emitter = this._emitters[field];
 
-        if (!emitter) {
-            return;
+        if (emitter) {
+            emitter.notify();
         }
-
-        const errors: FieldErrors = {};
-
-        for (let id in this._targetErrors) {
-            if (this._targetErrors.hasOwnProperty(id)) {
-                this._targetErrors[id].appendTo(field, errors);
-            }
-        }
-
-        emitter.emit(errors);
     }
 
 }
@@ -182,7 +195,8 @@ class FieldEmitter {
 
     constructor(
         private _field: string,
-        private _emitters: {[field: string]: FieldEmitter}) {
+        private _emitters: {[field: string]: FieldEmitter},
+        private _targetErrors: {[target: string]: TargetErrors}) {
     }
 
     subscribe(
@@ -190,15 +204,24 @@ class FieldEmitter {
         error?: (error: any) => void,
         complete?: () => void): ErrorSubscription {
 
-        const subscr: ErrorSubscription = this._emitter.subscribe(next, error, complete);
+        const subscr = this._emitter.subscribe(next, error, complete) as AnonymousSubscription;
 
         this._counter++;
 
-        return new ErrorSubscr(this, subscr);
+        return new ErrorSubscr(this, subscr).subscribe(next, error, complete);
     }
 
-    emit(errors: FieldErrors) {
-        this._emitter.emit(errors);
+    notify(emitter?: EventEmitter<FieldErrors>) {
+
+        const errors: FieldErrors = {};
+
+        for (let id in this._targetErrors) {
+            if (this._targetErrors.hasOwnProperty(id)) {
+                this._targetErrors[id].appendTo(this._field, errors);
+            }
+        }
+
+        (emitter || this._emitter).emit(errors);
     }
 
     unsubscribed() {
@@ -211,9 +234,18 @@ class FieldEmitter {
 
 class ErrorSubscr implements ErrorSubscription {
 
-    constructor(
-        private _emitter: FieldEmitter,
-        private _subscription?: ErrorSubscription) {
+    private readonly _refreshEmitter = new EventEmitter<FieldErrors>();
+    private _refreshSubscription: AnonymousSubscription;
+
+    constructor(private _fieldEmitter: FieldEmitter, private _subscription?: AnonymousSubscription) {
+    }
+
+    subscribe(
+        next: ((errors: FieldErrors) => void),
+        error?: (error: any) => void,
+        complete?: () => void): this {
+        this._refreshSubscription = this._refreshEmitter.subscribe(next, error, complete);
+        return this;
     }
 
     unsubscribe(): void {
@@ -222,10 +254,19 @@ class ErrorSubscr implements ErrorSubscription {
         }
         try {
             this._subscription.unsubscribe();
+            this._refreshSubscription.unsubscribe();
         } finally {
             delete this._subscription;
-            this._emitter.unsubscribed();
+            this._fieldEmitter.unsubscribed();
         }
+    }
+
+    refresh(): this {
+        if (!this._subscription) {
+            return this;
+        }
+        this._fieldEmitter.notify(this._refreshEmitter);
+        return this;
     }
 
 }
