@@ -34,7 +34,7 @@ export interface ErrorSubscription {
  * to build a `FieldErrors` instance to obtain errors from. Then it notifies all subscribers on when errors received or
  * removed.
  *
- * This service is registered automatically along with every event source by [RikeEventSource.provide] method.
+ * This service is registered automatically along with every event source by [provideEventSource] method.
  * But unlike event sources it is not a multi-provider.
  *
  * An instance of this class could be created on its own. Then it is necessary to subscribe it on Rike events with

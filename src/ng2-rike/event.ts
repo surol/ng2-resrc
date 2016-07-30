@@ -1,48 +1,14 @@
-import {EventEmitter, Type} from "@angular/core";
+import {EventEmitter} from "@angular/core";
 import {RikeTarget, RikeOperation} from "./rike";
-import {ErrorCollector} from "./error-collector";
-import {StatusCollector} from "./status-collector";
 
 /**
  * REST-like resource access event emitter.
  *
  * Multiple instances of this class could be injected into controller or service to listen for Rike events.
+ *
+ * Use [provideEventSource] function to register event sources.
  */
 export abstract class RikeEventSource {
-
-    /**
-     * Constructs provider recipe for [RikeEventSource]
-     *
-     * @param useClass
-     * @param useValue
-     * @param useExisting
-     * @param useFactory
-     * @param deps
-     *
-     * @return new provider recipe.
-     */
-    static provide({useClass, useValue, useExisting, useFactory, deps}: {
-        useClass?: Type;
-        useValue?: any;
-        useExisting?: any;
-        useFactory?: Function;
-        deps?: Object[];
-        multi?: boolean;
-    }): any[] {
-        return [
-            StatusCollector,
-            ErrorCollector,
-            {
-                provide: RikeEventSource,
-                multi: true,
-                useClass,
-                useValue,
-                useExisting,
-                useFactory,
-                deps,
-            },
-        ];
-    };
 
     /**
      * Rike events emitter.

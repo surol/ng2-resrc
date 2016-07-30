@@ -1,40 +1,10 @@
-import {Type} from "@angular/core";
 import {RequestOptions} from "@angular/http";
 import {Observable} from "rxjs/Rx";
 import {Protocol, JSON_PROTOCOL, jsonProtocol} from "./protocol";
-import {RikeEventSource} from "./event";
 import {relativeUrl} from "./options";
 import {RikeTarget, Rike} from "./rike";
 
 export abstract class Resource {
-
-    static provide({provide, useClass, useValue, useExisting, useFactory, deps}: {
-        provide: any,
-        useClass?: Type;
-        useValue?: any;
-        useExisting?: any;
-        useFactory?: Function;
-        deps?: Object[];
-        multi?: boolean;
-    }): any {
-
-        const token = provide || Resource;
-
-        return [
-            {
-                provide: token,
-                useClass,
-                useValue,
-                useExisting,
-                useFactory,
-                deps,
-            },
-            RikeEventSource.provide({
-                useFactory: (resource: Resource) => resource.rikeTarget,
-                deps: [token],
-            })
-        ];
-    }
 
     abstract readonly rikeTarget: RikeTarget<any, any>;
 
@@ -101,11 +71,11 @@ export abstract class CRUDResource<T> extends RikeResource {
     }
 
     protected objectCreateProtocol(object: T): Protocol<any, T> {
-        return this.rikeTarget.protocol.readResponseWith(response => object);
+        return this.rikeTarget.protocol.instead().readResponse(response => object);
     }
 
     protected objectReadProtocol(id: any): Protocol<any, T> {
-        return this.rikeTarget.protocol.prepareRequestWith(
+        return this.rikeTarget.protocol.prior().prepareRequest(
             options => new RequestOptions(options).merge({
                 url: this.objectUrl(options.url, id)
             }));
@@ -113,18 +83,22 @@ export abstract class CRUDResource<T> extends RikeResource {
 
     protected objectUpdateProtocol(object: T): Protocol<T, T> {
         return this.rikeTarget.protocol
-            .updateRequestWith((object, options) => new RequestOptions(options).merge({
+            .prior()
+            .updateRequest((object, options) => new RequestOptions(options).merge({
                 url: this.objectUrl(options.url, this.objectId(object))
             }))
-            .readResponseWith(response => object);
+            .instead()
+            .readResponse(response => object);
     }
 
     protected objectDeleteProtocol(object: T): Protocol<T, any> {
         return this.rikeTarget.protocol
-            .updateRequestWith((object, options) => new RequestOptions(options).merge({
+            .prior()
+            .updateRequest((object, options) => new RequestOptions(options).merge({
                 url: this.objectUrl(options.url, this.objectId(object))
             }))
-            .readResponseWith(response => object)
+            .instead()
+            .readResponse(response => object)
     }
 
     protected abstract objectId(object: T): any;

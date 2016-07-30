@@ -51,7 +51,7 @@ describe("Protocol", () => {
 
     it("prepares request before", () => {
 
-        const proto = protocol.prepareRequestWith(opts => new RequestOptions(opts).merge({search: "updated=true"}));
+        const proto = protocol.prior().prepareRequest(opts => new RequestOptions(opts).merge({search: "updated=true"}));
         const opts = proto.prepareRequest({});
 
         expect(opts.url).toBe("/request");
@@ -60,9 +60,7 @@ describe("Protocol", () => {
 
     it("prepares request after", () => {
 
-        const proto = protocol.prepareRequestWith(
-            opts => new RequestOptions(opts).merge({search: "updated=true"}),
-            true);
+        const proto = protocol.then().prepareRequest(opts => new RequestOptions(opts).merge({search: "updated=true"}));
         const opts = proto.prepareRequest({});
 
         expect(opts.url).toBe("/request");
@@ -71,7 +69,7 @@ describe("Protocol", () => {
 
     it("writes request", () => {
 
-        const proto = protocol.writeRequestWith((request: In2, opts: RequestOptionsArgs) => {
+        const proto = protocol.instead().writeRequest((request: In2, opts: RequestOptionsArgs) => {
             return new RequestOptions(opts).merge({body: request.request2});
         });
         const opts = proto.writeRequest({request2: "request2"}, {});
@@ -82,7 +80,7 @@ describe("Protocol", () => {
 
     it("updates request before it is written", () => {
 
-        const proto = protocol.updateRequestWith((request, opts) => {
+        const proto = protocol.prior().updateRequest((request, opts) => {
             request.update = "update1";
             request.written = "rewritten1";
             return new RequestOptions(opts).merge({body: request});
@@ -97,13 +95,12 @@ describe("Protocol", () => {
 
     it("updates request after it is written", () => {
 
-        const proto = protocol.updateRequestWith(
+        const proto = protocol.then().updateRequest(
             (request, opts) => {
                 request.update = "update1";
                 request.written = "rewritten1";
                 return new RequestOptions(opts).merge({body: request});
-            },
-            true);
+            });
         const opts = proto.writeRequest({request: "request1"}, {});
         const body = opts.body as In;
 
@@ -114,7 +111,7 @@ describe("Protocol", () => {
 
     it("reads response", () => {
 
-        const proto = protocol.readResponseWith(() => {
+        const proto = protocol.instead().readResponse(() => {
             return {
                 response2: "response2"
             } as Out2
@@ -126,7 +123,7 @@ describe("Protocol", () => {
 
     it("handles error", () => {
 
-        const proto = protocol.handleErrorWith(error => {
+        const proto = protocol.then().handleError(error => {
             return {error};
         });
         const error: {error: any} = proto.handleError!("abc");

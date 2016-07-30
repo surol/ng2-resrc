@@ -1,224 +1,15 @@
 /// <reference types="core-js" />
-declare module "ng2-rike/error" {
-    import { Response } from "@angular/http";
-    /**
-     * Error response options interface.
-     */
-    export interface ErrorResponseOpts {
-        /**
-         * HTTP response.
-         */
-        readonly response: Response;
-        /**
-         * Field errors.
-         */
-        readonly errors: FieldErrors;
-    }
-    /**
-     * Error response.
-     *
-     * Any object can be converted to `ErrorResponse` with `toErrorResponse()` function.
-     */
-    export class ErrorResponse implements ErrorResponseOpts {
-        /**
-         * HTTP response.
-         */
-        readonly response: Response;
-        /**
-         * Field errors.
-         */
-        readonly errors: FieldErrors;
-        constructor(opts: ErrorResponseOpts);
-    }
-    /**
-     * Field errors.
-     *
-     * Any field of this object is an arrays of errors corresponding to this field. Such array should never be empty.
-     *
-     * The special case is field named `"*"`. It contains errors not related to particular field.
-     */
-    export interface FieldErrors {
-        [field: string]: FieldError[];
-    }
-    /**
-     * Field error.
-     */
-    export interface FieldError {
-        /**
-         * Optional error code.
-         */
-        code?: string;
-        /**
-         * Error message.
-         */
-        message: string;
-    }
-    /**
-     * Converts any object to `ErrorResponse`.
-     *
-     * If the `error` object is already of type `ErrorResponse` then just returns it.
-     *
-     * This function can be used as a [error handler][Protocol.handleError] to convert HTTP responses.
-     *
-     * @param error object to convert.
-     *
-     * @return {ErrorResponse} constructed error response.
-     */
-    export function toErrorResponse(error: any): ErrorResponse;
-}
-declare module "ng2-rike/error-collector" {
-    import { EventEmitter } from "@angular/core";
-    import { AnonymousSubscription } from "rxjs/Subscription";
-    import { FieldErrors } from "ng2-rike/error";
-    import { RikeEventSource, RikeEvent } from "ng2-rike/event";
-    /**
-     * Field errors subscription.
-     *
-     * The `unsubscribe()` method should be called to stop receiving error notifications.
-     */
-    export interface ErrorSubscription {
-        /**
-         * After this method called the error notifications won't be sent to subscriber.
-         *
-         * This method should be called in order to release all resources associated with subscription.
-         */
-        unsubscribe(): void;
-        /**
-         * Request field errors to be updated by notifying the subscriber.
-         *
-         * Does nothing after `unsubscribe()` method called.
-         */
-        refresh(): this;
-    }
-    /**
-     * An error collecting service.
-     *
-     * It collects errors from all available [Rike event sources][RikeEventSource]. It uses `toFieldErrors()` method
-     * to build a `FieldErrors` instance to obtain errors from. Then it notifies all subscribers on when errors received or
-     * removed.
-     *
-     * This service is registered automatically along with every event source by [RikeEventSource.provide] method.
-     * But unlike event sources it is not a multi-provider.
-     *
-     * An instance of this class could be created on its own. Then it is necessary to subscribe it on Rike events with
-     * `subscribeOn` method.
-     */
-    export class ErrorCollector {
-        private _eventSources?;
-        private readonly _emitters;
-        private readonly _targetErrors;
-        private _initialized;
-        constructor(_eventSources?: RikeEventSource[]);
-        /**
-         * Subscribes this collector on the given Rike events emitter.
-         *
-         * @param events Rike events emitter to subscribe on.
-         */
-        subscribeOn(events: EventEmitter<RikeEvent>): AnonymousSubscription;
-        /**
-         * Adds subscription for errors corresponding to the given field.
-         *
-         * If the field name is `"*"`, then subscriber will be notified on error changes for all fields except those ones
-         * with existing subscriptions.
-         *
-         * @param field target field name.
-         * @param next function that will be called on every target field errors update.
-         * @param error function that will be called on errors.
-         * @param complete function that will be called when no more errors will be reported.
-         *
-         * @return {ErrorSubscription} subscription.
-         */
-        subscribe(field: string, next: ((errors: FieldErrors) => void), error?: (error: any) => void, complete?: () => void): ErrorSubscription;
-        /**
-         * Adds subscription for errors corresponding to all fields except those ones with existing subscriptions.
-         *
-         * Calling this method is the same as calling `subscribe("*", next, error, complete);`.
-         *
-         * @param next function that will be called on every errors update.
-         * @param error function that will be called on errors.
-         * @param complete function that will be called when no more errors will be reported.
-         *
-         * @return {ErrorSubscription} subscription.
-         */
-        subscribeForRest(next: ((errors: FieldErrors) => void), error?: (error: any) => void, complete?: () => void): ErrorSubscription;
-        /**
-         * Converts arbitrary error to `FieldErrors`.
-         *
-         * This method uses [toErrorResponse] function by default. Override it if you are using custom error handler.
-         *
-         * @param error arbitrary error passed in [RikeEvent.error] field.
-         *
-         * @return {FieldErrors} field errors.
-         */
-        protected toFieldErrors(error: any): FieldErrors;
-        private fieldEmitter(field);
-        private init();
-        private handleEvent(event);
-        private handleError(error);
-        private targetErrors(target);
-        private clearTargetErrors(target);
-        private notify(field);
-    }
-}
-declare module "ng2-rike/status-collector" {
-    import { EventEmitter } from "@angular/core";
-    import { RikeTarget } from "ng2-rike/rike";
-    import { RikeEvent, RikeEventSource } from "ng2-rike/event";
-    export const DEFAULT_STATUS_LABELS: {
-        [operation: string]: StatusLabels<any>;
-    };
-    export interface StatusLabels<L> {
-        processing?: L | ((target: RikeTarget<any, any>) => L);
-        failed?: L | ((target: RikeTarget<any, any>) => L);
-        cancelled?: L | ((target: RikeTarget<any, any>) => L);
-        succeed?: L | ((target: RikeTarget<any, any>) => L);
-    }
-    export class StatusCollector<L> {
-        private _targetStatuses;
-        private _labels;
-        private _combined?;
-        constructor(eventSources?: RikeEventSource[]);
-        subscribeOn(events: EventEmitter<RikeEvent>): void;
-        withLabels(labels: StatusLabels<L>): this;
-        withLabels(operation: string, labels: StatusLabels<L>): this;
-        readonly labels: L[];
-        readonly processing: boolean;
-        readonly failed: boolean;
-        readonly cancelled: boolean;
-        readonly succeed: boolean;
-        private readonly combined;
-        private labelFor(status);
-        private applyEvent(event);
-    }
-}
 declare module "ng2-rike/event" {
-    import { EventEmitter, Type } from "@angular/core";
+    import { EventEmitter } from "@angular/core";
     import { RikeTarget, RikeOperation } from "ng2-rike/rike";
     /**
      * REST-like resource access event emitter.
      *
      * Multiple instances of this class could be injected into controller or service to listen for Rike events.
+     *
+     * Use [provideEventSource] function to register event sources.
      */
     export abstract class RikeEventSource {
-        /**
-         * Constructs provider recipe for [RikeEventSource]
-         *
-         * @param useClass
-         * @param useValue
-         * @param useExisting
-         * @param useFactory
-         * @param deps
-         *
-         * @return new provider recipe.
-         */
-        static provide({useClass, useValue, useExisting, useFactory, deps}: {
-            useClass?: Type;
-            useValue?: any;
-            useExisting?: any;
-            useFactory?: Function;
-            deps?: Object[];
-            multi?: boolean;
-        }): any[];
         /**
          * Rike events emitter.
          */
@@ -314,6 +105,37 @@ declare module "ng2-rike/event" {
         readonly error: RikeOperationEvent | undefined;
         readonly cancel: boolean;
         readonly cancelledBy: RikeOperationEvent | undefined;
+    }
+}
+declare module "ng2-rike/status-collector" {
+    import { EventEmitter } from "@angular/core";
+    import { RikeTarget } from "ng2-rike/rike";
+    import { RikeEvent, RikeEventSource } from "ng2-rike/event";
+    export const DEFAULT_STATUS_LABELS: {
+        [operation: string]: StatusLabels<any>;
+    };
+    export interface StatusLabels<L> {
+        processing?: L | ((target: RikeTarget<any, any>) => L);
+        failed?: L | ((target: RikeTarget<any, any>) => L);
+        cancelled?: L | ((target: RikeTarget<any, any>) => L);
+        succeed?: L | ((target: RikeTarget<any, any>) => L);
+    }
+    export class StatusCollector<L> {
+        private _targetStatuses;
+        private _labels;
+        private _combined?;
+        constructor(eventSources?: RikeEventSource[]);
+        subscribeOn(events: EventEmitter<RikeEvent>): void;
+        withLabels(labels: StatusLabels<L>): this;
+        withLabels(operation: string, labels: StatusLabels<L>): this;
+        readonly labels: L[];
+        readonly processing: boolean;
+        readonly failed: boolean;
+        readonly cancelled: boolean;
+        readonly succeed: boolean;
+        private readonly combined;
+        private labelFor(status);
+        private applyEvent(event);
     }
 }
 declare module "ng2-rike/options" {
@@ -420,16 +242,6 @@ declare module "ng2-rike/protocol" {
          */
         prepareRequest(options: RequestOptionsArgs): RequestOptionsArgs;
         /**
-         * Constructs new protocol based on this one, which prepares the request with the given function.
-         *
-         * @param prepare a request preparation function invoked in addition to `this.prepareRequest` method.
-         * @param after `true` to call the `prepare` function after `this.prepareRequest` method,
-         * otherwise it will be called before `this.prepareRequest()` method
-         *
-         * @return {Protocol<IN, OUT>} new protocol.
-         */
-        prepareRequestWith(prepare: (options: RequestOptionsArgs) => RequestOptionsArgs, after?: boolean): Protocol<IN, OUT>;
-        /**
          * Writes operation request as HTTP request.
          *
          * This method is invoked only for HTTP request methods that expect request body.
@@ -444,25 +256,6 @@ declare module "ng2-rike/protocol" {
          */
         abstract writeRequest(request: IN, options: RequestOptionsArgs): RequestOptionsArgs;
         /**
-         * Constructs new protocol based on this one, which writes the request with the given function.
-         *
-         * @param writeRequest new request writer function.
-         *
-         * @return {Protocol<IN, OUT>} new protocol.
-         */
-        writeRequestWith<IN>(writeRequest: (request: IN, options: RequestOptionsArgs) => RequestOptionsArgs): Protocol<IN, OUT>;
-        /**
-         * Constructs new protocol based on this one, which updates request options with the given function. The request
-         * will be written with original `writeRequest()` method.
-         *
-         * @param updateRequest a function updating request options in addition to `this.writeRequest()` method.
-         * @param after `true` to invoke `updateRequest` function after `this.writeRequest()` method, otherwise it will be
-         * invoked before the `this.writeRequest()` method.
-         *
-         * @return {Protocol<IN, OUT>} new protocol.
-         */
-        updateRequestWith(updateRequest: (request: IN, options: RequestOptionsArgs) => RequestOptionsArgs, after?: boolean): Protocol<IN, OUT>;
-        /**
          * Reads operation response from HTTP response.
          *
          * @param response HTTP response.
@@ -470,14 +263,6 @@ declare module "ng2-rike/protocol" {
          * @returns operation response.
          */
         abstract readResponse(response: Response): OUT;
-        /**
-         * Constructs new protocol based on this one, which reads responses with the given function.
-         *
-         * @param readResponse new response reader function.
-         *
-         * @return {Protocol<IN, OUT>} new protocol.
-         */
-        readResponseWith<OUT>(readResponse: (response: Response) => OUT): Protocol<IN, OUT>;
         /**
          * Handles HTTP error.
          *
@@ -489,13 +274,92 @@ declare module "ng2-rike/protocol" {
          */
         readonly abstract handleError?: (error: any) => any;
         /**
-         * Constructs new protocol based on this one, which handles errors with the given function.
+         * Creates protocol addon able to prepend protocol actions with specified functions.
          *
-         * @param errorHandler
+         * @return {ProtocolAddon<IN, OUT>} protocol addon.
+         */
+        prior(): ProtocolAddon<IN, OUT>;
+        /**
+         * Creates protocol addon able to append specified functions to protocol actions.
+         *
+         * @return {ProtocolAddon<IN, OUT>} protocol addon.
+         */
+        then(): ProtocolAddon<IN, OUT>;
+        /**
+         * Creates protocol modifier able to replace protocol actions with specified functions.
+         *
+         * @return {ProtocolMod<IN, OUT>} protocol modifier.
+         */
+        instead(): ProtocolMod<IN, OUT>;
+    }
+    /**
+     * Protocol addon. It is able to construct new protocol based on original one by adding specified actions to original
+     * ones.
+     */
+    export interface ProtocolAddon<IN, OUT> {
+        /**
+         * Constructs new protocol based on this one, which prepares the request with the given function.
+         *
+         * @param prepare a request preparation function invoked in addition to `Protocol.prepareRequest` method.
          *
          * @return {Protocol<IN, OUT>} new protocol.
          */
-        handleErrorWith(errorHandler: (error: any) => any): Protocol<IN, OUT>;
+        prepareRequest(prepare: (options: RequestOptionsArgs) => RequestOptionsArgs): Protocol<IN, OUT>;
+        /**
+         * Constructs new protocol based on original one, which updates request options with the given function.
+         * The request will be written with original `Protocol.writeRequest()` method.
+         *
+         * @param update a function updating request options in addition to `Protocol.writeRequest()` method.
+         *
+         * @return {Protocol<IN, OUT>} new protocol.
+         */
+        updateRequest(update: (request: IN, options: RequestOptionsArgs) => RequestOptionsArgs): Protocol<IN, OUT>;
+        /**
+         * Constructs new protocol based on original one, which handles errors with the given function.
+         *
+         * @param handle a function handling errors in addition to `Protocol.handleError()` method.
+         *
+         * @return {Protocol<IN, OUT>} new protocol.
+         */
+        handleError(handle: (error: any) => any): Protocol<IN, OUT>;
+    }
+    /**
+     * Protocol modifier. It is able to construct new protocol based on original one by replacing protocol actions with
+     * specified ones.
+     */
+    export interface ProtocolMod<IN, OUT> {
+        /**
+         * Constructs new protocol based on original one, which prepares the request with the given function.
+         *
+         * @param prepare a request preparation function invoked instead of `Protocol.prepareRequest` method.
+         *
+         * @return {Protocol<IN, OUT>} new protocol.
+         */
+        prepareRequest(prepare: (options: RequestOptionsArgs) => RequestOptionsArgs): Protocol<IN, OUT>;
+        /**
+         * Constructs new protocol based on original one, which writes the request with the given function.
+         *
+         * @param write new request writer function.
+         *
+         * @return {Protocol<I, OUT>} new protocol.
+         */
+        writeRequest<I>(write: (request: I, options: RequestOptionsArgs) => RequestOptionsArgs): Protocol<I, OUT>;
+        /**
+         * Constructs new protocol based on original one, which reads responses with the given function.
+         *
+         * @param read new response reader function.
+         *
+         * @return {Protocol<IN, O>} new protocol.
+         */
+        readResponse<O>(read: (response: Response) => O): Protocol<IN, O>;
+        /**
+         * Constructs new protocol based on original one, which handles errors with the given function.
+         *
+         * @param handle a function handling errors instead of `Protocol.handleError()` method.
+         *
+         * @return {Protocol<IN, OUT>} new protocol.
+         */
+        handleError(handle: (error: any) => any): Protocol<IN, OUT>;
     }
     /**
      * JSON protocol.
@@ -759,6 +623,167 @@ declare module "ng2-rike/status.component" {
         protected configureStatus(status: StatusCollector<L>): void;
     }
 }
+declare module "ng2-rike/error" {
+    import { Response } from "@angular/http";
+    /**
+     * Error response options interface.
+     */
+    export interface ErrorResponseOpts {
+        /**
+         * HTTP response.
+         */
+        readonly response: Response;
+        /**
+         * Field errors.
+         */
+        readonly errors: FieldErrors;
+    }
+    /**
+     * Error response.
+     *
+     * Any object can be converted to `ErrorResponse` with `toErrorResponse()` function.
+     */
+    export class ErrorResponse implements ErrorResponseOpts {
+        /**
+         * HTTP response.
+         */
+        readonly response: Response;
+        /**
+         * Field errors.
+         */
+        readonly errors: FieldErrors;
+        constructor(opts: ErrorResponseOpts);
+    }
+    /**
+     * Field errors.
+     *
+     * Any field of this object is an arrays of errors corresponding to this field. Such array should never be empty.
+     *
+     * The special case is field named `"*"`. It contains errors not related to particular field.
+     */
+    export interface FieldErrors {
+        [field: string]: FieldError[];
+    }
+    /**
+     * Field error.
+     */
+    export interface FieldError {
+        /**
+         * Optional error code.
+         */
+        code?: string;
+        /**
+         * Error message.
+         */
+        message: string;
+    }
+    /**
+     * Converts any object to `ErrorResponse`.
+     *
+     * If the `error` object is already of type `ErrorResponse` then just returns it.
+     *
+     * This function can be used as a [error handler][Protocol.handleError] to convert HTTP responses.
+     *
+     * @param error object to convert.
+     *
+     * @return {ErrorResponse} constructed error response.
+     */
+    export function toErrorResponse(error: any): ErrorResponse;
+}
+declare module "ng2-rike/error-collector" {
+    import { EventEmitter } from "@angular/core";
+    import { AnonymousSubscription } from "rxjs/Subscription";
+    import { FieldErrors } from "ng2-rike/error";
+    import { RikeEventSource, RikeEvent } from "ng2-rike/event";
+    /**
+     * Field errors subscription.
+     *
+     * The `unsubscribe()` method should be called to stop receiving error notifications.
+     */
+    export interface ErrorSubscription {
+        /**
+         * After this method called the error notifications won't be sent to subscriber.
+         *
+         * This method should be called in order to release all resources associated with subscription.
+         */
+        unsubscribe(): void;
+        /**
+         * Request field errors to be updated by notifying the subscriber.
+         *
+         * Does nothing after `unsubscribe()` method called.
+         */
+        refresh(): this;
+    }
+    /**
+     * An error collecting service.
+     *
+     * It collects errors from all available [Rike event sources][RikeEventSource]. It uses `toFieldErrors()` method
+     * to build a `FieldErrors` instance to obtain errors from. Then it notifies all subscribers on when errors received or
+     * removed.
+     *
+     * This service is registered automatically along with every event source by [provideEventSource] method.
+     * But unlike event sources it is not a multi-provider.
+     *
+     * An instance of this class could be created on its own. Then it is necessary to subscribe it on Rike events with
+     * `subscribeOn` method.
+     */
+    export class ErrorCollector {
+        private _eventSources?;
+        private readonly _emitters;
+        private readonly _targetErrors;
+        private _initialized;
+        constructor(_eventSources?: RikeEventSource[]);
+        /**
+         * Subscribes this collector on the given Rike events emitter.
+         *
+         * @param events Rike events emitter to subscribe on.
+         */
+        subscribeOn(events: EventEmitter<RikeEvent>): AnonymousSubscription;
+        /**
+         * Adds subscription for errors corresponding to the given field.
+         *
+         * If the field name is `"*"`, then subscriber will be notified on error changes for all fields except those ones
+         * with existing subscriptions.
+         *
+         * @param field target field name.
+         * @param next function that will be called on every target field errors update.
+         * @param error function that will be called on errors.
+         * @param complete function that will be called when no more errors will be reported.
+         *
+         * @return {ErrorSubscription} subscription.
+         */
+        subscribe(field: string, next: ((errors: FieldErrors) => void), error?: (error: any) => void, complete?: () => void): ErrorSubscription;
+        /**
+         * Adds subscription for errors corresponding to all fields except those ones with existing subscriptions.
+         *
+         * Calling this method is the same as calling `subscribe("*", next, error, complete);`.
+         *
+         * @param next function that will be called on every errors update.
+         * @param error function that will be called on errors.
+         * @param complete function that will be called when no more errors will be reported.
+         *
+         * @return {ErrorSubscription} subscription.
+         */
+        subscribeForRest(next: ((errors: FieldErrors) => void), error?: (error: any) => void, complete?: () => void): ErrorSubscription;
+        /**
+         * Converts arbitrary error to `FieldErrors`.
+         *
+         * This method uses [toErrorResponse] function by default. Override it if you are using custom error handler.
+         *
+         * @param error arbitrary error passed in [RikeEvent.error] field.
+         *
+         * @return {FieldErrors} field errors.
+         */
+        protected toFieldErrors(error: any): FieldErrors;
+        private fieldEmitter(field);
+        private init();
+        private handleEvent(event);
+        private handleError(error);
+        private targetErrors(target);
+        private clearTargetErrors(target);
+        private notify(field);
+    }
+}
 declare module "ng2-rike/errors.component" {
     import { OnInit, OnDestroy } from "@angular/core";
     import { ErrorCollector } from "ng2-rike/error-collector";
@@ -781,21 +806,33 @@ declare module "ng2-rike/errors.component" {
         private unsubscribe();
     }
 }
-declare module "ng2-rike/resource" {
+declare module "ng2-rike/event-source-provider" {
     import { Type } from "@angular/core";
+    /**
+     * Constructs provider recipe for [RikeEventSource]
+     *
+     * @param useClass
+     * @param useValue
+     * @param useExisting
+     * @param useFactory
+     * @param deps
+     *
+     * @return new provider recipe.
+     */
+    export function provideEventSource({useClass, useValue, useExisting, useFactory, deps}: {
+        useClass?: Type;
+        useValue?: any;
+        useExisting?: any;
+        useFactory?: Function;
+        deps?: Object[];
+        multi?: boolean;
+    }): any[];
+}
+declare module "ng2-rike/resource" {
     import { Observable } from "rxjs/Rx";
     import { Protocol } from "ng2-rike/protocol";
     import { RikeTarget, Rike } from "ng2-rike/rike";
     export abstract class Resource {
-        static provide({provide, useClass, useValue, useExisting, useFactory, deps}: {
-            provide: any;
-            useClass?: Type;
-            useValue?: any;
-            useExisting?: any;
-            useFactory?: Function;
-            deps?: Object[];
-            multi?: boolean;
-        }): any;
         readonly abstract rikeTarget: RikeTarget<any, any>;
     }
     export abstract class RikeResource implements Resource {
@@ -824,14 +861,28 @@ declare module "ng2-rike/resource" {
         protected objectUrl(baseUrl: string | undefined, id: any): string;
     }
 }
+declare module "ng2-rike/resource-provider" {
+    import { Type } from "@angular/core";
+    export function provideResource({provide, useClass, useValue, useExisting, useFactory, deps}: {
+        provide: any;
+        useClass?: Type;
+        useValue?: any;
+        useExisting?: any;
+        useFactory?: Function;
+        deps?: Object[];
+        multi?: boolean;
+    }): any;
+}
 declare module "ng2-rike" {
     export * from "ng2-rike/error";
     export * from "ng2-rike/error-collector";
     export * from "ng2-rike/errors.component";
     export * from "ng2-rike/event";
+    export * from "ng2-rike/event-source-provider";
     export * from "ng2-rike/options";
     export * from "ng2-rike/protocol";
     export * from "ng2-rike/resource";
+    export * from "ng2-rike/resource-provider";
     export * from "ng2-rike/rike";
     export * from "ng2-rike/status-collector";
     export * from "ng2-rike/status.component";

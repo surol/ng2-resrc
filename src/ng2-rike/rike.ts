@@ -175,7 +175,7 @@ export class Rike implements RikeEventSource {
             const defaultErrorHandler = this.options.defaultErrorHandler;
 
             if (defaultErrorHandler) {
-                proto = proto.handleErrorWith(defaultErrorHandler);
+                proto = proto.then().handleError(defaultErrorHandler);
             }
         }
 
@@ -566,7 +566,7 @@ class RikeTargetImpl<IN, OUT> extends RikeTarget<IN, OUT> {
             name,
             !protocol ? this.protocol : (
                 this.protocol as Protocol<any, any> === HTTP_PROTOCOL
-                    ? protocol : protocol.prepareRequestWith(options => this.protocol.prepareRequest(options))));
+                    ? protocol : protocol.prior().prepareRequest(options => this.protocol.prepareRequest(options))));
     }
 
     startOperation(operation: RikeOperation<any, any>): void {
