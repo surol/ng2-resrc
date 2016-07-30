@@ -1,4 +1,4 @@
-import {Injectable, EventEmitter, Optional} from "@angular/core";
+import {Injectable, EventEmitter, Optional, Inject} from "@angular/core";
 import {AnonymousSubscription} from "rxjs/Subscription";
 import {FieldErrors, FieldError, toErrorResponse} from "./error";
 import {RikeEventSource, RikeEvent, RikeErrorEvent} from "./event";
@@ -47,7 +47,7 @@ export class ErrorCollector {
     private readonly _targetErrors: {[target: string]: TargetErrors} = {};
     private _initialized = false;
 
-    constructor(@Optional() private _eventSources?: RikeEventSource[]) {
+    constructor(@Inject(RikeEventSource) @Optional() private _eventSources?: RikeEventSource[]) {
     }
 
     /**

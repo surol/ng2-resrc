@@ -160,7 +160,7 @@ declare module "ng2-rike/error-collector" {
         private notify(field);
     }
 }
-declare module "ng2-rike/status" {
+declare module "ng2-rike/status-collector" {
     import { EventEmitter } from "@angular/core";
     import { RikeTarget } from "ng2-rike/rike";
     import { RikeEvent, RikeEventSource } from "ng2-rike/event";
@@ -173,7 +173,7 @@ declare module "ng2-rike/status" {
         cancelled?: L | ((target: RikeTarget<any, any>) => L);
         succeed?: L | ((target: RikeTarget<any, any>) => L);
     }
-    export class RikeStatus<L> {
+    export class StatusCollector<L> {
         private _targetStatuses;
         private _labels;
         private _combined?;
@@ -317,7 +317,7 @@ declare module "ng2-rike/event" {
     }
 }
 declare module "ng2-rike/options" {
-    import { StatusLabels } from "ng2-rike/status";
+    import { StatusLabels } from "ng2-rike/status-collector";
     /**
      * Constructs URL relative to base URL.
      *
@@ -742,7 +742,7 @@ declare module "ng2-rike/rike" {
     }
 }
 declare module "ng2-rike/status.component" {
-    import { StatusLabels, RikeStatus } from "ng2-rike/status";
+    import { StatusLabels, StatusCollector } from "ng2-rike/status-collector";
     import { RikeEventSource } from "ng2-rike/event";
     export class RikeStatusComponent<L> {
         private _eventSources;
@@ -750,13 +750,13 @@ declare module "ng2-rike/status.component" {
         private _rikeStatus?;
         private _labelText;
         constructor(_eventSources: RikeEventSource[]);
-        rikeStatus: RikeStatus<L>;
+        rikeStatus: StatusCollector<L>;
         rikeStatusLabels: StatusLabels<L> | undefined;
         rikeStatusLabelText: (label: L) => string;
         readonly cssClass: any;
         readonly text: string | undefined;
-        protected createStatus(): RikeStatus<L>;
-        protected configureStatus(status: RikeStatus<L>): void;
+        protected createStatus(): StatusCollector<L>;
+        protected configureStatus(status: StatusCollector<L>): void;
     }
 }
 declare module "ng2-rike/errors.component" {
@@ -833,7 +833,7 @@ declare module "ng2-rike" {
     export * from "ng2-rike/protocol";
     export * from "ng2-rike/resource";
     export * from "ng2-rike/rike";
-    export * from "ng2-rike/status";
+    export * from "ng2-rike/status-collector";
     export * from "ng2-rike/status.component";
     /**
      * Provides a basic set of providers to use REST-like services in application.

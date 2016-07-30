@@ -1,4 +1,4 @@
-import {StatusLabels, DEFAULT_STATUS_LABELS} from "./status";
+import {StatusLabels, DEFAULT_STATUS_LABELS} from "./status-collector";
 /**
  * Constructs URL relative to base URL.
  *

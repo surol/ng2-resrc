@@ -167,10 +167,10 @@ System.register("ng2-rike/error", ["@angular/http"], function(exports_1, context
         }
     }
 });
-System.register("ng2-rike/error-collector", ["@angular/core", "ng2-rike/error"], function(exports_2, context_2) {
+System.register("ng2-rike/error-collector", ["@angular/core", "ng2-rike/error", "ng2-rike/event"], function(exports_2, context_2) {
     "use strict";
     var __moduleName = context_2 && context_2.id;
-    var core_1, error_1;
+    var core_1, error_1, event_1;
     var ErrorCollector, FieldEmitter, ErrorSubscr, TargetErrors;
     function appendErrorsTo(field, fieldErrors, errors) {
         if (!errors || !errors.length) {
@@ -191,6 +191,9 @@ System.register("ng2-rike/error-collector", ["@angular/core", "ng2-rike/error"],
             },
             function (error_1_1) {
                 error_1 = error_1_1;
+            },
+            function (event_1_1) {
+                event_1 = event_1_1;
             }],
         execute: function() {
             /**
@@ -321,6 +324,7 @@ System.register("ng2-rike/error-collector", ["@angular/core", "ng2-rike/error"],
                 };
                 ErrorCollector = __decorate([
                     core_1.Injectable(),
+                    __param(0, core_1.Inject(event_1.RikeEventSource)),
                     __param(0, core_1.Optional()), 
                     __metadata('design:paramtypes', [Array])
                 ], ErrorCollector);
@@ -441,11 +445,11 @@ System.register("ng2-rike/error-collector", ["@angular/core", "ng2-rike/error"],
         }
     }
 });
-System.register("ng2-rike/status", ["@angular/core"], function(exports_3, context_3) {
+System.register("ng2-rike/status-collector", ["@angular/core", "ng2-rike/event"], function(exports_3, context_3) {
     "use strict";
     var __moduleName = context_3 && context_3.id;
-    var core_2;
-    var DEFAULT_STATUS_LABELS, RikeStatus;
+    var core_2, event_2;
+    var DEFAULT_STATUS_LABELS, StatusCollector;
     function labelOf(status, labels) {
         if (!labels) {
             return undefined;
@@ -507,6 +511,9 @@ System.register("ng2-rike/status", ["@angular/core"], function(exports_3, contex
         setters:[
             function (core_2_1) {
                 core_2 = core_2_1;
+            },
+            function (event_2_1) {
+                event_2 = event_2_1;
             }],
         execute: function() {
             exports_3("DEFAULT_STATUS_LABELS", DEFAULT_STATUS_LABELS = {
@@ -538,8 +545,8 @@ System.register("ng2-rike/status", ["@angular/core"], function(exports_3, contex
                     succeed: "Deleted",
                 },
             });
-            RikeStatus = (function () {
-                function RikeStatus(eventSources) {
+            StatusCollector = (function () {
+                function StatusCollector(eventSources) {
                     this._targetStatuses = {};
                     this._labels = {};
                     if (eventSources) {
@@ -549,11 +556,11 @@ System.register("ng2-rike/status", ["@angular/core"], function(exports_3, contex
                         }
                     }
                 }
-                RikeStatus.prototype.subscribeOn = function (events) {
+                StatusCollector.prototype.subscribeOn = function (events) {
                     var _this = this;
                     events.subscribe(function (event) { return _this.applyEvent(event); });
                 };
-                RikeStatus.prototype.withLabels = function (operation, labels) {
+                StatusCollector.prototype.withLabels = function (operation, labels) {
                     var id;
                     if (!labels) {
                         id = "*";
@@ -566,42 +573,42 @@ System.register("ng2-rike/status", ["@angular/core"], function(exports_3, contex
                     this._labels[id] = labels;
                     return this;
                 };
-                Object.defineProperty(RikeStatus.prototype, "labels", {
+                Object.defineProperty(StatusCollector.prototype, "labels", {
                     get: function () {
                         return this.combined && this.combined.labels || [];
                     },
                     enumerable: true,
                     configurable: true
                 });
-                Object.defineProperty(RikeStatus.prototype, "processing", {
+                Object.defineProperty(StatusCollector.prototype, "processing", {
                     get: function () {
                         return this.combined && this.combined.processing || false;
                     },
                     enumerable: true,
                     configurable: true
                 });
-                Object.defineProperty(RikeStatus.prototype, "failed", {
+                Object.defineProperty(StatusCollector.prototype, "failed", {
                     get: function () {
                         return this.combined && this.combined.failed || false;
                     },
                     enumerable: true,
                     configurable: true
                 });
-                Object.defineProperty(RikeStatus.prototype, "cancelled", {
+                Object.defineProperty(StatusCollector.prototype, "cancelled", {
                     get: function () {
                         return this.combined && this.combined.cancelled || false;
                     },
                     enumerable: true,
                     configurable: true
                 });
-                Object.defineProperty(RikeStatus.prototype, "succeed", {
+                Object.defineProperty(StatusCollector.prototype, "succeed", {
                     get: function () {
                         return this.combined && this.combined.succeed || false;
                     },
                     enumerable: true,
                     configurable: true
                 });
-                Object.defineProperty(RikeStatus.prototype, "combined", {
+                Object.defineProperty(StatusCollector.prototype, "combined", {
                     get: function () {
                         if (this._combined) {
                             return this._combined;
@@ -621,7 +628,7 @@ System.register("ng2-rike/status", ["@angular/core"], function(exports_3, contex
                     enumerable: true,
                     configurable: true
                 });
-                RikeStatus.prototype.labelFor = function (status) {
+                StatusCollector.prototype.labelFor = function (status) {
                     var operationName = status.start.operation.name;
                     var label = labelOf(status, this._labels[operationName]) || labelOf(status, this._labels["*"]);
                     if (label) {
@@ -630,7 +637,7 @@ System.register("ng2-rike/status", ["@angular/core"], function(exports_3, contex
                     var defaultLabels = status.start.target.rike.options.defaultStatusLabels || DEFAULT_STATUS_LABELS;
                     return labelOf(status, defaultLabels[operationName]) || labelOf(status, defaultLabels["*"]);
                 };
-                RikeStatus.prototype.applyEvent = function (event) {
+                StatusCollector.prototype.applyEvent = function (event) {
                     this._combined = undefined;
                     var uniqueId = event.target.uniqueId;
                     if (!event.complete) {
@@ -648,29 +655,30 @@ System.register("ng2-rike/status", ["@angular/core"], function(exports_3, contex
                         }
                     }
                 };
-                RikeStatus = __decorate([
+                StatusCollector = __decorate([
                     core_2.Injectable(),
+                    __param(0, core_2.Inject(event_2.RikeEventSource)),
                     __param(0, core_2.Optional()), 
                     __metadata('design:paramtypes', [Array])
-                ], RikeStatus);
-                return RikeStatus;
+                ], StatusCollector);
+                return StatusCollector;
             }());
-            exports_3("RikeStatus", RikeStatus);
+            exports_3("StatusCollector", StatusCollector);
         }
     }
 });
-System.register("ng2-rike/event", ["ng2-rike/error-collector", "ng2-rike/status"], function(exports_4, context_4) {
+System.register("ng2-rike/event", ["ng2-rike/error-collector", "ng2-rike/status-collector"], function(exports_4, context_4) {
     "use strict";
     var __moduleName = context_4 && context_4.id;
-    var error_collector_1, status_1;
+    var error_collector_1, status_collector_1;
     var RikeEventSource, RikeEvent, RikeOperationEvent, RikeSuccessEvent, RikeErrorEvent, RikeCancelEvent;
     return {
         setters:[
             function (error_collector_1_1) {
                 error_collector_1 = error_collector_1_1;
             },
-            function (status_1_1) {
-                status_1 = status_1_1;
+            function (status_collector_1_1) {
+                status_collector_1 = status_collector_1_1;
             }],
         execute: function() {
             /**
@@ -695,7 +703,7 @@ System.register("ng2-rike/event", ["ng2-rike/error-collector", "ng2-rike/status"
                 RikeEventSource.provide = function (_a) {
                     var useClass = _a.useClass, useValue = _a.useValue, useExisting = _a.useExisting, useFactory = _a.useFactory, deps = _a.deps;
                     return [
-                        status_1.RikeStatus,
+                        status_collector_1.StatusCollector,
                         error_collector_1.ErrorCollector,
                         {
                             provide: RikeEventSource,
@@ -926,10 +934,10 @@ System.register("ng2-rike/event", ["ng2-rike/error-collector", "ng2-rike/status"
         }
     }
 });
-System.register("ng2-rike/options", ["ng2-rike/status"], function(exports_5, context_5) {
+System.register("ng2-rike/options", ["ng2-rike/status-collector"], function(exports_5, context_5) {
     "use strict";
     var __moduleName = context_5 && context_5.id;
-    var status_2;
+    var status_collector_2;
     var RikeOptions, BaseRikeOptions, DEFAULT_RIKE_OPTIONS;
     /**
      * Constructs URL relative to base URL.
@@ -955,8 +963,8 @@ System.register("ng2-rike/options", ["ng2-rike/status"], function(exports_5, con
     exports_5("relativeUrl", relativeUrl);
     return {
         setters:[
-            function (status_2_1) {
-                status_2 = status_2_1;
+            function (status_collector_2_1) {
+                status_collector_2 = status_collector_2_1;
             }],
         execute: function() {
             /**
@@ -992,7 +1000,7 @@ System.register("ng2-rike/options", ["ng2-rike/status"], function(exports_5, con
                 __extends(BaseRikeOptions, _super);
                 function BaseRikeOptions(opts) {
                     _super.call(this);
-                    this._defaultStatusLabels = status_2.DEFAULT_STATUS_LABELS;
+                    this._defaultStatusLabels = status_collector_2.DEFAULT_STATUS_LABELS;
                     if (opts) {
                         this._baseUrl = opts.baseUrl;
                         this._defaultErrorHandler = opts.defaultErrorHandler;
@@ -1286,7 +1294,7 @@ System.register("ng2-rike/protocol", ["@angular/http"], function(exports_6, cont
 System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "ng2-rike/event", "ng2-rike/options", "ng2-rike/protocol"], function(exports_7, context_7) {
     "use strict";
     var __moduleName = context_7 && context_7.id;
-    var core_3, http_3, Rx_1, event_1, options_1, protocol_1;
+    var core_3, http_3, Rx_1, event_3, options_1, protocol_1;
     var REQUEST_METHODS, Rike, RikeTarget, RikeOperation, RikeTargetImpl, RikeOperationImpl;
     function requestMethod(method) {
         if (typeof method !== "string") {
@@ -1310,8 +1318,8 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
             function (Rx_1_1) {
                 Rx_1 = Rx_1_1;
             },
-            function (event_1_1) {
-                event_1 = event_1_1;
+            function (event_3_1) {
+                event_3 = event_3_1;
             },
             function (options_1_1) {
                 options_1 = options_1_1;
@@ -1649,12 +1657,12 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                     try {
                         if (this._observer) {
                             try {
-                                var cancel = new event_1.RikeCancelEvent(this._operation.operation, cause);
+                                var cancel = new event_3.RikeCancelEvent(this._operation.operation, cause);
                                 this._observer.error(cancel);
                                 this._rikeEvents.error(cancel);
                             }
                             catch (e) {
-                                this._rikeEvents.error(new event_1.RikeErrorEvent(this._operation.operation, e));
+                                this._rikeEvents.error(new event_3.RikeErrorEvent(this._operation.operation, e));
                                 throw e;
                             }
                             finally {
@@ -1682,7 +1690,7 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                         ? protocol : protocol.prepareRequestWith(function (options) { return _this.protocol.prepareRequest(options); })));
                 };
                 RikeTargetImpl.prototype.startOperation = function (operation) {
-                    var event = new event_1.RikeOperationEvent(operation);
+                    var event = new event_3.RikeOperationEvent(operation);
                     this._cancel(event);
                     this._rikeEvents.emit(event);
                     this._operation = event;
@@ -1707,19 +1715,19 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                             try {
                                 var response_1 = operation.protocol.readResponse(httpResponse);
                                 responseObserver.next(response_1);
-                                _this._rikeEvents.emit(new event_1.RikeSuccessEvent(operation, response_1));
+                                _this._rikeEvents.emit(new event_3.RikeSuccessEvent(operation, response_1));
                             }
                             catch (e) {
-                                _this._rikeEvents.error(new event_1.RikeErrorEvent(operation, e));
+                                _this._rikeEvents.error(new event_3.RikeErrorEvent(operation, e));
                             }
                         }, function (error) {
                             console.error("[" + _this.target + "] " + operation.name + " failed", error);
                             try {
                                 responseObserver.error(error);
-                                _this._rikeEvents.emit(new event_1.RikeErrorEvent(operation, error));
+                                _this._rikeEvents.emit(new event_3.RikeErrorEvent(operation, error));
                             }
                             catch (e) {
-                                _this._rikeEvents.error(new event_1.RikeErrorEvent(operation, e));
+                                _this._rikeEvents.error(new event_3.RikeErrorEvent(operation, e));
                             }
                             finally {
                                 cleanup();
@@ -1729,7 +1737,7 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                                 responseObserver.complete();
                             }
                             catch (e) {
-                                _this._rikeEvents.error(new event_1.RikeErrorEvent(operation, e));
+                                _this._rikeEvents.error(new event_3.RikeErrorEvent(operation, e));
                             }
                             finally {
                                 cleanup();
@@ -1806,7 +1814,7 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                         return this.wrapResponse(this.internals.request(this.requestUrl(options), options));
                     }
                     catch (e) {
-                        this.target.rikeEvents.error(new event_1.RikeErrorEvent(this, e));
+                        this.target.rikeEvents.error(new event_3.RikeErrorEvent(this, e));
                         throw e;
                     }
                 };
@@ -1817,7 +1825,7 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                         return this.wrapResponse(this.internals.request(this.requestUrl(options), options));
                     }
                     catch (e) {
-                        this.target.rikeEvents.error(new event_1.RikeErrorEvent(this, e));
+                        this.target.rikeEvents.error(new event_3.RikeErrorEvent(this, e));
                         throw e;
                     }
                 };
@@ -1828,7 +1836,7 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                         return this.wrapResponse(this.internals.get(this.requestUrl(options), options));
                     }
                     catch (e) {
-                        this.target.rikeEvents.error(new event_1.RikeErrorEvent(this, e));
+                        this.target.rikeEvents.error(new event_3.RikeErrorEvent(this, e));
                         throw e;
                     }
                 };
@@ -1839,7 +1847,7 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                         return this.wrapResponse(this.internals.post(this.requestUrl(options), options.body, options));
                     }
                     catch (e) {
-                        this.target.rikeEvents.error(new event_1.RikeErrorEvent(this, e));
+                        this.target.rikeEvents.error(new event_3.RikeErrorEvent(this, e));
                         throw e;
                     }
                 };
@@ -1850,7 +1858,7 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                         return this.wrapResponse(this.internals.put(this.requestUrl(options), options.body, options));
                     }
                     catch (e) {
-                        this.target.rikeEvents.error(new event_1.RikeErrorEvent(this, e));
+                        this.target.rikeEvents.error(new event_3.RikeErrorEvent(this, e));
                         throw e;
                     }
                 };
@@ -1862,7 +1870,7 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                         return this.wrapResponse(this.internals.delete(this.requestUrl(options), options));
                     }
                     catch (e) {
-                        this.target.rikeEvents.error(new event_1.RikeErrorEvent(this, e));
+                        this.target.rikeEvents.error(new event_3.RikeErrorEvent(this, e));
                         throw e;
                     }
                 };
@@ -1873,7 +1881,7 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                         return this.wrapResponse(this.internals.patch(this.requestUrl(options), options.body, options));
                     }
                     catch (e) {
-                        this.target.rikeEvents.error(new event_1.RikeErrorEvent(this, e));
+                        this.target.rikeEvents.error(new event_3.RikeErrorEvent(this, e));
                         throw e;
                     }
                 };
@@ -1884,7 +1892,7 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                         return this.wrapResponse(this.internals.head(this.requestUrl(options), options));
                     }
                     catch (e) {
-                        this.target.rikeEvents.error(new event_1.RikeErrorEvent(this, e));
+                        this.target.rikeEvents.error(new event_3.RikeErrorEvent(this, e));
                         throw e;
                     }
                 };
@@ -1929,18 +1937,18 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
         }
     }
 });
-System.register("ng2-rike/status.component", ["@angular/core", "ng2-rike/status"], function(exports_8, context_8) {
+System.register("ng2-rike/status.component", ["@angular/core", "ng2-rike/status-collector"], function(exports_8, context_8) {
     "use strict";
     var __moduleName = context_8 && context_8.id;
-    var core_4, status_3;
+    var core_4, status_collector_3;
     var RikeStatusComponent;
     return {
         setters:[
             function (core_4_1) {
                 core_4 = core_4_1;
             },
-            function (status_3_1) {
-                status_3 = status_3_1;
+            function (status_collector_3_1) {
+                status_collector_3 = status_collector_3_1;
             }],
         execute: function() {
             RikeStatusComponent = (function () {
@@ -2016,7 +2024,7 @@ System.register("ng2-rike/status.component", ["@angular/core", "ng2-rike/status"
                     configurable: true
                 });
                 RikeStatusComponent.prototype.createStatus = function () {
-                    var status = new status_3.RikeStatus();
+                    var status = new status_collector_3.StatusCollector();
                     this.configureStatus(status);
                     return status;
                 };
@@ -2031,7 +2039,7 @@ System.register("ng2-rike/status.component", ["@angular/core", "ng2-rike/status"
                 };
                 __decorate([
                     core_4.Input(), 
-                    __metadata('design:type', status_3.RikeStatus)
+                    __metadata('design:type', status_collector_3.StatusCollector)
                 ], RikeStatusComponent.prototype, "rikeStatus", null);
                 __decorate([
                     core_4.Input(), 
@@ -2172,7 +2180,7 @@ System.register("ng2-rike/errors.component", ["@angular/core", "ng2-rike/error-c
 System.register("ng2-rike/resource", ["@angular/http", "ng2-rike/protocol", "ng2-rike/event", "ng2-rike/options"], function(exports_10, context_10) {
     "use strict";
     var __moduleName = context_10 && context_10.id;
-    var http_4, protocol_2, event_2, options_2;
+    var http_4, protocol_2, event_4, options_2;
     var Resource, RikeResource, CRUDResource;
     return {
         setters:[
@@ -2182,8 +2190,8 @@ System.register("ng2-rike/resource", ["@angular/http", "ng2-rike/protocol", "ng2
             function (protocol_2_1) {
                 protocol_2 = protocol_2_1;
             },
-            function (event_2_1) {
-                event_2 = event_2_1;
+            function (event_4_1) {
+                event_4 = event_4_1;
             },
             function (options_2_1) {
                 options_2 = options_2_1;
@@ -2204,7 +2212,7 @@ System.register("ng2-rike/resource", ["@angular/http", "ng2-rike/protocol", "ng2
                             useFactory: useFactory,
                             deps: deps,
                         },
-                        event_2.RikeEventSource.provide({
+                        event_4.RikeEventSource.provide({
                             useFactory: function (resource) { return resource.rikeTarget; },
                             deps: [token],
                         })
@@ -2306,10 +2314,10 @@ System.register("ng2-rike/resource", ["@angular/http", "ng2-rike/protocol", "ng2
         }
     }
 });
-System.register("ng2-rike", ["@angular/core", "ng2-rike/rike", "ng2-rike/event", "ng2-rike/status.component", "ng2-rike/errors.component", "ng2-rike/error", "ng2-rike/error-collector", "ng2-rike/options", "ng2-rike/protocol", "ng2-rike/resource", "ng2-rike/status"], function(exports_11, context_11) {
+System.register("ng2-rike", ["@angular/core", "ng2-rike/rike", "ng2-rike/event", "ng2-rike/status.component", "ng2-rike/errors.component", "ng2-rike/error", "ng2-rike/error-collector", "ng2-rike/options", "ng2-rike/protocol", "ng2-rike/resource", "ng2-rike/status-collector"], function(exports_11, context_11) {
     "use strict";
     var __moduleName = context_11 && context_11.id;
-    var core_6, rike_1, event_3, status_component_1, errors_component_1;
+    var core_6, rike_1, event_5, status_component_1, errors_component_1;
     var RIKE_PROVIDERS;
     var exportedNames_1 = {
         'RIKE_PROVIDERS': true
@@ -2330,9 +2338,9 @@ System.register("ng2-rike", ["@angular/core", "ng2-rike/rike", "ng2-rike/event",
                 rike_1 = rike_1_1;
                 exportStar_1(rike_1_1);
             },
-            function (event_3_1) {
-                event_3 = event_3_1;
-                exportStar_1(event_3_1);
+            function (event_5_1) {
+                event_5 = event_5_1;
+                exportStar_1(event_5_1);
             },
             function (status_component_1_1) {
                 status_component_1 = status_component_1_1;
@@ -2357,8 +2365,8 @@ System.register("ng2-rike", ["@angular/core", "ng2-rike/rike", "ng2-rike/event",
             function (resource_1_1) {
                 exportStar_1(resource_1_1);
             },
-            function (status_4_1) {
-                exportStar_1(status_4_1);
+            function (status_collector_4_1) {
+                exportStar_1(status_collector_4_1);
             }],
         execute: function() {
             /**
@@ -2371,7 +2379,7 @@ System.register("ng2-rike", ["@angular/core", "ng2-rike/rike", "ng2-rike/event",
              */
             exports_11("RIKE_PROVIDERS", RIKE_PROVIDERS = [
                 rike_1.Rike,
-                event_3.RikeEventSource.provide({ useExisting: rike_1.Rike }),
+                event_5.RikeEventSource.provide({ useExisting: rike_1.Rike }),
                 {
                     provide: core_6.PLATFORM_DIRECTIVES,
                     useValue: status_component_1.RikeStatusComponent,

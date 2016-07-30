@@ -1,4 +1,4 @@
-import {EventEmitter, Injectable, Optional} from "@angular/core";
+import {EventEmitter, Injectable, Optional, Inject} from "@angular/core";
 import {RikeTarget} from "./rike";
 import {RikeEvent, RikeEventSource} from "./event";
 
@@ -40,13 +40,13 @@ export interface StatusLabels<L> {
 }
 
 @Injectable()
-export class RikeStatus<L> {
+export class StatusCollector<L> {
 
     private _targetStatuses: {[targetId: string]: TargetStatus} = {};
     private _labels: {[operation: string]: StatusLabels<L>} = {};
     private _combined?: CombinedStatus<L>;
 
-    constructor(@Optional() eventSources?: RikeEventSource[]) {
+    constructor(@Inject(RikeEventSource) @Optional() eventSources?: RikeEventSource[]) {
         if (eventSources) {
             for (let esrc of eventSources) {
                 this.subscribeOn(esrc.rikeEvents);

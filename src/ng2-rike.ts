@@ -13,7 +13,7 @@ export * from "./ng2-rike/options";
 export * from "./ng2-rike/protocol";
 export * from "./ng2-rike/resource";
 export * from "./ng2-rike/rike";
-export * from "./ng2-rike/status";
+export * from "./ng2-rike/status-collector";
 export * from "./ng2-rike/status.component";
 
 /**

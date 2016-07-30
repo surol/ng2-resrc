@@ -11,7 +11,7 @@ import {
 } from "./event";
 import {RikeOptions, DEFAULT_RIKE_OPTIONS, relativeUrl} from "./options";
 import {Protocol, HTTP_PROTOCOL, jsonProtocol} from "./protocol";
-import {StatusLabels, DEFAULT_STATUS_LABELS} from "./status";
+import {StatusLabels, DEFAULT_STATUS_LABELS} from "./status-collector";
 
 const REQUEST_METHODS: {[name: string]: number} = {
     "GET": RequestMethod.Get,

@@ -1,5 +1,5 @@
 import {Component, Input} from "@angular/core";
-import {StatusLabels, RikeStatus} from "./status";
+import {StatusLabels, StatusCollector} from "./status-collector";
 import {RikeEventSource} from "./event";
 
 @Component({
@@ -12,18 +12,18 @@ import {RikeEventSource} from "./event";
 export class RikeStatusComponent<L> {
 
     private _statusLabels?: StatusLabels<L>;
-    private _rikeStatus?: RikeStatus<L>;
+    private _rikeStatus?: StatusCollector<L>;
     private _labelText: (label: L) => string = label => label.toString();
 
     constructor(private _eventSources: RikeEventSource[]) {
     }
 
-    get rikeStatus(): RikeStatus<L> {
+    get rikeStatus(): StatusCollector<L> {
         return this._rikeStatus || (this._rikeStatus = this.createStatus());
     }
 
     @Input()
-    set rikeStatus(status: RikeStatus<L>) {
+    set rikeStatus(status: StatusCollector<L>) {
         this._rikeStatus = status;
     }
 
@@ -81,16 +81,16 @@ export class RikeStatusComponent<L> {
         return text;
     }
 
-    protected createStatus(): RikeStatus<L> {
+    protected createStatus(): StatusCollector<L> {
 
-        const status = new RikeStatus<L>();
+        const status = new StatusCollector<L>();
 
         this.configureStatus(status);
 
         return status;
     }
 
-    protected configureStatus(status: RikeStatus<L>) {
+    protected configureStatus(status: StatusCollector<L>) {
         if (this.rikeStatusLabels) {
             status.withLabels(this.rikeStatusLabels);
         }
