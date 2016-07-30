@@ -107,114 +107,6 @@ declare module "ng2-rike/event" {
         readonly cancelledBy: RikeOperationEvent | undefined;
     }
 }
-declare module "ng2-rike/status-collector" {
-    import { EventEmitter } from "@angular/core";
-    import { RikeTarget } from "ng2-rike/rike";
-    import { RikeEvent, RikeEventSource } from "ng2-rike/event";
-    export const DEFAULT_STATUS_LABELS: {
-        [operation: string]: StatusLabels<any>;
-    };
-    export interface StatusLabels<L> {
-        processing?: L | ((target: RikeTarget<any, any>) => L);
-        failed?: L | ((target: RikeTarget<any, any>) => L);
-        cancelled?: L | ((target: RikeTarget<any, any>) => L);
-        succeed?: L | ((target: RikeTarget<any, any>) => L);
-    }
-    export class StatusCollector<L> {
-        private _targetStatuses;
-        private _labels;
-        private _combined?;
-        constructor(eventSources?: RikeEventSource[]);
-        subscribeOn(events: EventEmitter<RikeEvent>): void;
-        withLabels(labels: StatusLabels<L>): this;
-        withLabels(operation: string, labels: StatusLabels<L>): this;
-        readonly labels: L[];
-        readonly processing: boolean;
-        readonly failed: boolean;
-        readonly cancelled: boolean;
-        readonly succeed: boolean;
-        private readonly combined;
-        private labelFor(status);
-        private applyEvent(event);
-    }
-}
-declare module "ng2-rike/options" {
-    import { StatusLabels } from "ng2-rike/status-collector";
-    /**
-     * Constructs URL relative to base URL.
-     *
-     * @param baseUrl base URL.
-     * @param url URL.
-     *
-     * @returns {string} If `baseUrl` is not specified, or empty string, or `url` is absolute, then returns unmodified `url`.
-     * Otherwise concatenates `baseUrl` and `url` separating them by `/` sign.
-     */
-    export function relativeUrl(baseUrl: string | undefined, url: string): string;
-    /**
-     * Global Rike options interface.
-     */
-    export interface RikeOptionsArgs {
-        /**
-         * Base URL of all relative URLs
-         */
-        readonly baseUrl?: string;
-        /**
-         * Default error handler to use, if any.
-         */
-        readonly defaultErrorHandler?: (error: any) => any;
-        /**
-         * Rike operation status labels to use by default.
-         */
-        readonly defaultStatusLabels?: {
-            [operation: string]: StatusLabels<any>;
-        };
-    }
-    /**
-     * Global Rike options.
-     *
-     * To overwrite global options add a provider for [BaseRikeOptions] instance with [RikeOptions] as a key:
-     * ```ts
-     * bootstrap(AppComponent, {provide: RikeOptions, new BaseRikeOptions({baseDir: "/rike"})});
-     * ```
-     */
-    export abstract class RikeOptions implements RikeOptionsArgs {
-        readonly abstract baseUrl?: string;
-        readonly abstract defaultErrorHandler?: (error: any) => any;
-        abstract defaultStatusLabels?: {
-            [operation: string]: StatusLabels<any>;
-        };
-        /**
-         * Constructs URL relative to `baseUrl`.
-         *
-         * @param url URL
-         *
-         * @returns {string} resolved URL.
-         */
-        relativeUrl(url: string): string;
-    }
-    /**
-     * Basic [global resource options][RikeOptions] implementation.
-     *
-     * Can be used to override the global resource options.
-     */
-    export class BaseRikeOptions extends RikeOptions {
-        private _baseUrl?;
-        private _defaultErrorHandler?;
-        private _defaultStatusLabels;
-        constructor(opts?: RikeOptionsArgs);
-        readonly baseUrl: string | undefined;
-        readonly defaultErrorHandler: ((error: any) => any) | undefined;
-        readonly defaultStatusLabels: {
-            [operation: string]: StatusLabels<any>;
-        } | undefined;
-    }
-    /**
-     * Default resource options.
-     *
-     * @type {RikeOptions}
-     */
-    export const DEFAULT_RIKE_OPTIONS: RikeOptions;
-}
 declare module "ng2-rike/protocol" {
     import { Response, RequestOptionsArgs } from "@angular/http";
     /**
@@ -298,7 +190,7 @@ declare module "ng2-rike/protocol" {
      */
     export interface ProtocolAddon<IN, OUT> {
         /**
-         * Constructs new protocol based on this one, which prepares the request with the given function.
+         * Constructs new protocol based on this one, which prepares requests with the given function.
          *
          * @param prepare a request preparation function invoked in addition to `Protocol.prepareRequest` method.
          *
@@ -322,6 +214,13 @@ declare module "ng2-rike/protocol" {
          * @return {Protocol<IN, OUT>} new protocol.
          */
         handleError(handle: (error: any) => any): Protocol<IN, OUT>;
+        /**
+         * Constructs new protocol based on original onw, which prepares requests and handles errors with corresponding
+         * `protocol` methods in addition to original ones.
+         *
+         * @param protocol {Protocol<IN, OUT>} new protocol.
+         */
+        apply(protocol: Protocol<any, any>): Protocol<IN, OUT>;
     }
     /**
      * Protocol modifier. It is able to construct new protocol based on original one by replacing protocol actions with
@@ -384,6 +283,119 @@ declare module "ng2-rike/protocol" {
      */
     export const HTTP_PROTOCOL: Protocol<any, Response>;
 }
+declare module "ng2-rike/status-collector" {
+    import { EventEmitter } from "@angular/core";
+    import { RikeTarget } from "ng2-rike/rike";
+    import { RikeEvent, RikeEventSource } from "ng2-rike/event";
+    export const DEFAULT_STATUS_LABELS: {
+        [operation: string]: StatusLabels<any>;
+    };
+    export interface StatusLabels<L> {
+        processing?: L | ((target: RikeTarget<any, any>) => L);
+        failed?: L | ((target: RikeTarget<any, any>) => L);
+        cancelled?: L | ((target: RikeTarget<any, any>) => L);
+        succeed?: L | ((target: RikeTarget<any, any>) => L);
+    }
+    export class StatusCollector<L> {
+        private _targetStatuses;
+        private _labels;
+        private _combined?;
+        constructor(eventSources?: RikeEventSource[]);
+        subscribeOn(events: EventEmitter<RikeEvent>): void;
+        withLabels(labels: StatusLabels<L>): this;
+        withLabels(operation: string, labels: StatusLabels<L>): this;
+        readonly labels: L[];
+        readonly processing: boolean;
+        readonly failed: boolean;
+        readonly cancelled: boolean;
+        readonly succeed: boolean;
+        private readonly combined;
+        private labelFor(status);
+        private applyEvent(event);
+    }
+}
+declare module "ng2-rike/options" {
+    import { Protocol } from "ng2-rike/protocol";
+    import { StatusLabels } from "ng2-rike/status-collector";
+    /**
+     * Constructs URL relative to base URL.
+     *
+     * @param baseUrl base URL.
+     * @param url URL.
+     *
+     * @returns {string} If `baseUrl` is not specified, or empty string, or `url` is absolute, then returns unmodified `url`.
+     * Otherwise concatenates `baseUrl` and `url` separating them by `/` sign.
+     */
+    export function relativeUrl(baseUrl: string | undefined, url: string): string;
+    /**
+     * Global Rike options interface.
+     */
+    export interface RikeOptionsArgs {
+        /**
+         * Base URL of all relative URLs.
+         *
+         * All relative Rike request URLs will be resolved against this one.
+         */
+        readonly baseUrl?: string;
+        /**
+         * Default operations protocol.
+         *
+         * If not specified then `HTTP_PROTOCOL` will be used.
+         */
+        readonly defaultProtocol?: Protocol<any, any>;
+        /**
+         * Rike operation status labels to use by default.
+         */
+        readonly defaultStatusLabels?: {
+            [operation: string]: StatusLabels<any>;
+        };
+    }
+    /**
+     * Global Rike options.
+     *
+     * To overwrite global options add a provider for {{BaseRikeOptions}} instance with {{RikeOptions}} as token:
+     * ```ts
+     * bootstrap(AppComponent, {provide: RikeOptions, new BaseRikeOptions({baseUrl: "/rike"})});
+     * ```
+     */
+    export abstract class RikeOptions implements RikeOptionsArgs {
+        readonly abstract baseUrl?: string;
+        readonly abstract defaultProtocol?: Protocol<any, any>;
+        abstract defaultStatusLabels?: {
+            [operation: string]: StatusLabels<any>;
+        };
+        /**
+         * Constructs URL relative to `baseUrl`.
+         *
+         * @param url URL
+         *
+         * @returns {string} resolved URL.
+         */
+        relativeUrl(url: string): string;
+    }
+    /**
+     * Basic [global resource options][RikeOptions] implementation.
+     *
+     * Can be used to override the global resource options.
+     */
+    export class BaseRikeOptions extends RikeOptions {
+        private _baseUrl?;
+        private _defaultProtocol?;
+        private _defaultStatusLabels;
+        constructor(opts?: RikeOptionsArgs);
+        readonly baseUrl: string | undefined;
+        readonly defaultProtocol: Protocol<any, any> | undefined;
+        readonly defaultStatusLabels: {
+            [operation: string]: StatusLabels<any>;
+        } | undefined;
+    }
+    /**
+     * Default resource options.
+     *
+     * @type {RikeOptions}
+     */
+    export const DEFAULT_RIKE_OPTIONS: RikeOptions;
+}
 declare module "ng2-rike/rike" {
     import { EventEmitter } from "@angular/core";
     import { Request, RequestOptionsArgs, Response, Http, RequestMethod, RequestOptions } from "@angular/http";
@@ -415,6 +427,12 @@ declare module "ng2-rike/rike" {
          */
         readonly options: RikeOptions;
         /**
+         * Default Rike protocol.
+         *
+         * @return {Protocol<any, any>} either {{RikeOptions.defaultProtocol}}, or `HTTP_PROTOCOL`.
+         */
+        readonly defaultProtocol: Protocol<any, any>;
+        /**
          * All REST-like resource operation events emitter.
          *
          * @returns {EventEmitter<RikeEvent>}
@@ -428,7 +446,7 @@ declare module "ng2-rike/rike" {
         patch(url: string, body: any, options?: RequestOptionsArgs): Observable<Response>;
         head(url: string, options?: RequestOptionsArgs): Observable<Response>;
         /**
-         * Constructs operation target which operates over [HTTP protocol][HTTP_PROTOCOL].
+         * Constructs operation target which operates over `HTTP_PROTOCOL`.
          *
          * Arbitrary value can be used as a request body.
          *
@@ -463,6 +481,7 @@ declare module "ng2-rike/rike" {
          * done.
          */
         protected updateRequestOptions(options?: RequestOptionsArgs): RequestOptionsArgs | undefined;
+        private prepareRequest(options?);
         /**
          * Wraps the HTTP response observable for the given operation to make it handle errors.
          *
@@ -470,7 +489,7 @@ declare module "ng2-rike/rike" {
          *
          * @returns {Observable<Response>} response observer wrapper.
          */
-        protected handleErrors(response: Observable<Response>): Observable<Response>;
+        private handleErrors(response);
     }
     /**
      * REST-like operations target.
@@ -513,7 +532,7 @@ declare module "ng2-rike/rike" {
         /**
          * An operations protocol to use by default.
          *
-         * This is a protocol based on the one passed to [Rike.target] method, which honors the default error handler.
+         * This is a protocol based on the one passed to [Rike.target] method, which honors {{Rike.defaultProtocol}}.
          */
         readonly abstract protocol: Protocol<IN, OUT>;
         /**

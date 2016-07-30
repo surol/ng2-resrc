@@ -11,7 +11,6 @@ import {
 } from "./event";
 import {RikeOptions, DEFAULT_RIKE_OPTIONS, relativeUrl} from "./options";
 import {Protocol, HTTP_PROTOCOL, jsonProtocol} from "./protocol";
-import {StatusLabels, DEFAULT_STATUS_LABELS} from "./status-collector";
 
 const REQUEST_METHODS: {[name: string]: number} = {
     "GET": RequestMethod.Get,
@@ -108,6 +107,15 @@ export class Rike implements RikeEventSource {
     }
 
     /**
+     * Default Rike protocol.
+     *
+     * @return {Protocol<any, any>} either {{RikeOptions.defaultProtocol}}, or `HTTP_PROTOCOL`.
+     */
+    get defaultProtocol(): Protocol<any, any> {
+        return this.options.defaultProtocol || HTTP_PROTOCOL;
+    }
+
+    /**
      * All REST-like resource operation events emitter.
      *
      * @returns {EventEmitter<RikeEvent>}
@@ -117,36 +125,36 @@ export class Rike implements RikeEventSource {
     }
 
     request(request: string | Request, options?: RequestOptionsArgs): Observable<Response> {
-        return this.handleErrors(this._internals.request(request, options));
+        return this.handleErrors(this._internals.request(request, this.prepareRequest(options)));
     }
 
     get(url: string, options?: RequestOptionsArgs): Observable<Response> {
-        return this.handleErrors(this._internals.get(url, options));
+        return this.handleErrors(this._internals.get(url, this.prepareRequest(options)));
     }
 
     post(url: string, body: any, options?: RequestOptionsArgs): Observable<Response> {
-        return this.handleErrors(this._internals.post(url, body, options));
+        return this.handleErrors(this._internals.post(url, body, this.prepareRequest(options)));
     }
 
     put(url: string, body: any, options?: RequestOptionsArgs): Observable<Response> {
-        return this.handleErrors(this._internals.put(url, body, options));
+        return this.handleErrors(this._internals.put(url, body, this.prepareRequest(options)));
     }
 
     //noinspection ReservedWordAsName
     delete(url: string, options?: RequestOptionsArgs): Observable<Response> {
-        return this.handleErrors(this._internals.delete(url, options));
+        return this.handleErrors(this._internals.delete(url, this.prepareRequest(options)));
     }
 
     patch(url: string, body: any, options?: RequestOptionsArgs): Observable<Response> {
-        return this.handleErrors(this._internals.patch(url, body, options));
+        return this.handleErrors(this._internals.patch(url, body, this.prepareRequest(options)));
     }
 
     head(url: string, options?: RequestOptionsArgs): Observable<Response> {
-        return this.handleErrors(this._internals.head(url, options));
+        return this.handleErrors(this._internals.head(url, this.prepareRequest(options)));
     }
 
     /**
-     * Constructs operation target which operates over [HTTP protocol][HTTP_PROTOCOL].
+     * Constructs operation target which operates over `HTTP_PROTOCOL`.
      *
      * Arbitrary value can be used as a request body.
      *
@@ -168,22 +176,11 @@ export class Rike implements RikeEventSource {
 
     target(target: any, protocol?: Protocol<any, any>): RikeTarget<any, any> {
 
-        let proto = protocol || HTTP_PROTOCOL;
-
-        if (!proto.handleError) {
-
-            const defaultErrorHandler = this.options.defaultErrorHandler;
-
-            if (defaultErrorHandler) {
-                proto = proto.then().handleError(defaultErrorHandler);
-            }
-        }
-
         const rikeTarget = new RikeTargetImpl<any, any>(
             this,
             this._internals,
             target,
-            proto || HTTP_PROTOCOL);
+            protocol ? protocol.prior().apply(this.defaultProtocol) : this.defaultProtocol);
 
         rikeTarget.rikeEvents.subscribe(
             (event: RikeEvent) => this._rikeEvents.emit(event),
@@ -235,7 +232,10 @@ export class Rike implements RikeEventSource {
         return options;
     }
 
-    //noinspection JSMethodCanBeStatic,JSUnusedLocalSymbols
+    private prepareRequest(options?: RequestOptionsArgs) {
+        return this.defaultProtocol.prepareRequest(options || {});
+    }
+
     /**
      * Wraps the HTTP response observable for the given operation to make it handle errors.
      *
@@ -243,9 +243,9 @@ export class Rike implements RikeEventSource {
      *
      * @returns {Observable<Response>} response observer wrapper.
      */
-    protected handleErrors(response: Observable<Response>): Observable<Response> {
+    private handleErrors(response: Observable<Response>): Observable<Response> {
 
-        const handleError = this.options.defaultErrorHandler;
+        const handleError = this.defaultProtocol.handleError;
 
         if (!handleError) {
             return response;
@@ -308,7 +308,7 @@ export abstract class RikeTarget<IN, OUT> implements RikeEventSource {
     /**
      * An operations protocol to use by default.
      *
-     * This is a protocol based on the one passed to [Rike.target] method, which honors the default error handler.
+     * This is a protocol based on the one passed to [Rike.target] method, which honors {{Rike.defaultProtocol}}.
      */
     abstract readonly protocol: Protocol<IN, OUT>;
 
@@ -564,9 +564,7 @@ class RikeTargetImpl<IN, OUT> extends RikeTarget<IN, OUT> {
         return new RikeOperationImpl(
             this,
             name,
-            !protocol ? this.protocol : (
-                this.protocol as Protocol<any, any> === HTTP_PROTOCOL
-                    ? protocol : protocol.prior().prepareRequest(options => this.protocol.prepareRequest(options))));
+            !protocol ? this.protocol : protocol.prior().apply(this.protocol));
     }
 
     startOperation(operation: RikeOperation<any, any>): void {

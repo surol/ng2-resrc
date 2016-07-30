@@ -13,7 +13,7 @@ import {MockBackend, MockConnection} from "@angular/http/testing";
 import {RIKE_PROVIDERS} from "../ng2-rike";
 import {Rike, requestMethod} from "./rike";
 import {RikeOptions, BaseRikeOptions} from "./options";
-import {HTTP_PROTOCOL, JSON_PROTOCOL, jsonProtocol} from "./protocol";
+import {HTTP_PROTOCOL, JSON_PROTOCOL, jsonProtocol, Protocol} from "./protocol";
 import {Observable} from "rxjs/Rx";
 
 export function addRikeProviders() {
@@ -132,7 +132,7 @@ describe("Rike", () => {
         const target = rike.json(targetId);
 
         expect(target.target).toBe(targetId);
-        expect(target.protocol).toBe(JSON_PROTOCOL);
+        expectJsonProtocol(target.protocol);
     });
 
     it("creates target with specified protocol", () => {
@@ -140,12 +140,12 @@ describe("Rike", () => {
         const protocol = jsonProtocol<string>()
             .instead()
             .writeRequest((val: number, opts: RequestOptionsArgs) =>
-                new RequestOptions(opts).merge({body: JSON.stringify(val)}));
+                new RequestOptions(opts).merge({body: val}));
         const targetId = "target1";
         const target = rike.target(targetId, protocol);
 
         expect(target.target).toBe(targetId);
-        expect(target.protocol).toBe(protocol);
+        expect(protocol.writeRequest(-5, {}).body).toBe(-5);
     });
 });
 
@@ -171,3 +171,26 @@ describe("requestMethod", () => {
         expect(() => requestMethod("")).toThrow();
     });
 });
+
+interface Data {
+    a: string;
+    b: number;
+    c: string[];
+}
+
+export function expectJsonProtocol(protocol: Protocol<any, any>) {
+
+    const value: Data = {
+        a: "test",
+        b: 13,
+        c: ["foo", "bar", "baz"]
+    };
+
+    const written = protocol.writeRequest(value, {}).body as string;
+    const restored: Data = JSON.parse(written);
+
+    console.log(restored);
+    expect(restored.a).toBe(value.a, "Invalid data restored from JSON");
+    expect(restored.b).toBe(value.b, "Invalid data restored from JSON");
+    expect(restored.c).toEqual(value.c, "Invalid data restored from JSON");
+}

@@ -1,3 +1,4 @@
+import {Protocol} from "./protocol";
 import {StatusLabels, DEFAULT_STATUS_LABELS} from "./status-collector";
 /**
  * Constructs URL relative to base URL.
@@ -27,14 +28,18 @@ export function relativeUrl(baseUrl: string | undefined, url: string): string {
 export interface RikeOptionsArgs {
 
     /**
-     * Base URL of all relative URLs
+     * Base URL of all relative URLs.
+     *
+     * All relative Rike request URLs will be resolved against this one.
      */
     readonly baseUrl?: string;
 
     /**
-     * Default error handler to use, if any.
+     * Default operations protocol.
+     *
+     * If not specified then `HTTP_PROTOCOL` will be used.
      */
-    readonly defaultErrorHandler?: (error: any) => any;
+    readonly defaultProtocol?: Protocol<any, any>;
 
     /**
      * Rike operation status labels to use by default.
@@ -46,16 +51,16 @@ export interface RikeOptionsArgs {
 /**
  * Global Rike options.
  *
- * To overwrite global options add a provider for [BaseRikeOptions] instance with [RikeOptions] as a key:
+ * To overwrite global options add a provider for {{BaseRikeOptions}} instance with {{RikeOptions}} as token:
  * ```ts
- * bootstrap(AppComponent, {provide: RikeOptions, new BaseRikeOptions({baseDir: "/rike"})});
+ * bootstrap(AppComponent, {provide: RikeOptions, new BaseRikeOptions({baseUrl: "/rike"})});
  * ```
  */
 export abstract class RikeOptions implements RikeOptionsArgs {
 
     abstract readonly baseUrl?: string;
 
-    abstract readonly defaultErrorHandler?: (error: any) => any;
+    abstract readonly defaultProtocol?: Protocol<any, any>;
 
     abstract defaultStatusLabels?: {[operation: string]: StatusLabels<any>};
 
@@ -80,14 +85,16 @@ export abstract class RikeOptions implements RikeOptionsArgs {
 export class BaseRikeOptions extends RikeOptions {
 
     private _baseUrl?: string;
-    private _defaultErrorHandler?: (error: any) => any;
+    private _defaultProtocol?: Protocol<any, any>;
     private _defaultStatusLabels = DEFAULT_STATUS_LABELS;
 
     constructor(opts?: RikeOptionsArgs) {
         super();
         if (opts) {
             this._baseUrl = opts.baseUrl;
-            this._defaultErrorHandler = opts.defaultErrorHandler;
+            if (opts.defaultProtocol) {
+                this._defaultProtocol = opts.defaultProtocol;
+            }
             if (opts.defaultStatusLabels) {
                 this._defaultStatusLabels = opts.defaultStatusLabels;
             }
@@ -98,8 +105,8 @@ export class BaseRikeOptions extends RikeOptions {
         return this._baseUrl;
     }
 
-    get defaultErrorHandler(): ((error: any) => any) | undefined {
-        return this._defaultErrorHandler;
+    get defaultProtocol(): Protocol<any, any> | undefined {
+        return this._defaultProtocol;
     }
 
     get defaultStatusLabels():{[operation: string]: StatusLabels<any>} | undefined {

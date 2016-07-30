@@ -250,9 +250,215 @@ System.register("ng2-rike/event", [], function(exports_1, context_1) {
         }
     }
 });
-System.register("ng2-rike/status-collector", ["@angular/core", "ng2-rike/event"], function(exports_2, context_2) {
+System.register("ng2-rike/protocol", ["@angular/http"], function(exports_2, context_2) {
     "use strict";
     var __moduleName = context_2 && context_2.id;
+    var http_1;
+    var Protocol, CustomProtocolAddon, CustomProtocolMod, CustomProtocol, JsonProtocol, JSON_PROTOCOL, jsonProtocol, HttpProtocol, HTTP_PROTOCOL;
+    return {
+        setters:[
+            function (http_1_1) {
+                http_1 = http_1_1;
+            }],
+        execute: function() {
+            /**
+             * REST-like operations protocol.
+             *
+             * It is used by REST-like operations to encode operation requests to HTTP, decode operation responses from HTTP,
+             * and handle errors.
+             *
+             * `IN` is operation request type.
+             * `OUT` is operation response type.
+             */
+            Protocol = (function () {
+                function Protocol() {
+                }
+                //noinspection JSMethodCanBeStatic
+                /**
+                 * Prepares HTTP request.
+                 *
+                 * The `options` passed have at least `url` and `method` fields set.
+                 *
+                 * This method is called for each HTTP request before _writeRequest_ method. When default protocol is set for
+                 * operation target, this method is called first on the default protocol, and then - on the operation protocol.
+                 *
+                 * @param options original HTTP request options.
+                 *
+                 * @returns modified HTTP request options to use further instead of original ones. Returns unmodified request
+                 * `options` by default.
+                 */
+                Protocol.prototype.prepareRequest = function (options) {
+                    return options;
+                };
+                /**
+                 * Creates protocol addon able to prepend protocol actions with specified functions.
+                 *
+                 * @return {ProtocolAddon<IN, OUT>} protocol addon.
+                 */
+                Protocol.prototype.prior = function () {
+                    return new CustomProtocolAddon(this, true);
+                };
+                /**
+                 * Creates protocol addon able to append specified functions to protocol actions.
+                 *
+                 * @return {ProtocolAddon<IN, OUT>} protocol addon.
+                 */
+                Protocol.prototype.then = function () {
+                    return new CustomProtocolAddon(this, false);
+                };
+                /**
+                 * Creates protocol modifier able to replace protocol actions with specified functions.
+                 *
+                 * @return {ProtocolMod<IN, OUT>} protocol modifier.
+                 */
+                Protocol.prototype.instead = function () {
+                    return new CustomProtocolMod(this);
+                };
+                return Protocol;
+            }());
+            exports_2("Protocol", Protocol);
+            CustomProtocolAddon = (function () {
+                function CustomProtocolAddon(_protocol, _prior) {
+                    this._protocol = _protocol;
+                    this._prior = _prior;
+                }
+                CustomProtocolAddon.prototype.prepareRequest = function (prepare) {
+                    var _this = this;
+                    var handleError = this._protocol.handleError;
+                    return new CustomProtocol(this._prior
+                        ? function (options) { return _this._protocol.prepareRequest(prepare(options)); }
+                        : function (options) { return prepare(_this._protocol.prepareRequest(options)); }, function (request, options) { return _this._protocol.writeRequest(request, options); }, function (response) { return _this._protocol.readResponse(response); }, handleError && (function (error) { return handleError(error); }));
+                };
+                CustomProtocolAddon.prototype.updateRequest = function (update) {
+                    var _this = this;
+                    var handleError = this._protocol.handleError;
+                    return new CustomProtocol(function (options) { return _this._protocol.prepareRequest(options); }, this._prior
+                        ? function (request, options) { return _this._protocol.writeRequest(request, update(request, options)); }
+                        : function (request, options) { return update(request, _this._protocol.writeRequest(request, options)); }, function (response) { return _this._protocol.readResponse(response); }, handleError && (function (error) { return handleError(error); }));
+                };
+                CustomProtocolAddon.prototype.handleError = function (handle) {
+                    var _this = this;
+                    var handleError = this._protocol.handleError;
+                    return new CustomProtocol(function (options) { return _this._protocol.prepareRequest(options); }, function (request, options) { return _this._protocol.writeRequest(request, options); }, function (response) { return _this._protocol.readResponse(response); }, !handleError ? handle : (this._prior
+                        ? function (error) { return handleError(handle(error)); }
+                        : function (error) { return handle(handleError(error)); }));
+                };
+                CustomProtocolAddon.prototype.apply = function (protocol) {
+                    var _this = this;
+                    var handleError = this._protocol.handleError;
+                    var handle = protocol.handleError;
+                    if (this._prior) {
+                        return new CustomProtocol(function (options) { return _this._protocol.prepareRequest(protocol.prepareRequest(options)); }, function (request, options) { return _this._protocol.writeRequest(request, options); }, function (response) { return _this._protocol.readResponse(response); }, !handleError ? handle : (!handle ? handleError : (function (error) { return handleError(handle(error)); })));
+                    }
+                    return new CustomProtocol(function (options) { return protocol.prepareRequest(_this._protocol.prepareRequest(options)); }, function (request, options) { return _this._protocol.writeRequest(request, options); }, function (response) { return _this._protocol.readResponse(response); }, !handleError ? handle : (!handle ? handleError : (function (error) { return handle(handleError(error)); })));
+                };
+                return CustomProtocolAddon;
+            }());
+            CustomProtocolMod = (function () {
+                function CustomProtocolMod(_protocol) {
+                    this._protocol = _protocol;
+                }
+                CustomProtocolMod.prototype.prepareRequest = function (prepare) {
+                    var _this = this;
+                    return new CustomProtocol(prepare, function (request, options) { return _this._protocol.writeRequest(request, options); }, function (response) { return _this._protocol.readResponse(response); }, this._protocol.handleError);
+                };
+                CustomProtocolMod.prototype.writeRequest = function (write) {
+                    var _this = this;
+                    return new CustomProtocol(function (options) { return _this._protocol.prepareRequest(options); }, write, function (response) { return _this._protocol.readResponse(response); }, this._protocol.handleError);
+                };
+                CustomProtocolMod.prototype.readResponse = function (read) {
+                    var _this = this;
+                    return new CustomProtocol(function (options) { return _this._protocol.prepareRequest(options); }, function (request, options) { return _this._protocol.writeRequest(request, options); }, read, this._protocol.handleError);
+                };
+                CustomProtocolMod.prototype.handleError = function (handle) {
+                    var _this = this;
+                    return new CustomProtocol(function (options) { return _this._protocol.prepareRequest(options); }, function (request, options) { return _this._protocol.writeRequest(request, options); }, function (response) { return _this._protocol.readResponse(response); }, handle);
+                };
+                return CustomProtocolMod;
+            }());
+            CustomProtocol = (function (_super) {
+                __extends(CustomProtocol, _super);
+                function CustomProtocol(_prepareRequest, _writeRequest, _readResponse, handleError) {
+                    _super.call(this);
+                    this._prepareRequest = _prepareRequest;
+                    this._writeRequest = _writeRequest;
+                    this._readResponse = _readResponse;
+                    this.handleError = handleError;
+                }
+                CustomProtocol.prototype.prepareRequest = function (options) {
+                    return this._prepareRequest(options);
+                };
+                CustomProtocol.prototype.writeRequest = function (request, options) {
+                    return this._writeRequest(request, options);
+                };
+                CustomProtocol.prototype.readResponse = function (response) {
+                    return this._readResponse(response);
+                };
+                return CustomProtocol;
+            }(Protocol));
+            JsonProtocol = (function (_super) {
+                __extends(JsonProtocol, _super);
+                function JsonProtocol() {
+                    _super.apply(this, arguments);
+                }
+                JsonProtocol.prototype.writeRequest = function (request, options) {
+                    var opts = new http_1.RequestOptions(options).merge({ body: JSON.stringify(request) });
+                    var headers;
+                    if (opts.headers) {
+                        headers = opts.headers;
+                    }
+                    else {
+                        opts.headers = headers = new http_1.Headers();
+                    }
+                    headers.set("Content-Type", "application/json");
+                    return opts;
+                };
+                JsonProtocol.prototype.readResponse = function (response) {
+                    return response.json();
+                };
+                return JsonProtocol;
+            }(Protocol));
+            /**
+             * JSON protocol.
+             *
+             * Sends and receives arbitrary data as JSON over HTTP.
+             *
+             * @type {Protocol<any>}
+             */
+            exports_2("JSON_PROTOCOL", JSON_PROTOCOL = new JsonProtocol());
+            /**
+             * Returns JSON protocol.
+             *
+             * Sends and receives the data of the given type as JSON over HTTP.
+             */
+            exports_2("jsonProtocol", jsonProtocol = function () { return JSON_PROTOCOL; });
+            HttpProtocol = (function (_super) {
+                __extends(HttpProtocol, _super);
+                function HttpProtocol() {
+                    _super.apply(this, arguments);
+                }
+                HttpProtocol.prototype.writeRequest = function (request, options) {
+                    return new http_1.RequestOptions(options).merge({ body: request });
+                };
+                HttpProtocol.prototype.readResponse = function (response) {
+                    return response;
+                };
+                return HttpProtocol;
+            }(Protocol));
+            /**
+             * HTTP protocol.
+             *
+             * The request type is any. It is used as request body.
+             *
+             * @type {Protocol<any, Response>}
+             */
+            exports_2("HTTP_PROTOCOL", HTTP_PROTOCOL = new HttpProtocol());
+        }
+    }
+});
+System.register("ng2-rike/status-collector", ["@angular/core", "ng2-rike/event"], function(exports_3, context_3) {
+    "use strict";
+    var __moduleName = context_3 && context_3.id;
     var core_1, event_1;
     var DEFAULT_STATUS_LABELS, StatusCollector;
     function labelOf(status, labels) {
@@ -321,7 +527,7 @@ System.register("ng2-rike/status-collector", ["@angular/core", "ng2-rike/event"]
                 event_1 = event_1_1;
             }],
         execute: function() {
-            exports_2("DEFAULT_STATUS_LABELS", DEFAULT_STATUS_LABELS = {
+            exports_3("DEFAULT_STATUS_LABELS", DEFAULT_STATUS_LABELS = {
                 "*": {
                     processing: "Processing",
                     failed: "Error",
@@ -468,13 +674,13 @@ System.register("ng2-rike/status-collector", ["@angular/core", "ng2-rike/event"]
                 ], StatusCollector);
                 return StatusCollector;
             }());
-            exports_2("StatusCollector", StatusCollector);
+            exports_3("StatusCollector", StatusCollector);
         }
     }
 });
-System.register("ng2-rike/options", ["ng2-rike/status-collector"], function(exports_3, context_3) {
+System.register("ng2-rike/options", ["ng2-rike/status-collector"], function(exports_4, context_4) {
     "use strict";
-    var __moduleName = context_3 && context_3.id;
+    var __moduleName = context_4 && context_4.id;
     var status_collector_1;
     var RikeOptions, BaseRikeOptions, DEFAULT_RIKE_OPTIONS;
     /**
@@ -498,7 +704,7 @@ System.register("ng2-rike/options", ["ng2-rike/status-collector"], function(expo
         }
         return baseUrl + "/" + url;
     }
-    exports_3("relativeUrl", relativeUrl);
+    exports_4("relativeUrl", relativeUrl);
     return {
         setters:[
             function (status_collector_1_1) {
@@ -508,9 +714,9 @@ System.register("ng2-rike/options", ["ng2-rike/status-collector"], function(expo
             /**
              * Global Rike options.
              *
-             * To overwrite global options add a provider for [BaseRikeOptions] instance with [RikeOptions] as a key:
+             * To overwrite global options add a provider for {{BaseRikeOptions}} instance with {{RikeOptions}} as token:
              * ```ts
-             * bootstrap(AppComponent, {provide: RikeOptions, new BaseRikeOptions({baseDir: "/rike"})});
+             * bootstrap(AppComponent, {provide: RikeOptions, new BaseRikeOptions({baseUrl: "/rike"})});
              * ```
              */
             RikeOptions = (function () {
@@ -528,7 +734,7 @@ System.register("ng2-rike/options", ["ng2-rike/status-collector"], function(expo
                 };
                 return RikeOptions;
             }());
-            exports_3("RikeOptions", RikeOptions);
+            exports_4("RikeOptions", RikeOptions);
             /**
              * Basic [global resource options][RikeOptions] implementation.
              *
@@ -541,7 +747,9 @@ System.register("ng2-rike/options", ["ng2-rike/status-collector"], function(expo
                     this._defaultStatusLabels = status_collector_1.DEFAULT_STATUS_LABELS;
                     if (opts) {
                         this._baseUrl = opts.baseUrl;
-                        this._defaultErrorHandler = opts.defaultErrorHandler;
+                        if (opts.defaultProtocol) {
+                            this._defaultProtocol = opts.defaultProtocol;
+                        }
                         if (opts.defaultStatusLabels) {
                             this._defaultStatusLabels = opts.defaultStatusLabels;
                         }
@@ -554,9 +762,9 @@ System.register("ng2-rike/options", ["ng2-rike/status-collector"], function(expo
                     enumerable: true,
                     configurable: true
                 });
-                Object.defineProperty(BaseRikeOptions.prototype, "defaultErrorHandler", {
+                Object.defineProperty(BaseRikeOptions.prototype, "defaultProtocol", {
                     get: function () {
-                        return this._defaultErrorHandler;
+                        return this._defaultProtocol;
                     },
                     enumerable: true,
                     configurable: true
@@ -570,210 +778,13 @@ System.register("ng2-rike/options", ["ng2-rike/status-collector"], function(expo
                 });
                 return BaseRikeOptions;
             }(RikeOptions));
-            exports_3("BaseRikeOptions", BaseRikeOptions);
+            exports_4("BaseRikeOptions", BaseRikeOptions);
             /**
              * Default resource options.
              *
              * @type {RikeOptions}
              */
-            exports_3("DEFAULT_RIKE_OPTIONS", DEFAULT_RIKE_OPTIONS = new BaseRikeOptions());
-        }
-    }
-});
-System.register("ng2-rike/protocol", ["@angular/http"], function(exports_4, context_4) {
-    "use strict";
-    var __moduleName = context_4 && context_4.id;
-    var http_1;
-    var Protocol, CustomProtocolAddon, CustomProtocolMod, CustomProtocol, JsonProtocol, JSON_PROTOCOL, jsonProtocol, HttpProtocol, HTTP_PROTOCOL;
-    return {
-        setters:[
-            function (http_1_1) {
-                http_1 = http_1_1;
-            }],
-        execute: function() {
-            /**
-             * REST-like operations protocol.
-             *
-             * It is used by REST-like operations to encode operation requests to HTTP, decode operation responses from HTTP,
-             * and handle errors.
-             *
-             * `IN` is operation request type.
-             * `OUT` is operation response type.
-             */
-            Protocol = (function () {
-                function Protocol() {
-                }
-                //noinspection JSMethodCanBeStatic
-                /**
-                 * Prepares HTTP request.
-                 *
-                 * The `options` passed have at least `url` and `method` fields set.
-                 *
-                 * This method is called for each HTTP request before _writeRequest_ method. When default protocol is set for
-                 * operation target, this method is called first on the default protocol, and then - on the operation protocol.
-                 *
-                 * @param options original HTTP request options.
-                 *
-                 * @returns modified HTTP request options to use further instead of original ones. Returns unmodified request
-                 * `options` by default.
-                 */
-                Protocol.prototype.prepareRequest = function (options) {
-                    return options;
-                };
-                /**
-                 * Creates protocol addon able to prepend protocol actions with specified functions.
-                 *
-                 * @return {ProtocolAddon<IN, OUT>} protocol addon.
-                 */
-                Protocol.prototype.prior = function () {
-                    return new CustomProtocolAddon(this, true);
-                };
-                /**
-                 * Creates protocol addon able to append specified functions to protocol actions.
-                 *
-                 * @return {ProtocolAddon<IN, OUT>} protocol addon.
-                 */
-                Protocol.prototype.then = function () {
-                    return new CustomProtocolAddon(this, false);
-                };
-                /**
-                 * Creates protocol modifier able to replace protocol actions with specified functions.
-                 *
-                 * @return {ProtocolMod<IN, OUT>} protocol modifier.
-                 */
-                Protocol.prototype.instead = function () {
-                    return new CustomProtocolMod(this);
-                };
-                return Protocol;
-            }());
-            exports_4("Protocol", Protocol);
-            CustomProtocolAddon = (function () {
-                function CustomProtocolAddon(_protocol, _prior) {
-                    this._protocol = _protocol;
-                    this._prior = _prior;
-                }
-                CustomProtocolAddon.prototype.prepareRequest = function (prepare) {
-                    var _this = this;
-                    var handleError = this._protocol.handleError;
-                    return new CustomProtocol(this._prior
-                        ? function (options) { return _this._protocol.prepareRequest(prepare(options)); }
-                        : function (options) { return prepare(_this._protocol.prepareRequest(options)); }, function (request, options) { return _this._protocol.writeRequest(request, options); }, function (response) { return _this._protocol.readResponse(response); }, handleError && (function (error) { return handleError(error); }));
-                };
-                CustomProtocolAddon.prototype.updateRequest = function (update) {
-                    var _this = this;
-                    var handleError = this._protocol.handleError;
-                    return new CustomProtocol(function (options) { return _this._protocol.prepareRequest(options); }, this._prior
-                        ? function (request, options) { return _this._protocol.writeRequest(request, update(request, options)); }
-                        : function (request, options) { return update(request, _this._protocol.writeRequest(request, options)); }, function (response) { return _this._protocol.readResponse(response); }, handleError && (function (error) { return handleError(error); }));
-                };
-                CustomProtocolAddon.prototype.handleError = function (handle) {
-                    var _this = this;
-                    var handleError = this._protocol.handleError;
-                    return new CustomProtocol(function (options) { return _this._protocol.prepareRequest(options); }, function (request, options) { return _this._protocol.writeRequest(request, options); }, function (response) { return _this._protocol.readResponse(response); }, !handleError ? handle : (this._prior
-                        ? function (error) { return handleError(handle(error)); }
-                        : function (error) { return handle(handleError(error)); }));
-                };
-                return CustomProtocolAddon;
-            }());
-            CustomProtocolMod = (function () {
-                function CustomProtocolMod(_protocol) {
-                    this._protocol = _protocol;
-                }
-                CustomProtocolMod.prototype.prepareRequest = function (prepare) {
-                    var _this = this;
-                    return new CustomProtocol(prepare, function (request, options) { return _this._protocol.writeRequest(request, options); }, function (response) { return _this._protocol.readResponse(response); }, this._protocol.handleError);
-                };
-                CustomProtocolMod.prototype.writeRequest = function (write) {
-                    var _this = this;
-                    return new CustomProtocol(function (options) { return _this._protocol.prepareRequest(options); }, write, function (response) { return _this._protocol.readResponse(response); }, this._protocol.handleError);
-                };
-                CustomProtocolMod.prototype.readResponse = function (read) {
-                    var _this = this;
-                    return new CustomProtocol(function (options) { return _this._protocol.prepareRequest(options); }, function (request, options) { return _this._protocol.writeRequest(request, options); }, read, this._protocol.handleError);
-                };
-                CustomProtocolMod.prototype.handleError = function (handle) {
-                    var _this = this;
-                    return new CustomProtocol(function (options) { return _this._protocol.prepareRequest(options); }, function (request, options) { return _this._protocol.writeRequest(request, options); }, function (response) { return _this._protocol.readResponse(response); }, handle);
-                };
-                return CustomProtocolMod;
-            }());
-            CustomProtocol = (function (_super) {
-                __extends(CustomProtocol, _super);
-                function CustomProtocol(_prepareRequest, _writeRequest, _readResponse, handleError) {
-                    _super.call(this);
-                    this._prepareRequest = _prepareRequest;
-                    this._writeRequest = _writeRequest;
-                    this._readResponse = _readResponse;
-                    this.handleError = handleError;
-                }
-                CustomProtocol.prototype.prepareRequest = function (options) {
-                    return this._prepareRequest(options);
-                };
-                CustomProtocol.prototype.writeRequest = function (request, options) {
-                    return this._writeRequest(request, options);
-                };
-                CustomProtocol.prototype.readResponse = function (response) {
-                    return this._readResponse(response);
-                };
-                return CustomProtocol;
-            }(Protocol));
-            JsonProtocol = (function (_super) {
-                __extends(JsonProtocol, _super);
-                function JsonProtocol() {
-                    _super.apply(this, arguments);
-                }
-                JsonProtocol.prototype.writeRequest = function (request, options) {
-                    var opts = new http_1.RequestOptions(options).merge({ body: JSON.stringify(request) });
-                    var headers;
-                    if (opts.headers) {
-                        headers = opts.headers;
-                    }
-                    else {
-                        opts.headers = headers = new http_1.Headers();
-                    }
-                    headers.set("Content-Type", "application/json");
-                    return opts;
-                };
-                JsonProtocol.prototype.readResponse = function (response) {
-                    return response.json();
-                };
-                return JsonProtocol;
-            }(Protocol));
-            /**
-             * JSON protocol.
-             *
-             * Sends and receives arbitrary data as JSON over HTTP.
-             *
-             * @type {Protocol<any>}
-             */
-            exports_4("JSON_PROTOCOL", JSON_PROTOCOL = new JsonProtocol());
-            /**
-             * Returns JSON protocol.
-             *
-             * Sends and receives the data of the given type as JSON over HTTP.
-             */
-            exports_4("jsonProtocol", jsonProtocol = function () { return JSON_PROTOCOL; });
-            HttpProtocol = (function (_super) {
-                __extends(HttpProtocol, _super);
-                function HttpProtocol() {
-                    _super.apply(this, arguments);
-                }
-                HttpProtocol.prototype.writeRequest = function (request, options) {
-                    return new http_1.RequestOptions(options).merge({ body: request });
-                };
-                HttpProtocol.prototype.readResponse = function (response) {
-                    return response;
-                };
-                return HttpProtocol;
-            }(Protocol));
-            /**
-             * HTTP protocol.
-             *
-             * The request type is any. It is used as request body.
-             *
-             * @type {Protocol<any, Response>}
-             */
-            exports_4("HTTP_PROTOCOL", HTTP_PROTOCOL = new HttpProtocol());
+            exports_4("DEFAULT_RIKE_OPTIONS", DEFAULT_RIKE_OPTIONS = new BaseRikeOptions());
         }
     }
 });
@@ -883,6 +894,18 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                     enumerable: true,
                     configurable: true
                 });
+                Object.defineProperty(Rike.prototype, "defaultProtocol", {
+                    /**
+                     * Default Rike protocol.
+                     *
+                     * @return {Protocol<any, any>} either {{RikeOptions.defaultProtocol}}, or `HTTP_PROTOCOL`.
+                     */
+                    get: function () {
+                        return this.options.defaultProtocol || protocol_1.HTTP_PROTOCOL;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
                 Object.defineProperty(Rike.prototype, "rikeEvents", {
                     /**
                      * All REST-like resource operation events emitter.
@@ -896,37 +919,30 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                     configurable: true
                 });
                 Rike.prototype.request = function (request, options) {
-                    return this.handleErrors(this._internals.request(request, options));
+                    return this.handleErrors(this._internals.request(request, this.prepareRequest(options)));
                 };
                 Rike.prototype.get = function (url, options) {
-                    return this.handleErrors(this._internals.get(url, options));
+                    return this.handleErrors(this._internals.get(url, this.prepareRequest(options)));
                 };
                 Rike.prototype.post = function (url, body, options) {
-                    return this.handleErrors(this._internals.post(url, body, options));
+                    return this.handleErrors(this._internals.post(url, body, this.prepareRequest(options)));
                 };
                 Rike.prototype.put = function (url, body, options) {
-                    return this.handleErrors(this._internals.put(url, body, options));
+                    return this.handleErrors(this._internals.put(url, body, this.prepareRequest(options)));
                 };
                 //noinspection ReservedWordAsName
                 Rike.prototype.delete = function (url, options) {
-                    return this.handleErrors(this._internals.delete(url, options));
+                    return this.handleErrors(this._internals.delete(url, this.prepareRequest(options)));
                 };
                 Rike.prototype.patch = function (url, body, options) {
-                    return this.handleErrors(this._internals.patch(url, body, options));
+                    return this.handleErrors(this._internals.patch(url, body, this.prepareRequest(options)));
                 };
                 Rike.prototype.head = function (url, options) {
-                    return this.handleErrors(this._internals.head(url, options));
+                    return this.handleErrors(this._internals.head(url, this.prepareRequest(options)));
                 };
                 Rike.prototype.target = function (target, protocol) {
                     var _this = this;
-                    var proto = protocol || protocol_1.HTTP_PROTOCOL;
-                    if (!proto.handleError) {
-                        var defaultErrorHandler = this.options.defaultErrorHandler;
-                        if (defaultErrorHandler) {
-                            proto = proto.then().handleError(defaultErrorHandler);
-                        }
-                    }
-                    var rikeTarget = new RikeTargetImpl(this, this._internals, target, proto || protocol_1.HTTP_PROTOCOL);
+                    var rikeTarget = new RikeTargetImpl(this, this._internals, target, protocol ? protocol.prior().apply(this.defaultProtocol) : this.defaultProtocol);
                     rikeTarget.rikeEvents.subscribe(function (event) { return _this._rikeEvents.emit(event); }, function (error) { return _this._rikeEvents.error(error); }, function () { return _this._rikeEvents.complete(); });
                     return rikeTarget;
                 };
@@ -967,7 +983,9 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                     }
                     return options;
                 };
-                //noinspection JSMethodCanBeStatic,JSUnusedLocalSymbols
+                Rike.prototype.prepareRequest = function (options) {
+                    return this.defaultProtocol.prepareRequest(options || {});
+                };
                 /**
                  * Wraps the HTTP response observable for the given operation to make it handle errors.
                  *
@@ -976,7 +994,7 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                  * @returns {Observable<Response>} response observer wrapper.
                  */
                 Rike.prototype.handleErrors = function (response) {
-                    var handleError = this.options.defaultErrorHandler;
+                    var handleError = this.defaultProtocol.handleError;
                     if (!handleError) {
                         return response;
                     }
@@ -1171,9 +1189,7 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                     return true;
                 };
                 RikeTargetImpl.prototype.operation = function (name, protocol) {
-                    var _this = this;
-                    return new RikeOperationImpl(this, name, !protocol ? this.protocol : (this.protocol === protocol_1.HTTP_PROTOCOL
-                        ? protocol : protocol.prior().prepareRequest(function (options) { return _this.protocol.prepareRequest(options); })));
+                    return new RikeOperationImpl(this, name, !protocol ? this.protocol : protocol.prior().apply(this.protocol));
                 };
                 RikeTargetImpl.prototype.startOperation = function (operation) {
                     var event = new event_2.RikeOperationEvent(operation);
@@ -2564,6 +2580,20 @@ System.register("ng2-rike/rike.spec", ["@angular/http", "@angular/core/testing",
     function requestMethodTest(method, value) {
         return function () { return expect(rike_3.requestMethod(value)).toBe(method); };
     }
+    function expectJsonProtocol(protocol) {
+        var value = {
+            a: "test",
+            b: 13,
+            c: ["foo", "bar", "baz"]
+        };
+        var written = protocol.writeRequest(value, {}).body;
+        var restored = JSON.parse(written);
+        console.log(restored);
+        expect(restored.a).toBe(value.a, "Invalid data restored from JSON");
+        expect(restored.b).toBe(value.b, "Invalid data restored from JSON");
+        expect(restored.c).toEqual(value.c, "Invalid data restored from JSON");
+    }
+    exports_16("expectJsonProtocol", expectJsonProtocol);
     return {
         setters:[
             function (http_6_1) {
@@ -2661,18 +2691,18 @@ System.register("ng2-rike/rike.spec", ["@angular/http", "@angular/core/testing",
                     var targetId = "target1";
                     var target = rike.json(targetId);
                     expect(target.target).toBe(targetId);
-                    expect(target.protocol).toBe(protocol_5.JSON_PROTOCOL);
+                    expectJsonProtocol(target.protocol);
                 });
                 it("creates target with specified protocol", function () {
                     var protocol = protocol_5.jsonProtocol()
                         .instead()
                         .writeRequest(function (val, opts) {
-                        return new http_6.RequestOptions(opts).merge({ body: JSON.stringify(val) });
+                        return new http_6.RequestOptions(opts).merge({ body: val });
                     });
                     var targetId = "target1";
                     var target = rike.target(targetId, protocol);
                     expect(target.target).toBe(targetId);
-                    expect(target.protocol).toBe(protocol);
+                    expect(protocol.writeRequest(-5, {}).body).toBe(-5);
                 });
             });
             describe("requestMethod", function () {
@@ -2950,7 +2980,7 @@ System.register("ng2-rike/rike-target.spec", ["@angular/core/testing", "@angular
                     var op = target.json("jsonOperation");
                     expect(op.target).toBe(target);
                     expect(op.name).toBe("jsonOperation");
-                    expect(op.protocol).toBe(protocol_6.JSON_PROTOCOL);
+                    rike_spec_2.expectJsonProtocol(op.protocol);
                 });
                 it("creates operation over specified protocol", function () {
                     var proto = protocol_6.jsonProtocol()
@@ -2961,7 +2991,7 @@ System.register("ng2-rike/rike-target.spec", ["@angular/core/testing", "@angular
                     var op = target.operation("customOperation", proto);
                     expect(op.target).toBe(target);
                     expect(op.name).toBe("customOperation");
-                    expect(op.protocol).toBe(proto);
+                    expect(JSON.parse(op.protocol.writeRequest(13, {}).body)).toBe(13);
                 });
                 it("current operation updated on request", function (done) {
                     back.connections.subscribe(function (connection) {

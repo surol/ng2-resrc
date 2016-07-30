@@ -100,7 +100,7 @@ export abstract class Protocol<IN, OUT> {
 export interface ProtocolAddon<IN, OUT> {
 
     /**
-     * Constructs new protocol based on this one, which prepares the request with the given function.
+     * Constructs new protocol based on this one, which prepares requests with the given function.
      *
      * @param prepare a request preparation function invoked in addition to `Protocol.prepareRequest` method.
      *
@@ -126,6 +126,14 @@ export interface ProtocolAddon<IN, OUT> {
      * @return {Protocol<IN, OUT>} new protocol.
      */
     handleError(handle: (error: any) => any): Protocol<IN, OUT>;
+
+    /**
+     * Constructs new protocol based on original onw, which prepares requests and handles errors with corresponding
+     * `protocol` methods in addition to original ones.
+     *
+     * @param protocol {Protocol<IN, OUT>} new protocol.
+     */
+    apply(protocol: Protocol<any, any>): Protocol<IN, OUT>;
 
 }
 
@@ -172,6 +180,26 @@ class CustomProtocolAddon<IN, OUT> implements ProtocolAddon<IN, OUT> {
                 this._prior
                     ? error => handleError(handle(error))
                     : error => handle(handleError(error))));
+    }
+
+    apply(protocol: Protocol<any, any>): Protocol<IN, OUT> {
+
+        const handleError = this._protocol.handleError;
+        const handle = protocol.handleError;
+
+        if (this._prior) {
+            return new CustomProtocol<IN, OUT>(
+                options => this._protocol.prepareRequest(protocol.prepareRequest(options)),
+                (request, options) => this._protocol.writeRequest(request, options),
+                response => this._protocol.readResponse(response),
+                !handleError ? handle : (!handle ? handleError : (error => handleError(handle(error)))));
+        }
+
+        return new CustomProtocol<IN, OUT>(
+            options => protocol.prepareRequest(this._protocol.prepareRequest(options)),
+            (request, options) => this._protocol.writeRequest(request, options),
+            response => this._protocol.readResponse(response),
+            !handleError ? handle : (!handle ? handleError : (error => handle(handleError(error)))));
     }
 
 }

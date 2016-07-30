@@ -1,7 +1,7 @@
 import {inject} from "@angular/core/testing";
 import {Response, RequestOptionsArgs, RequestOptions, ResponseOptions} from "@angular/http";
 import {MockBackend, MockConnection} from "@angular/http/testing";
-import {addRikeProviders} from "./rike.spec";
+import {addRikeProviders, expectJsonProtocol} from "./rike.spec";
 import {Rike, RikeTarget} from "./rike";
 import {JSON_PROTOCOL, jsonProtocol} from "./protocol";
 
@@ -46,7 +46,7 @@ describe("RikeTarget", () => {
 
         expect(op.target).toBe(target);
         expect(op.name).toBe("jsonOperation");
-        expect(op.protocol).toBe(JSON_PROTOCOL);
+        expectJsonProtocol(op.protocol);
     });
 
     it("creates operation over specified protocol", () => {
@@ -59,7 +59,7 @@ describe("RikeTarget", () => {
 
         expect(op.target).toBe(target);
         expect(op.name).toBe("customOperation");
-        expect(op.protocol).toBe(proto);
+        expect(JSON.parse(op.protocol.writeRequest(13, {}).body)).toBe(13);
     });
 
     it("current operation updated on request", done => {
