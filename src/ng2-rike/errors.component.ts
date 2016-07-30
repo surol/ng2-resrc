@@ -1,6 +1,6 @@
 import {Component, Input, OnInit, OnDestroy, Optional} from "@angular/core";
 import {ErrorCollector, ErrorSubscription} from "./error-collector";
-import {FieldErrors, FieldError} from "./error";
+import {FieldErrors, FieldError} from "./field-error";
 
 @Component({
     selector: '[rikeErrors],[rikeErrorsField]',

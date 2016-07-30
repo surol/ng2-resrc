@@ -1,5 +1,5 @@
 import {RequestOptionsArgs, Response, RequestOptions, URLSearchParams, ResponseOptions} from "@angular/http";
-import {Protocol, JSON_PROTOCOL} from "./protocol";
+import {Protocol, JSON_PROTOCOL, ErrorResponse} from "./protocol";
 
 interface In {
     request: string;
@@ -122,13 +122,22 @@ describe("Protocol", () => {
     it("handles error", () => {
 
         const proto = protocol.then().handleError(error => {
-            return {error};
-        });
-        const error: {error: any} = proto.handleError!("abc");
 
-        expect(error.error).toBe("abc");
+            const err = error as TestErrorResponse;
+
+            err.test = "error1";
+
+            return err;
+        });
+        const error = proto.handleError({response: new Response(new ResponseOptions())}) as TestErrorResponse;
+
+        expect(error.test).toBe("error1");
     });
 });
+
+interface TestErrorResponse extends ErrorResponse {
+    test: any;
+}
 
 describe("JSON protocol", () => {
 

@@ -1,6 +1,29 @@
 import {Response, RequestOptionsArgs, RequestOptions, Headers} from "@angular/http";
 
 /**
+ * Error response.
+ *
+ * All error handlers operates over it.
+ *
+ * Typical error handler extends this interface with handler-specific fields and fills them.
+ */
+export interface ErrorResponse {
+
+    /**
+     * HTTP response.
+     */
+    response: Response;
+
+    /**
+     * Arbitrary error object.
+     *
+     * This field is filled when HTTP returns something different from `Response` object.
+     */
+    error?: any;
+
+}
+
+/**
  * REST-like operations protocol.
  *
  * It is used by REST-like operations to encode operation requests to HTTP, decode operation responses from HTTP,
@@ -57,13 +80,13 @@ export abstract class Protocol<IN, OUT> {
     /**
      * Handles HTTP error.
      *
-     * Does not modify error object by default.
+     * Does not modify error response by default.
      *
-     * @param error error to handle.
+     * @param error error response to handle.
      *
      * @returns error processing result.
      */
-    handleError(error: any): any {
+    handleError(error: ErrorResponse): ErrorResponse {
         return error;
     }
 
@@ -128,7 +151,7 @@ export interface ProtocolAddon<IN, OUT> {
      *
      * @return {Protocol<IN, OUT>} new protocol.
      */
-    handleError(handle: (error: any) => any): Protocol<IN, OUT>;
+    handleError(handle: (error: ErrorResponse) => ErrorResponse): Protocol<IN, OUT>;
 
     /**
      * Constructs new protocol based on original onw, which prepares requests and handles errors with corresponding
@@ -165,7 +188,7 @@ class CustomProtocolAddon<IN, OUT> implements ProtocolAddon<IN, OUT> {
             error => this._protocol.handleError(error));
     }
 
-    handleError(handle: (error: any) => any): Protocol<IN, OUT> {
+    handleError(handle: (error: ErrorResponse) => ErrorResponse): Protocol<IN, OUT> {
         return new CustomProtocol<IN, OUT>(
             options => this._protocol.prepareRequest(options),
             (request, options) => this._protocol.writeRequest(request, options),
@@ -233,7 +256,7 @@ export interface ProtocolMod<IN, OUT> {
      *
      * @return {Protocol<IN, OUT>} new protocol.
      */
-    handleError(handle: (error: any) => any): Protocol<IN, OUT>;
+    handleError(handle: (error: ErrorResponse) => ErrorResponse): Protocol<IN, OUT>;
 
 }
 
@@ -266,7 +289,7 @@ class CustomProtocolMod<IN, OUT> implements ProtocolMod<IN, OUT> {
             this._protocol.handleError);
     }
 
-    handleError(handle: (error: any) => any): Protocol<IN, OUT> {
+    handleError(handle: (error: ErrorResponse) => ErrorResponse): Protocol<IN, OUT> {
         return new CustomProtocol<IN, OUT>(
             options => this._protocol.prepareRequest(options),
             (request, options) => this._protocol.writeRequest(request, options),
@@ -282,7 +305,7 @@ class CustomProtocol<IN, OUT> extends Protocol<IN, OUT> {
         private _prepareRequest: (options: RequestOptionsArgs) => RequestOptionsArgs,
         private _writeRequest: (request: IN, options: RequestOptionsArgs) => RequestOptionsArgs,
         private _readResponse: (response: Response) => OUT,
-        private _handleError: (error: any) => any) {
+        private _handleError: (error: ErrorResponse) => ErrorResponse) {
         super();
     }
 
@@ -298,9 +321,10 @@ class CustomProtocol<IN, OUT> extends Protocol<IN, OUT> {
         return this._readResponse(response);
     }
 
-    handleError(error: any): any {
+    handleError(error: ErrorResponse): ErrorResponse {
         return this._handleError(error);
     }
+
 }
 
 class JsonProtocol<T> extends Protocol<T, T> {

@@ -1,5 +1,8 @@
 import {Injectable, Optional, EventEmitter} from "@angular/core";
-import {Request, RequestOptionsArgs, Response, Http, RequestMethod, RequestOptions} from "@angular/http";
+import {
+    Request, RequestOptionsArgs, Response, Http, RequestMethod, RequestOptions,
+    ResponseOptions, ResponseType
+} from "@angular/http";
 import {Observable, Observer, Subscription} from "rxjs/Rx";
 import {
     RikeEvent,
@@ -7,10 +10,10 @@ import {
     RikeSuccessEvent,
     RikeOperationEvent,
     RikeCancelEvent,
-    RikeEventSource
+    RikeEventSource, RikeErrorResponseEvent, RikeExceptionEvent
 } from "./event";
 import {RikeOptions, DEFAULT_RIKE_OPTIONS, relativeUrl} from "./options";
-import {Protocol, HTTP_PROTOCOL, jsonProtocol} from "./protocol";
+import {Protocol, HTTP_PROTOCOL, jsonProtocol, ErrorResponse} from "./protocol";
 
 const REQUEST_METHODS: {[name: string]: number} = {
     "GET": RequestMethod.Get,
@@ -244,21 +247,35 @@ export class Rike implements RikeEventSource {
      * @returns {Observable<Response>} response observer wrapper.
      */
     private handleErrors(response: Observable<Response>): Observable<Response> {
-
-        const handleError = this.defaultProtocol.handleError;
-
-        if (!handleError) {
-            return response;
-        }
-
         return new Observable<Response>((responseObserver: Observer<Response>) => {
             response.subscribe(
                 httpResponse => responseObserver.next(httpResponse),
-                error => responseObserver.error(handleError(error)),
+                error => responseObserver.error(this.defaultProtocol.handleError(toErrorResponse(error))),
                 () => responseObserver.complete());
         });
     }
 
+}
+
+function toErrorResponse(error: any): ErrorResponse {
+    if (error instanceof Response) {
+        return {response: error};
+    }
+    return syntheticResponse(error);
+}
+
+function syntheticResponse(error: any): ErrorResponse {
+
+    const statusText = error != null ? error.toString() : null;
+
+    return {
+        response: new Response(new ResponseOptions({
+            type: ResponseType.Error,
+            status: 500,
+            statusText: statusText || "Unknown error"
+        })),
+        error,
+    };
 }
 
 /**
@@ -539,7 +556,7 @@ class RikeTargetImpl<IN, OUT> extends RikeTarget<IN, OUT> {
                     this._observer.error(cancel);
                     this._rikeEvents.error(cancel);
                 } catch (e) {
-                    this._rikeEvents.error(new RikeErrorEvent(this._operation.operation, e));
+                    this._rikeEvents.error(new RikeExceptionEvent(this._operation.operation, e));
                     throw e;
                 } finally {
                     this._operation = undefined;
@@ -602,16 +619,27 @@ class RikeTargetImpl<IN, OUT> extends RikeTarget<IN, OUT> {
                         responseObserver.next(response);
                         this._rikeEvents.emit(new RikeSuccessEvent(operation, response));
                     } catch (e) {
-                        this._rikeEvents.error(new RikeErrorEvent(operation, e));
+                        this._rikeEvents.error(new RikeExceptionEvent(
+                            operation,
+                            e,
+                            {
+                                response: httpResponse,
+                                error: e
+                            }));
                     }
                 },
                 error => {
                     console.error("[" + this.target + "] " + operation.name + " failed", error);
+
+                    let errorResponse = toErrorResponse(error);
+
                     try {
-                        responseObserver.error(error);
-                        this._rikeEvents.emit(new RikeErrorEvent(operation, error));
+                        errorResponse = operation.protocol.handleError(errorResponse);
+                        responseObserver.error(errorResponse);
+                        this._rikeEvents.emit(new RikeErrorResponseEvent(operation, errorResponse));
                     } catch (e) {
-                        this._rikeEvents.error(new RikeErrorEvent(operation, e));
+                        errorResponse.error = e;
+                        this._rikeEvents.error(new RikeExceptionEvent(operation, e, errorResponse));
                     } finally {
                         cleanup();
                     }
@@ -620,7 +648,7 @@ class RikeTargetImpl<IN, OUT> extends RikeTarget<IN, OUT> {
                     try {
                         responseObserver.complete();
                     } catch (e) {
-                        this._rikeEvents.error(new RikeErrorEvent(operation, e));
+                        this._rikeEvents.error(new RikeExceptionEvent(operation, e));
                     } finally {
                         cleanup();
                     }
@@ -683,7 +711,7 @@ class RikeOperationImpl<IN, OUT> extends RikeOperation<IN, OUT> {
             options = this.requestOptions(undefined, url, options);
             return this.wrapResponse(this.internals.request(this.requestUrl(options), options));
         } catch (e) {
-            this.target.rikeEvents.error(new RikeErrorEvent(this, e));
+            this.target.rikeEvents.error(new RikeExceptionEvent(this, e));
             throw e;
         }
     }
@@ -694,7 +722,7 @@ class RikeOperationImpl<IN, OUT> extends RikeOperation<IN, OUT> {
             options = this.writeRequest(request, this.requestOptions(undefined, url, options));
             return this.wrapResponse(this.internals.request(this.requestUrl(options), options));
         } catch (e) {
-            this.target.rikeEvents.error(new RikeErrorEvent(this, e));
+            this.target.rikeEvents.error(new RikeExceptionEvent(this, e));
             throw e;
         }
     }
@@ -705,7 +733,7 @@ class RikeOperationImpl<IN, OUT> extends RikeOperation<IN, OUT> {
             options = this.requestOptions(RequestMethod.Get, url, options);
             return this.wrapResponse(this.internals.get(this.requestUrl(options), options));
         } catch (e) {
-            this.target.rikeEvents.error(new RikeErrorEvent(this, e));
+            this.target.rikeEvents.error(new RikeExceptionEvent(this, e));
             throw e;
         }
     }
@@ -716,7 +744,7 @@ class RikeOperationImpl<IN, OUT> extends RikeOperation<IN, OUT> {
             options = this.writeRequest(request, this.requestOptions(RequestMethod.Post, url, options));
             return this.wrapResponse(this.internals.post(this.requestUrl(options), options.body, options));
         } catch (e) {
-            this.target.rikeEvents.error(new RikeErrorEvent(this, e));
+            this.target.rikeEvents.error(new RikeExceptionEvent(this, e));
             throw e;
         }
     }
@@ -727,7 +755,7 @@ class RikeOperationImpl<IN, OUT> extends RikeOperation<IN, OUT> {
             options = this.writeRequest(request, this.requestOptions(RequestMethod.Put, url, options));
             return this.wrapResponse(this.internals.put(this.requestUrl(options), options.body, options));
         } catch (e) {
-            this.target.rikeEvents.error(new RikeErrorEvent(this, e));
+            this.target.rikeEvents.error(new RikeExceptionEvent(this, e));
             throw e;
         }
     }
@@ -739,7 +767,7 @@ class RikeOperationImpl<IN, OUT> extends RikeOperation<IN, OUT> {
             options = this.requestOptions(RequestMethod.Delete, url, options);
             return this.wrapResponse(this.internals.delete(this.requestUrl(options), options));
         } catch (e) {
-            this.target.rikeEvents.error(new RikeErrorEvent(this, e));
+            this.target.rikeEvents.error(new RikeExceptionEvent(this, e));
             throw e;
         }
     }
@@ -750,7 +778,7 @@ class RikeOperationImpl<IN, OUT> extends RikeOperation<IN, OUT> {
             options = this.writeRequest(request, this.requestOptions(RequestMethod.Patch, url, options));
             return this.wrapResponse(this.internals.patch(this.requestUrl(options), options.body, options));
         } catch (e) {
-            this.target.rikeEvents.error(new RikeErrorEvent(this, e));
+            this.target.rikeEvents.error(new RikeExceptionEvent(this, e));
             throw e;
         }
     }
@@ -761,7 +789,7 @@ class RikeOperationImpl<IN, OUT> extends RikeOperation<IN, OUT> {
             options = this.requestOptions(RequestMethod.Head, url, options);
             return this.wrapResponse(this.internals.head(this.requestUrl(options), options));
         } catch (e) {
-            this.target.rikeEvents.error(new RikeErrorEvent(this, e));
+            this.target.rikeEvents.error(new RikeExceptionEvent(this, e));
             throw e;
         }
     }

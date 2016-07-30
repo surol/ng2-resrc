@@ -6,11 +6,11 @@ import {RikeStatusComponent} from "./ng2-rike/status.component";
 import {RikeErrorsComponent} from "./ng2-rike/errors.component";
 import {provideEventSource} from "./ng2-rike/event-source-provider";
 
-export * from "./ng2-rike/error";
 export * from "./ng2-rike/error-collector";
 export * from "./ng2-rike/errors.component";
 export * from "./ng2-rike/event";
 export * from "./ng2-rike/event-source-provider";
+export * from "./ng2-rike/field-error";
 export * from "./ng2-rike/options";
 export * from "./ng2-rike/protocol";
 export * from "./ng2-rike/resource";

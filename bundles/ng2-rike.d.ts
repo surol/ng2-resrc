@@ -1,114 +1,25 @@
 /// <reference types="core-js" />
-declare module "ng2-rike/event" {
-    import { EventEmitter } from "@angular/core";
-    import { RikeTarget, RikeOperation } from "ng2-rike/rike";
-    /**
-     * REST-like resource access event emitter.
-     *
-     * Multiple instances of this class could be injected into controller or service to listen for Rike events.
-     *
-     * Use [provideEventSource] function to register event sources.
-     */
-    export abstract class RikeEventSource {
-        /**
-         * Rike events emitter.
-         */
-        readonly abstract rikeEvents: EventEmitter<RikeEvent>;
-    }
-    /**
-     * Basic REST-like resource access event.
-     *
-     * Such events are emitted by [Rike event sources][RikeEventsSource].
-     */
-    export abstract class RikeEvent {
-        /**
-         * Operation target.
-         */
-        readonly target: RikeTarget<any, any>;
-        /**
-         * Rike operation.
-         */
-        readonly abstract operation: RikeOperation<any, any>;
-        /**
-         * Whether an operation is complete.
-         *
-         * `true` on error or successful completion event.
-         */
-        readonly abstract complete: boolean;
-        /**
-         * The error occurred.
-         *
-         * `undefined` if this is not an error event.
-         */
-        readonly abstract error?: any;
-        /**
-         * Whether this is an operation cancel.
-         *
-         * @return {boolean} `true` if operation cancelled, or `false` otherwise.
-         */
-        readonly cancel: boolean;
-        /**
-         * The operation that cancelled this operation.
-         */
-        readonly abstract cancelledBy?: RikeOperationEvent;
-        /**
-         * Operation result, if any.
-         */
-        readonly abstract result?: any;
-    }
-    /**
-     * An event emitted when operation on a REST-like resource is started.
-     */
-    export class RikeOperationEvent extends RikeEvent {
-        private _operation;
-        constructor(_operation: RikeOperation<any, any>);
-        readonly operation: RikeOperation<any, any>;
-        readonly complete: boolean;
-        readonly error: undefined;
-        readonly cancelledBy: undefined;
-        readonly result: undefined;
-    }
-    /**
-     * An event emitted when operation on a REST-like resource is successfully completed.
-     */
-    export class RikeSuccessEvent extends RikeEvent {
-        private _operation;
-        private _result;
-        constructor(_operation: RikeOperation<any, any>, _result: any);
-        readonly operation: RikeOperation<any, any>;
-        readonly complete: boolean;
-        readonly error: undefined;
-        readonly cancelledBy: undefined;
-        readonly result: any;
-    }
-    /**
-     * An event emitted when operation on a REST-like resource is failed.
-     *
-     * An object of this type is also reported as an error when some internal exception occurs.
-     */
-    export class RikeErrorEvent extends RikeEvent {
-        private _operation;
-        private _error;
-        constructor(_operation: RikeOperation<any, any>, _error: any);
-        readonly operation: RikeOperation<any, any>;
-        readonly complete: boolean;
-        readonly error: any;
-        readonly cancelledBy: RikeOperationEvent | undefined;
-        readonly result: undefined;
-    }
-    /**
-     * An event emitted when operation on a REST-like resource is cancelled.
-     */
-    export class RikeCancelEvent extends RikeErrorEvent {
-        private _cancelledBy?;
-        constructor(operation: RikeOperation<any, any>, _cancelledBy?: RikeOperationEvent);
-        readonly error: RikeOperationEvent | undefined;
-        readonly cancel: boolean;
-        readonly cancelledBy: RikeOperationEvent | undefined;
-    }
-}
 declare module "ng2-rike/protocol" {
     import { Response, RequestOptionsArgs } from "@angular/http";
+    /**
+     * Error response.
+     *
+     * All error handlers operates over it.
+     *
+     * Typical error handler extends this interface with handler-specific fields and fills them.
+     */
+    export interface ErrorResponse {
+        /**
+         * HTTP response.
+         */
+        response: Response;
+        /**
+         * Arbitrary error object.
+         *
+         * This field is filled when HTTP returns something different from `Response` object.
+         */
+        error?: any;
+    }
     /**
      * REST-like operations protocol.
      *
@@ -158,13 +69,13 @@ declare module "ng2-rike/protocol" {
         /**
          * Handles HTTP error.
          *
-         * Does not modify error object by default.
+         * Does not modify error response by default.
          *
-         * @param error error to handle.
+         * @param error error response to handle.
          *
          * @returns error processing result.
          */
-        handleError(error: any): any;
+        handleError(error: ErrorResponse): ErrorResponse;
         /**
          * Creates protocol addon able to prepend protocol actions with specified functions.
          *
@@ -213,7 +124,7 @@ declare module "ng2-rike/protocol" {
          *
          * @return {Protocol<IN, OUT>} new protocol.
          */
-        handleError(handle: (error: any) => any): Protocol<IN, OUT>;
+        handleError(handle: (error: ErrorResponse) => ErrorResponse): Protocol<IN, OUT>;
         /**
          * Constructs new protocol based on original onw, which prepares requests and handles errors with corresponding
          * `protocol` methods in addition to original ones.
@@ -258,7 +169,7 @@ declare module "ng2-rike/protocol" {
          *
          * @return {Protocol<IN, OUT>} new protocol.
          */
-        handleError(handle: (error: any) => any): Protocol<IN, OUT>;
+        handleError(handle: (error: ErrorResponse) => ErrorResponse): Protocol<IN, OUT>;
     }
     /**
      * JSON protocol.
@@ -282,6 +193,140 @@ declare module "ng2-rike/protocol" {
      * @type {Protocol<any, Response>}
      */
     export const HTTP_PROTOCOL: Protocol<any, Response>;
+}
+declare module "ng2-rike/event" {
+    import { EventEmitter } from "@angular/core";
+    import { RikeTarget, RikeOperation } from "ng2-rike/rike";
+    import { ErrorResponse } from "ng2-rike/protocol";
+    /**
+     * REST-like resource access event emitter.
+     *
+     * Multiple instances of this class could be injected into controller or service to listen for Rike events.
+     *
+     * Use [provideEventSource] function to register event sources.
+     */
+    export abstract class RikeEventSource {
+        /**
+         * Rike events emitter.
+         */
+        readonly abstract rikeEvents: EventEmitter<RikeEvent>;
+    }
+    /**
+     * Basic REST-like resource access event.
+     *
+     * Such events are emitted by [Rike event sources][RikeEventsSource].
+     */
+    export abstract class RikeEvent {
+        /**
+         * Operation target.
+         */
+        readonly target: RikeTarget<any, any>;
+        /**
+         * Rike operation.
+         */
+        readonly abstract operation: RikeOperation<any, any>;
+        /**
+         * Whether an operation is complete.
+         *
+         * `true` on error or successful completion event.
+         */
+        readonly abstract complete: boolean;
+        /**
+         * The error occurred.
+         *
+         * `undefined` if this is not an error event.
+         */
+        readonly abstract error?: any;
+        /**
+         * Error response.
+         */
+        readonly abstract errorResponse?: ErrorResponse;
+        /**
+         * Whether this is an operation cancel.
+         *
+         * @return {boolean} `true` if operation cancelled, or `false` otherwise.
+         */
+        readonly cancel: boolean;
+        /**
+         * The operation that cancelled this operation.
+         */
+        readonly abstract cancelledBy?: RikeOperationEvent;
+        /**
+         * Operation result, if any.
+         */
+        readonly abstract result?: any;
+    }
+    /**
+     * An event emitted when operation on a REST-like resource is started.
+     */
+    export class RikeOperationEvent extends RikeEvent {
+        private _operation;
+        constructor(_operation: RikeOperation<any, any>);
+        readonly operation: RikeOperation<any, any>;
+        readonly complete: boolean;
+        readonly error: undefined;
+        readonly errorResponse: undefined;
+        readonly cancelledBy: undefined;
+        readonly result: undefined;
+    }
+    /**
+     * An event emitted when operation on a REST-like resource is successfully completed.
+     */
+    export class RikeSuccessEvent extends RikeEvent {
+        private _operation;
+        private _result;
+        constructor(_operation: RikeOperation<any, any>, _result: any);
+        readonly operation: RikeOperation<any, any>;
+        readonly complete: boolean;
+        readonly error: undefined;
+        readonly errorResponse: undefined;
+        readonly cancelledBy: undefined;
+        readonly result: any;
+    }
+    /**
+     * An event emitted when operation on a REST-like resource is failed.
+     *
+     * An object of this type is also reported as an error when some internal exception occurs.
+     */
+    export abstract class RikeErrorEvent extends RikeEvent {
+        private _operation;
+        private _error;
+        constructor(_operation: RikeOperation<any, any>, _error: any);
+        readonly operation: RikeOperation<any, any>;
+        readonly complete: boolean;
+        readonly error: any;
+        readonly errorResponse: ErrorResponse | undefined;
+        readonly cancelledBy: RikeOperationEvent | undefined;
+        readonly result: undefined;
+    }
+    /**
+     * An event emitted when operation on a REST-like resource caused an exception.
+     *
+     * An object of this type is reported as an error.
+     */
+    export class RikeExceptionEvent extends RikeErrorEvent {
+        private _errorResponse?;
+        constructor(operation: RikeOperation<any, any>, error: any, _errorResponse?: ErrorResponse);
+        readonly errorResponse: ErrorResponse | undefined;
+    }
+    /**
+     * An event emitted when operation on a REST-like resource returned error.
+     */
+    export class RikeErrorResponseEvent extends RikeErrorEvent {
+        private _errorResponse;
+        constructor(operation: RikeOperation<any, any>, _errorResponse: ErrorResponse);
+        readonly errorResponse: ErrorResponse;
+    }
+    /**
+     * An event emitted when operation on a REST-like resource is cancelled.
+     */
+    export class RikeCancelEvent extends RikeErrorEvent {
+        private _cancelledBy?;
+        constructor(operation: RikeOperation<any, any>, _cancelledBy?: RikeOperationEvent);
+        readonly error: RikeOperationEvent | undefined;
+        readonly cancel: boolean;
+        readonly cancelledBy: RikeOperationEvent | undefined;
+    }
 }
 declare module "ng2-rike/status-collector" {
     import { EventEmitter } from "@angular/core";
@@ -642,36 +687,18 @@ declare module "ng2-rike/status.component" {
         protected configureStatus(status: StatusCollector<L>): void;
     }
 }
-declare module "ng2-rike/error" {
-    import { Response } from "@angular/http";
-    /**
-     * Error response options interface.
-     */
-    export interface ErrorResponseOpts {
-        /**
-         * HTTP response.
-         */
-        readonly response: Response;
-        /**
-         * Field errors.
-         */
-        readonly errors: FieldErrors;
-    }
+declare module "ng2-rike/field-error" {
+    import { ErrorResponse } from "ng2-rike/protocol";
     /**
      * Error response.
      *
      * Any object can be converted to `ErrorResponse` with `toErrorResponse()` function.
      */
-    export class ErrorResponse implements ErrorResponseOpts {
-        /**
-         * HTTP response.
-         */
-        readonly response: Response;
+    export interface FieldErrorResponse extends ErrorResponse {
         /**
          * Field errors.
          */
-        readonly errors: FieldErrors;
-        constructor(opts: ErrorResponseOpts);
+        fieldErrors: FieldErrors;
     }
     /**
      * Field errors.
@@ -697,23 +724,23 @@ declare module "ng2-rike/error" {
         message: string;
     }
     /**
-     * Converts any object to `ErrorResponse`.
+     * Appends field errors to {{ErrorResponse}}.
      *
-     * If the `error` object is already of type `ErrorResponse` then just returns it.
+     * If field errors already present in `ErrorResponse` then does nothing.
      *
-     * This function can be used as a [error handler][Protocol.handleError] to convert HTTP responses.
+     * This function can be used as {{Protocol}} error handler error handler.
      *
      * @param error object to convert.
      *
-     * @return {ErrorResponse} constructed error response.
+     * @return {FieldErrorResponse} constructed error httpResponse.
      */
-    export function toErrorResponse(error: any): ErrorResponse;
+    export function addFieldErrors(error: ErrorResponse): FieldErrorResponse;
 }
 declare module "ng2-rike/error-collector" {
     import { EventEmitter } from "@angular/core";
     import { AnonymousSubscription } from "rxjs/Subscription";
-    import { FieldErrors } from "ng2-rike/error";
-    import { RikeEventSource, RikeEvent } from "ng2-rike/event";
+    import { FieldErrors } from "ng2-rike/field-error";
+    import { RikeEventSource, RikeEvent, RikeErrorEvent } from "ng2-rike/event";
     /**
      * Field errors subscription.
      *
@@ -736,9 +763,9 @@ declare module "ng2-rike/error-collector" {
     /**
      * An error collecting service.
      *
-     * It collects errors from all available [Rike event sources][RikeEventSource]. It uses `toFieldErrors()` method
-     * to build a `FieldErrors` instance to obtain errors from. Then it notifies all subscribers on when errors received or
-     * removed.
+     * It collects errors from all available [Rike event sources][RikeEventSource]. It uses `fieldErrors()` method
+     * to obtain a `FieldErrors` instance from {{RikeErrorEvent}}. Then it notifies all subscribers on when errors received
+     * or removed.
      *
      * This service is registered automatically along with every event source by [provideEventSource] method.
      * But unlike event sources it is not a multi-provider.
@@ -785,15 +812,15 @@ declare module "ng2-rike/error-collector" {
          */
         subscribeForRest(next: ((errors: FieldErrors) => void), error?: (error: any) => void, complete?: () => void): ErrorSubscription;
         /**
-         * Converts arbitrary error to `FieldErrors`.
+         * Converts error to `FieldErrors`.
          *
-         * This method uses [toErrorResponse] function by default. Override it if you are using custom error handler.
+         * This method uses `addFieldErrors` function by default. Override it if you are using custom error handler.
          *
          * @param error arbitrary error passed in [RikeEvent.error] field.
          *
          * @return {FieldErrors} field errors.
          */
-        protected toFieldErrors(error: any): FieldErrors;
+        protected fieldErrors(error: RikeErrorEvent): FieldErrors;
         private fieldEmitter(field);
         private init();
         private handleEvent(event);
@@ -806,7 +833,7 @@ declare module "ng2-rike/error-collector" {
 declare module "ng2-rike/errors.component" {
     import { OnInit, OnDestroy } from "@angular/core";
     import { ErrorCollector } from "ng2-rike/error-collector";
-    import { FieldErrors, FieldError } from "ng2-rike/error";
+    import { FieldErrors, FieldError } from "ng2-rike/field-error";
     export class RikeErrorsComponent implements OnInit, OnDestroy {
         private _collector?;
         private _rikeErrorsField;
@@ -893,11 +920,11 @@ declare module "ng2-rike/resource-provider" {
     }): any;
 }
 declare module "ng2-rike" {
-    export * from "ng2-rike/error";
     export * from "ng2-rike/error-collector";
     export * from "ng2-rike/errors.component";
     export * from "ng2-rike/event";
     export * from "ng2-rike/event-source-provider";
+    export * from "ng2-rike/field-error";
     export * from "ng2-rike/options";
     export * from "ng2-rike/protocol";
     export * from "ng2-rike/resource";

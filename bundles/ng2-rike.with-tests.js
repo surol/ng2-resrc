@@ -16,243 +16,9 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
 ///<reference types="jasmine"/>
-System.register("ng2-rike/event", [], function(exports_1, context_1) {
+System.register("ng2-rike/protocol", ["@angular/http"], function(exports_1, context_1) {
     "use strict";
     var __moduleName = context_1 && context_1.id;
-    var RikeEventSource, RikeEvent, RikeOperationEvent, RikeSuccessEvent, RikeErrorEvent, RikeCancelEvent;
-    return {
-        setters:[],
-        execute: function() {
-            /**
-             * REST-like resource access event emitter.
-             *
-             * Multiple instances of this class could be injected into controller or service to listen for Rike events.
-             *
-             * Use [provideEventSource] function to register event sources.
-             */
-            RikeEventSource = (function () {
-                function RikeEventSource() {
-                }
-                return RikeEventSource;
-            }());
-            exports_1("RikeEventSource", RikeEventSource);
-            /**
-             * Basic REST-like resource access event.
-             *
-             * Such events are emitted by [Rike event sources][RikeEventsSource].
-             */
-            RikeEvent = (function () {
-                function RikeEvent() {
-                }
-                Object.defineProperty(RikeEvent.prototype, "target", {
-                    /**
-                     * Operation target.
-                     */
-                    get: function () {
-                        return this.operation.target;
-                    },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(RikeEvent.prototype, "cancel", {
-                    /**
-                     * Whether this is an operation cancel.
-                     *
-                     * @return {boolean} `true` if operation cancelled, or `false` otherwise.
-                     */
-                    get: function () {
-                        return false;
-                    },
-                    enumerable: true,
-                    configurable: true
-                });
-                return RikeEvent;
-            }());
-            exports_1("RikeEvent", RikeEvent);
-            /**
-             * An event emitted when operation on a REST-like resource is started.
-             */
-            RikeOperationEvent = (function (_super) {
-                __extends(RikeOperationEvent, _super);
-                function RikeOperationEvent(_operation) {
-                    _super.call(this);
-                    this._operation = _operation;
-                }
-                Object.defineProperty(RikeOperationEvent.prototype, "operation", {
-                    get: function () {
-                        return this._operation;
-                    },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(RikeOperationEvent.prototype, "complete", {
-                    get: function () {
-                        return false;
-                    },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(RikeOperationEvent.prototype, "error", {
-                    get: function () {
-                        return undefined;
-                    },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(RikeOperationEvent.prototype, "cancelledBy", {
-                    get: function () {
-                        return undefined;
-                    },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(RikeOperationEvent.prototype, "result", {
-                    get: function () {
-                        return undefined;
-                    },
-                    enumerable: true,
-                    configurable: true
-                });
-                return RikeOperationEvent;
-            }(RikeEvent));
-            exports_1("RikeOperationEvent", RikeOperationEvent);
-            /**
-             * An event emitted when operation on a REST-like resource is successfully completed.
-             */
-            RikeSuccessEvent = (function (_super) {
-                __extends(RikeSuccessEvent, _super);
-                function RikeSuccessEvent(_operation, _result) {
-                    _super.call(this);
-                    this._operation = _operation;
-                    this._result = _result;
-                }
-                Object.defineProperty(RikeSuccessEvent.prototype, "operation", {
-                    get: function () {
-                        return this._operation;
-                    },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(RikeSuccessEvent.prototype, "complete", {
-                    get: function () {
-                        return true;
-                    },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(RikeSuccessEvent.prototype, "error", {
-                    get: function () {
-                        return undefined;
-                    },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(RikeSuccessEvent.prototype, "cancelledBy", {
-                    get: function () {
-                        return undefined;
-                    },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(RikeSuccessEvent.prototype, "result", {
-                    get: function () {
-                        return this._result;
-                    },
-                    enumerable: true,
-                    configurable: true
-                });
-                return RikeSuccessEvent;
-            }(RikeEvent));
-            exports_1("RikeSuccessEvent", RikeSuccessEvent);
-            /**
-             * An event emitted when operation on a REST-like resource is failed.
-             *
-             * An object of this type is also reported as an error when some internal exception occurs.
-             */
-            RikeErrorEvent = (function (_super) {
-                __extends(RikeErrorEvent, _super);
-                function RikeErrorEvent(_operation, _error) {
-                    _super.call(this);
-                    this._operation = _operation;
-                    this._error = _error;
-                }
-                Object.defineProperty(RikeErrorEvent.prototype, "operation", {
-                    get: function () {
-                        return this._operation;
-                    },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(RikeErrorEvent.prototype, "complete", {
-                    get: function () {
-                        return true;
-                    },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(RikeErrorEvent.prototype, "error", {
-                    get: function () {
-                        return this._error;
-                    },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(RikeErrorEvent.prototype, "cancelledBy", {
-                    get: function () {
-                        return undefined;
-                    },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(RikeErrorEvent.prototype, "result", {
-                    get: function () {
-                        return undefined;
-                    },
-                    enumerable: true,
-                    configurable: true
-                });
-                return RikeErrorEvent;
-            }(RikeEvent));
-            exports_1("RikeErrorEvent", RikeErrorEvent);
-            /**
-             * An event emitted when operation on a REST-like resource is cancelled.
-             */
-            RikeCancelEvent = (function (_super) {
-                __extends(RikeCancelEvent, _super);
-                function RikeCancelEvent(operation, _cancelledBy) {
-                    _super.call(this, operation, _cancelledBy || "cancel");
-                    this._cancelledBy = _cancelledBy;
-                }
-                Object.defineProperty(RikeCancelEvent.prototype, "error", {
-                    get: function () {
-                        return this.cancelledBy;
-                    },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(RikeCancelEvent.prototype, "cancel", {
-                    get: function () {
-                        return true;
-                    },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(RikeCancelEvent.prototype, "cancelledBy", {
-                    get: function () {
-                        return this._cancelledBy;
-                    },
-                    enumerable: true,
-                    configurable: true
-                });
-                return RikeCancelEvent;
-            }(RikeErrorEvent));
-            exports_1("RikeCancelEvent", RikeCancelEvent);
-        }
-    }
-});
-System.register("ng2-rike/protocol", ["@angular/http"], function(exports_2, context_2) {
-    "use strict";
-    var __moduleName = context_2 && context_2.id;
     var http_1;
     var Protocol, CustomProtocolAddon, CustomProtocolMod, CustomProtocol, JsonProtocol, JSON_PROTOCOL, jsonProtocol, HttpProtocol, HTTP_PROTOCOL;
     return {
@@ -294,9 +60,9 @@ System.register("ng2-rike/protocol", ["@angular/http"], function(exports_2, cont
                 /**
                  * Handles HTTP error.
                  *
-                 * Does not modify error object by default.
+                 * Does not modify error response by default.
                  *
-                 * @param error error to handle.
+                 * @param error error response to handle.
                  *
                  * @returns error processing result.
                  */
@@ -329,7 +95,7 @@ System.register("ng2-rike/protocol", ["@angular/http"], function(exports_2, cont
                 };
                 return Protocol;
             }());
-            exports_2("Protocol", Protocol);
+            exports_1("Protocol", Protocol);
             CustomProtocolAddon = (function () {
                 function CustomProtocolAddon(_protocol, _prior) {
                     this._protocol = _protocol;
@@ -436,13 +202,13 @@ System.register("ng2-rike/protocol", ["@angular/http"], function(exports_2, cont
              *
              * @type {Protocol<any>}
              */
-            exports_2("JSON_PROTOCOL", JSON_PROTOCOL = new JsonProtocol());
+            exports_1("JSON_PROTOCOL", JSON_PROTOCOL = new JsonProtocol());
             /**
              * Returns JSON protocol.
              *
              * Sends and receives the data of the given type as JSON over HTTP.
              */
-            exports_2("jsonProtocol", jsonProtocol = function () { return JSON_PROTOCOL; });
+            exports_1("jsonProtocol", jsonProtocol = function () { return JSON_PROTOCOL; });
             HttpProtocol = (function (_super) {
                 __extends(HttpProtocol, _super);
                 function HttpProtocol() {
@@ -463,7 +229,302 @@ System.register("ng2-rike/protocol", ["@angular/http"], function(exports_2, cont
              *
              * @type {Protocol<any, Response>}
              */
-            exports_2("HTTP_PROTOCOL", HTTP_PROTOCOL = new HttpProtocol());
+            exports_1("HTTP_PROTOCOL", HTTP_PROTOCOL = new HttpProtocol());
+        }
+    }
+});
+System.register("ng2-rike/event", [], function(exports_2, context_2) {
+    "use strict";
+    var __moduleName = context_2 && context_2.id;
+    var RikeEventSource, RikeEvent, RikeOperationEvent, RikeSuccessEvent, RikeErrorEvent, RikeExceptionEvent, RikeErrorResponseEvent, RikeCancelEvent;
+    return {
+        setters:[],
+        execute: function() {
+            /**
+             * REST-like resource access event emitter.
+             *
+             * Multiple instances of this class could be injected into controller or service to listen for Rike events.
+             *
+             * Use [provideEventSource] function to register event sources.
+             */
+            RikeEventSource = (function () {
+                function RikeEventSource() {
+                }
+                return RikeEventSource;
+            }());
+            exports_2("RikeEventSource", RikeEventSource);
+            /**
+             * Basic REST-like resource access event.
+             *
+             * Such events are emitted by [Rike event sources][RikeEventsSource].
+             */
+            RikeEvent = (function () {
+                function RikeEvent() {
+                }
+                Object.defineProperty(RikeEvent.prototype, "target", {
+                    /**
+                     * Operation target.
+                     */
+                    get: function () {
+                        return this.operation.target;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                Object.defineProperty(RikeEvent.prototype, "cancel", {
+                    /**
+                     * Whether this is an operation cancel.
+                     *
+                     * @return {boolean} `true` if operation cancelled, or `false` otherwise.
+                     */
+                    get: function () {
+                        return false;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                return RikeEvent;
+            }());
+            exports_2("RikeEvent", RikeEvent);
+            /**
+             * An event emitted when operation on a REST-like resource is started.
+             */
+            RikeOperationEvent = (function (_super) {
+                __extends(RikeOperationEvent, _super);
+                function RikeOperationEvent(_operation) {
+                    _super.call(this);
+                    this._operation = _operation;
+                }
+                Object.defineProperty(RikeOperationEvent.prototype, "operation", {
+                    get: function () {
+                        return this._operation;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                Object.defineProperty(RikeOperationEvent.prototype, "complete", {
+                    get: function () {
+                        return false;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                Object.defineProperty(RikeOperationEvent.prototype, "error", {
+                    get: function () {
+                        return undefined;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                Object.defineProperty(RikeOperationEvent.prototype, "errorResponse", {
+                    get: function () {
+                        return undefined;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                Object.defineProperty(RikeOperationEvent.prototype, "cancelledBy", {
+                    get: function () {
+                        return undefined;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                Object.defineProperty(RikeOperationEvent.prototype, "result", {
+                    get: function () {
+                        return undefined;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                return RikeOperationEvent;
+            }(RikeEvent));
+            exports_2("RikeOperationEvent", RikeOperationEvent);
+            /**
+             * An event emitted when operation on a REST-like resource is successfully completed.
+             */
+            RikeSuccessEvent = (function (_super) {
+                __extends(RikeSuccessEvent, _super);
+                function RikeSuccessEvent(_operation, _result) {
+                    _super.call(this);
+                    this._operation = _operation;
+                    this._result = _result;
+                }
+                Object.defineProperty(RikeSuccessEvent.prototype, "operation", {
+                    get: function () {
+                        return this._operation;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                Object.defineProperty(RikeSuccessEvent.prototype, "complete", {
+                    get: function () {
+                        return true;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                Object.defineProperty(RikeSuccessEvent.prototype, "error", {
+                    get: function () {
+                        return undefined;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                Object.defineProperty(RikeSuccessEvent.prototype, "errorResponse", {
+                    get: function () {
+                        return undefined;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                Object.defineProperty(RikeSuccessEvent.prototype, "cancelledBy", {
+                    get: function () {
+                        return undefined;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                Object.defineProperty(RikeSuccessEvent.prototype, "result", {
+                    get: function () {
+                        return this._result;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                return RikeSuccessEvent;
+            }(RikeEvent));
+            exports_2("RikeSuccessEvent", RikeSuccessEvent);
+            /**
+             * An event emitted when operation on a REST-like resource is failed.
+             *
+             * An object of this type is also reported as an error when some internal exception occurs.
+             */
+            RikeErrorEvent = (function (_super) {
+                __extends(RikeErrorEvent, _super);
+                function RikeErrorEvent(_operation, _error) {
+                    _super.call(this);
+                    this._operation = _operation;
+                    this._error = _error;
+                }
+                Object.defineProperty(RikeErrorEvent.prototype, "operation", {
+                    get: function () {
+                        return this._operation;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                Object.defineProperty(RikeErrorEvent.prototype, "complete", {
+                    get: function () {
+                        return true;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                Object.defineProperty(RikeErrorEvent.prototype, "error", {
+                    get: function () {
+                        return this._error;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                Object.defineProperty(RikeErrorEvent.prototype, "errorResponse", {
+                    get: function () {
+                        return undefined;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                Object.defineProperty(RikeErrorEvent.prototype, "cancelledBy", {
+                    get: function () {
+                        return undefined;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                Object.defineProperty(RikeErrorEvent.prototype, "result", {
+                    get: function () {
+                        return undefined;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                return RikeErrorEvent;
+            }(RikeEvent));
+            exports_2("RikeErrorEvent", RikeErrorEvent);
+            /**
+             * An event emitted when operation on a REST-like resource caused an exception.
+             *
+             * An object of this type is reported as an error.
+             */
+            RikeExceptionEvent = (function (_super) {
+                __extends(RikeExceptionEvent, _super);
+                function RikeExceptionEvent(operation, error, _errorResponse) {
+                    _super.call(this, operation, error);
+                    this._errorResponse = _errorResponse;
+                }
+                Object.defineProperty(RikeExceptionEvent.prototype, "errorResponse", {
+                    get: function () {
+                        return this._errorResponse;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                return RikeExceptionEvent;
+            }(RikeErrorEvent));
+            exports_2("RikeExceptionEvent", RikeExceptionEvent);
+            /**
+             * An event emitted when operation on a REST-like resource returned error.
+             */
+            RikeErrorResponseEvent = (function (_super) {
+                __extends(RikeErrorResponseEvent, _super);
+                function RikeErrorResponseEvent(operation, _errorResponse) {
+                    _super.call(this, operation, _errorResponse.error || _errorResponse);
+                    this._errorResponse = _errorResponse;
+                }
+                Object.defineProperty(RikeErrorResponseEvent.prototype, "errorResponse", {
+                    get: function () {
+                        return this._errorResponse;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                return RikeErrorResponseEvent;
+            }(RikeErrorEvent));
+            exports_2("RikeErrorResponseEvent", RikeErrorResponseEvent);
+            /**
+             * An event emitted when operation on a REST-like resource is cancelled.
+             */
+            RikeCancelEvent = (function (_super) {
+                __extends(RikeCancelEvent, _super);
+                function RikeCancelEvent(operation, _cancelledBy) {
+                    _super.call(this, operation, _cancelledBy || "cancel");
+                    this._cancelledBy = _cancelledBy;
+                }
+                Object.defineProperty(RikeCancelEvent.prototype, "error", {
+                    get: function () {
+                        return this.cancelledBy;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                Object.defineProperty(RikeCancelEvent.prototype, "cancel", {
+                    get: function () {
+                        return true;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                Object.defineProperty(RikeCancelEvent.prototype, "cancelledBy", {
+                    get: function () {
+                        return this._cancelledBy;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                return RikeCancelEvent;
+            }(RikeErrorEvent));
+            exports_2("RikeCancelEvent", RikeCancelEvent);
         }
     }
 });
@@ -815,6 +876,23 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
         throw new Error("Unsupported HTTP request method: " + method);
     }
     exports_5("requestMethod", requestMethod);
+    function toErrorResponse(error) {
+        if (error instanceof http_2.Response) {
+            return { response: error };
+        }
+        return syntheticResponse(error);
+    }
+    function syntheticResponse(error) {
+        var statusText = error != null ? error.toString() : null;
+        return {
+            response: new http_2.Response(new http_2.ResponseOptions({
+                type: http_2.ResponseType.Error,
+                status: 500,
+                statusText: statusText || "Unknown error"
+            })),
+            error: error,
+        };
+    }
     return {
         setters:[
             function (core_2_1) {
@@ -1005,12 +1083,9 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                  * @returns {Observable<Response>} response observer wrapper.
                  */
                 Rike.prototype.handleErrors = function (response) {
-                    var handleError = this.defaultProtocol.handleError;
-                    if (!handleError) {
-                        return response;
-                    }
+                    var _this = this;
                     return new Rx_1.Observable(function (responseObserver) {
-                        response.subscribe(function (httpResponse) { return responseObserver.next(httpResponse); }, function (error) { return responseObserver.error(handleError(error)); }, function () { return responseObserver.complete(); });
+                        response.subscribe(function (httpResponse) { return responseObserver.next(httpResponse); }, function (error) { return responseObserver.error(_this.defaultProtocol.handleError(toErrorResponse(error))); }, function () { return responseObserver.complete(); });
                     });
                 };
                 Rike = __decorate([
@@ -1177,7 +1252,7 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                                 this._rikeEvents.error(cancel);
                             }
                             catch (e) {
-                                this._rikeEvents.error(new event_2.RikeErrorEvent(this._operation.operation, e));
+                                this._rikeEvents.error(new event_2.RikeExceptionEvent(this._operation.operation, e));
                                 throw e;
                             }
                             finally {
@@ -1231,16 +1306,22 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                                 _this._rikeEvents.emit(new event_2.RikeSuccessEvent(operation, response_1));
                             }
                             catch (e) {
-                                _this._rikeEvents.error(new event_2.RikeErrorEvent(operation, e));
+                                _this._rikeEvents.error(new event_2.RikeExceptionEvent(operation, e, {
+                                    response: httpResponse,
+                                    error: e
+                                }));
                             }
                         }, function (error) {
                             console.error("[" + _this.target + "] " + operation.name + " failed", error);
+                            var errorResponse = toErrorResponse(error);
                             try {
-                                responseObserver.error(error);
-                                _this._rikeEvents.emit(new event_2.RikeErrorEvent(operation, error));
+                                errorResponse = operation.protocol.handleError(errorResponse);
+                                responseObserver.error(errorResponse);
+                                _this._rikeEvents.emit(new event_2.RikeErrorResponseEvent(operation, errorResponse));
                             }
                             catch (e) {
-                                _this._rikeEvents.error(new event_2.RikeErrorEvent(operation, e));
+                                errorResponse.error = e;
+                                _this._rikeEvents.error(new event_2.RikeExceptionEvent(operation, e, errorResponse));
                             }
                             finally {
                                 cleanup();
@@ -1250,7 +1331,7 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                                 responseObserver.complete();
                             }
                             catch (e) {
-                                _this._rikeEvents.error(new event_2.RikeErrorEvent(operation, e));
+                                _this._rikeEvents.error(new event_2.RikeExceptionEvent(operation, e));
                             }
                             finally {
                                 cleanup();
@@ -1327,7 +1408,7 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                         return this.wrapResponse(this.internals.request(this.requestUrl(options), options));
                     }
                     catch (e) {
-                        this.target.rikeEvents.error(new event_2.RikeErrorEvent(this, e));
+                        this.target.rikeEvents.error(new event_2.RikeExceptionEvent(this, e));
                         throw e;
                     }
                 };
@@ -1338,7 +1419,7 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                         return this.wrapResponse(this.internals.request(this.requestUrl(options), options));
                     }
                     catch (e) {
-                        this.target.rikeEvents.error(new event_2.RikeErrorEvent(this, e));
+                        this.target.rikeEvents.error(new event_2.RikeExceptionEvent(this, e));
                         throw e;
                     }
                 };
@@ -1349,7 +1430,7 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                         return this.wrapResponse(this.internals.get(this.requestUrl(options), options));
                     }
                     catch (e) {
-                        this.target.rikeEvents.error(new event_2.RikeErrorEvent(this, e));
+                        this.target.rikeEvents.error(new event_2.RikeExceptionEvent(this, e));
                         throw e;
                     }
                 };
@@ -1360,7 +1441,7 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                         return this.wrapResponse(this.internals.post(this.requestUrl(options), options.body, options));
                     }
                     catch (e) {
-                        this.target.rikeEvents.error(new event_2.RikeErrorEvent(this, e));
+                        this.target.rikeEvents.error(new event_2.RikeExceptionEvent(this, e));
                         throw e;
                     }
                 };
@@ -1371,7 +1452,7 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                         return this.wrapResponse(this.internals.put(this.requestUrl(options), options.body, options));
                     }
                     catch (e) {
-                        this.target.rikeEvents.error(new event_2.RikeErrorEvent(this, e));
+                        this.target.rikeEvents.error(new event_2.RikeExceptionEvent(this, e));
                         throw e;
                     }
                 };
@@ -1383,7 +1464,7 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                         return this.wrapResponse(this.internals.delete(this.requestUrl(options), options));
                     }
                     catch (e) {
-                        this.target.rikeEvents.error(new event_2.RikeErrorEvent(this, e));
+                        this.target.rikeEvents.error(new event_2.RikeExceptionEvent(this, e));
                         throw e;
                     }
                 };
@@ -1394,7 +1475,7 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                         return this.wrapResponse(this.internals.patch(this.requestUrl(options), options.body, options));
                     }
                     catch (e) {
-                        this.target.rikeEvents.error(new event_2.RikeErrorEvent(this, e));
+                        this.target.rikeEvents.error(new event_2.RikeExceptionEvent(this, e));
                         throw e;
                     }
                 };
@@ -1405,7 +1486,7 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                         return this.wrapResponse(this.internals.head(this.requestUrl(options), options));
                     }
                     catch (e) {
-                        this.target.rikeEvents.error(new event_2.RikeErrorEvent(this, e));
+                        this.target.rikeEvents.error(new event_2.RikeExceptionEvent(this, e));
                         throw e;
                     }
                 };
@@ -1574,80 +1655,55 @@ System.register("ng2-rike/status.component", ["@angular/core", "ng2-rike/status-
         }
     }
 });
-System.register("ng2-rike/error", ["@angular/http"], function(exports_7, context_7) {
+System.register("ng2-rike/field-error", ["ng2-rike/protocol"], function(exports_7, context_7) {
     "use strict";
     var __moduleName = context_7 && context_7.id;
-    var http_3;
-    var ErrorResponse;
+    var protocol_2;
+    var _Protocol_import;
     /**
-     * Converts any object to `ErrorResponse`.
+     * Appends field errors to {{ErrorResponse}}.
      *
-     * If the `error` object is already of type `ErrorResponse` then just returns it.
+     * If field errors already present in `ErrorResponse` then does nothing.
      *
-     * This function can be used as a [error handler][Protocol.handleError] to convert HTTP responses.
+     * This function can be used as {{Protocol}} error handler error handler.
      *
      * @param error object to convert.
      *
-     * @return {ErrorResponse} constructed error response.
+     * @return {FieldErrorResponse} constructed error httpResponse.
      */
-    function toErrorResponse(error) {
-        if (error instanceof ErrorResponse) {
-            // Error is already of the desired type.
-            return error;
+    function addFieldErrors(error) {
+        var response = error;
+        if (response.fieldErrors) {
+            // Field errors already present.
+            return response;
         }
-        if (error instanceof http_3.Response) {
-            var response = error;
-            var body = undefined;
-            // Attempt to parse JSON body
-            if (response.headers.get("Content-Type") === "application/json") {
-                try {
-                    body = response.json();
-                }
-                catch (e) {
-                    console.log("Failed to parse JSON error response", e);
-                }
+        var httpResponse = error.response;
+        var body = undefined;
+        // Attempt to parse JSON body
+        if (httpResponse.headers.get("Content-Type") === "application/json") {
+            try {
+                body = httpResponse.json();
             }
-            var fieldErrors_1 = toFieldErrors(body);
-            if (fieldErrors_1) {
-                return new ErrorResponse({
-                    response: response,
-                    errors: fieldErrors_1,
-                });
+            catch (e) {
+                console.log("Failed to parse JSON error response", e);
             }
-            return defaultErrorResponse(response);
         }
-        // Error has `ErrorResponseOpts` interface?
-        var errorOpts = error;
-        if (errorOpts.response instanceof http_3.Response && errorOpts.errors instanceof Array) {
-            return new ErrorResponse(errorOpts);
-        }
-        var fieldErrors = toFieldErrors(error);
+        var fieldErrors = toFieldErrors(body);
         if (fieldErrors) {
-            return new ErrorResponse({
-                response: syntheticResponse(null),
-                errors: fieldErrors,
-            });
+            response.fieldErrors = fieldErrors;
+            return response;
         }
-        return defaultErrorResponse(syntheticResponse(error));
+        return defaultFieldErrors(response);
     }
-    exports_7("toErrorResponse", toErrorResponse);
-    function syntheticResponse(error) {
-        var statusText = error != null ? error.toString() : null;
-        return new http_3.Response(new http_3.ResponseOptions({
-            type: http_3.ResponseType.Error,
-            status: 500,
-            statusText: statusText || "Unknown error"
-        }));
-    }
-    function defaultErrorResponse(response) {
-        var message = "ERROR " + response.status;
-        if (response.statusText && response.statusText.toLowerCase() != "ok") {
-            message += ": " + response.statusText;
+    exports_7("addFieldErrors", addFieldErrors);
+    function defaultFieldErrors(response) {
+        var httpResponse = response.response;
+        var message = "ERROR " + httpResponse.status;
+        if (httpResponse.statusText && httpResponse.statusText.toLowerCase() != "ok") {
+            message += ": " + httpResponse.statusText;
         }
-        return new ErrorResponse({
-            response: response,
-            errors: { "*": [{ code: "HTTP" + response.status, message: message }] },
-        });
+        response.fieldErrors = { "*": [{ code: "HTTP" + httpResponse.status, message: message }] };
+        return response;
     }
     function toFieldErrors(data) {
         if (data == null) {
@@ -1705,30 +1761,19 @@ System.register("ng2-rike/error", ["@angular/http"], function(exports_7, context
     }
     return {
         setters:[
-            function (http_3_1) {
-                http_3 = http_3_1;
+            function (protocol_2_1) {
+                protocol_2 = protocol_2_1;
             }],
         execute: function() {
-            /**
-             * Error response.
-             *
-             * Any object can be converted to `ErrorResponse` with `toErrorResponse()` function.
-             */
-            ErrorResponse = (function () {
-                function ErrorResponse(opts) {
-                    this.response = opts.response;
-                    this.errors = opts.errors;
-                }
-                return ErrorResponse;
-            }());
-            exports_7("ErrorResponse", ErrorResponse);
+            //noinspection JSUnusedLocalSymbols
+            _Protocol_import = protocol_2.Protocol;
         }
     }
 });
-System.register("ng2-rike/error-collector", ["@angular/core", "ng2-rike/error", "ng2-rike/event"], function(exports_8, context_8) {
+System.register("ng2-rike/error-collector", ["@angular/core", "ng2-rike/field-error", "ng2-rike/event"], function(exports_8, context_8) {
     "use strict";
     var __moduleName = context_8 && context_8.id;
-    var core_4, error_1, event_3;
+    var core_4, field_error_1, event_3;
     var ErrorCollector, FieldEmitter, ErrorSubscr, TargetErrors;
     function appendErrorsTo(field, fieldErrors, errors) {
         if (!errors || !errors.length) {
@@ -1747,8 +1792,8 @@ System.register("ng2-rike/error-collector", ["@angular/core", "ng2-rike/error", 
             function (core_4_1) {
                 core_4 = core_4_1;
             },
-            function (error_1_1) {
-                error_1 = error_1_1;
+            function (field_error_1_1) {
+                field_error_1 = field_error_1_1;
             },
             function (event_3_1) {
                 event_3 = event_3_1;
@@ -1757,9 +1802,9 @@ System.register("ng2-rike/error-collector", ["@angular/core", "ng2-rike/error", 
             /**
              * An error collecting service.
              *
-             * It collects errors from all available [Rike event sources][RikeEventSource]. It uses `toFieldErrors()` method
-             * to build a `FieldErrors` instance to obtain errors from. Then it notifies all subscribers on when errors received or
-             * removed.
+             * It collects errors from all available [Rike event sources][RikeEventSource]. It uses `fieldErrors()` method
+             * to obtain a `FieldErrors` instance from {{RikeErrorEvent}}. Then it notifies all subscribers on when errors received
+             * or removed.
              *
              * This service is registered automatically along with every event source by [provideEventSource] method.
              * But unlike event sources it is not a multi-provider.
@@ -1816,16 +1861,24 @@ System.register("ng2-rike/error-collector", ["@angular/core", "ng2-rike/error", 
                 };
                 //noinspection JSMethodCanBeStatic
                 /**
-                 * Converts arbitrary error to `FieldErrors`.
+                 * Converts error to `FieldErrors`.
                  *
-                 * This method uses [toErrorResponse] function by default. Override it if you are using custom error handler.
+                 * This method uses `addFieldErrors` function by default. Override it if you are using custom error handler.
                  *
                  * @param error arbitrary error passed in [RikeEvent.error] field.
                  *
                  * @return {FieldErrors} field errors.
                  */
-                ErrorCollector.prototype.toFieldErrors = function (error) {
-                    return error_1.toErrorResponse(error).errors;
+                ErrorCollector.prototype.fieldErrors = function (error) {
+                    var errorResponse = error.errorResponse;
+                    if (errorResponse) {
+                        return field_error_1.addFieldErrors(errorResponse).fieldErrors;
+                    }
+                    return {
+                        "*": [
+                            { message: error.error.toString() }
+                        ]
+                    };
                 };
                 ErrorCollector.prototype.fieldEmitter = function (field) {
                     return this._emitters[field] || (this._emitters[field] = new FieldEmitter(field, this._emitters, this._targetErrors));
@@ -1844,12 +1897,12 @@ System.register("ng2-rike/error-collector", ["@angular/core", "ng2-rike/error", 
                 };
                 ErrorCollector.prototype.handleEvent = function (event) {
                     var affectedFields;
-                    var error = event.error;
-                    if (!error) {
+                    if (!event.error) {
                         affectedFields = this.clearTargetErrors(event.target);
                     }
                     else {
-                        affectedFields = this.targetErrors(event.target).addAll(this.toFieldErrors(error));
+                        affectedFields = this.targetErrors(event.target)
+                            .addAll(this.fieldErrors(event));
                     }
                     for (var field in affectedFields) {
                         if (affectedFields.hasOwnProperty(field)) {
@@ -2170,15 +2223,15 @@ System.register("ng2-rike/event-source-provider", ["ng2-rike/event", "ng2-rike/s
 System.register("ng2-rike/resource", ["@angular/http", "ng2-rike/protocol", "ng2-rike/options"], function(exports_11, context_11) {
     "use strict";
     var __moduleName = context_11 && context_11.id;
-    var http_4, protocol_2, options_2;
+    var http_3, protocol_3, options_2;
     var Resource, RikeResource, CRUDResource;
     return {
         setters:[
-            function (http_4_1) {
-                http_4 = http_4_1;
+            function (http_3_1) {
+                http_3 = http_3_1;
             },
-            function (protocol_2_1) {
-                protocol_2 = protocol_2_1;
+            function (protocol_3_1) {
+                protocol_3 = protocol_3_1;
             },
             function (options_2_1) {
                 options_2 = options_2_1;
@@ -2212,7 +2265,7 @@ System.register("ng2-rike/resource", ["@angular/http", "ng2-rike/protocol", "ng2
                     return this._rikeTarget || (this._rikeTarget = this.createRikeTarget());
                 };
                 RikeResource.prototype.createRikeTarget = function () {
-                    return this.rike.target(this, protocol_2.JSON_PROTOCOL);
+                    return this.rike.target(this, protocol_3.JSON_PROTOCOL);
                 };
                 return RikeResource;
             }());
@@ -2246,14 +2299,14 @@ System.register("ng2-rike/resource", ["@angular/http", "ng2-rike/protocol", "ng2
                     return this.rikeTarget.operation("delete", this.objectDeleteProtocol(object)).delete();
                 };
                 CRUDResource.prototype.createRikeTarget = function () {
-                    return this.rike.target(this, protocol_2.jsonProtocol());
+                    return this.rike.target(this, protocol_3.jsonProtocol());
                 };
                 CRUDResource.prototype.objectCreateProtocol = function (object) {
                     return this.rikeTarget.protocol.instead().readResponse(function (response) { return object; });
                 };
                 CRUDResource.prototype.objectReadProtocol = function (id) {
                     var _this = this;
-                    return this.rikeTarget.protocol.prior().prepareRequest(function (options) { return new http_4.RequestOptions(options).merge({
+                    return this.rikeTarget.protocol.prior().prepareRequest(function (options) { return new http_3.RequestOptions(options).merge({
                         url: _this.objectUrl(options.url, id)
                     }); });
                 };
@@ -2261,7 +2314,7 @@ System.register("ng2-rike/resource", ["@angular/http", "ng2-rike/protocol", "ng2
                     var _this = this;
                     return this.rikeTarget.protocol
                         .prior()
-                        .updateRequest(function (object, options) { return new http_4.RequestOptions(options).merge({
+                        .updateRequest(function (object, options) { return new http_3.RequestOptions(options).merge({
                         url: _this.objectUrl(options.url, _this.objectId(object))
                     }); })
                         .instead()
@@ -2271,7 +2324,7 @@ System.register("ng2-rike/resource", ["@angular/http", "ng2-rike/protocol", "ng2
                     var _this = this;
                     return this.rikeTarget.protocol
                         .prior()
-                        .updateRequest(function (object, options) { return new http_4.RequestOptions(options).merge({
+                        .updateRequest(function (object, options) { return new http_3.RequestOptions(options).merge({
                         url: _this.objectUrl(options.url, _this.objectId(object))
                     }); })
                         .instead()
@@ -2322,7 +2375,7 @@ System.register("ng2-rike/resource-provider", ["ng2-rike/resource", "ng2-rike/ev
         }
     }
 });
-System.register("ng2-rike", ["@angular/core", "ng2-rike/rike", "ng2-rike/status.component", "ng2-rike/errors.component", "ng2-rike/event-source-provider", "ng2-rike/error", "ng2-rike/error-collector", "ng2-rike/event", "ng2-rike/options", "ng2-rike/protocol", "ng2-rike/resource", "ng2-rike/resource-provider", "ng2-rike/status-collector"], function(exports_13, context_13) {
+System.register("ng2-rike", ["@angular/core", "ng2-rike/rike", "ng2-rike/status.component", "ng2-rike/errors.component", "ng2-rike/event-source-provider", "ng2-rike/error-collector", "ng2-rike/event", "ng2-rike/field-error", "ng2-rike/options", "ng2-rike/protocol", "ng2-rike/resource", "ng2-rike/resource-provider", "ng2-rike/status-collector"], function(exports_13, context_13) {
     "use strict";
     var __moduleName = context_13 && context_13.id;
     var core_6, rike_1, status_component_1, errors_component_1, event_source_provider_2;
@@ -2358,20 +2411,20 @@ System.register("ng2-rike", ["@angular/core", "ng2-rike/rike", "ng2-rike/status.
                 event_source_provider_2 = event_source_provider_2_1;
                 exportStar_1(event_source_provider_2_1);
             },
-            function (error_2_1) {
-                exportStar_1(error_2_1);
-            },
             function (error_collector_3_1) {
                 exportStar_1(error_collector_3_1);
             },
             function (event_5_1) {
                 exportStar_1(event_5_1);
             },
+            function (field_error_2_1) {
+                exportStar_1(field_error_2_1);
+            },
             function (options_3_1) {
                 exportStar_1(options_3_1);
             },
-            function (protocol_3_1) {
-                exportStar_1(protocol_3_1);
+            function (protocol_4_1) {
+                exportStar_1(protocol_4_1);
             },
             function (resource_2_1) {
                 exportStar_1(resource_2_1);
@@ -2450,15 +2503,15 @@ System.register("ng2-rike/options.spec", ["ng2-rike/options"], function(exports_
 System.register("ng2-rike/protocol.spec", ["@angular/http", "ng2-rike/protocol"], function(exports_15, context_15) {
     "use strict";
     var __moduleName = context_15 && context_15.id;
-    var http_5, protocol_4;
+    var http_4, protocol_5;
     var TestProtocol;
     return {
         setters:[
-            function (http_5_1) {
-                http_5 = http_5_1;
+            function (http_4_1) {
+                http_4 = http_4_1;
             },
-            function (protocol_4_1) {
-                protocol_4 = protocol_4_1;
+            function (protocol_5_1) {
+                protocol_5 = protocol_5_1;
             }],
         execute: function() {
             TestProtocol = (function (_super) {
@@ -2467,11 +2520,11 @@ System.register("ng2-rike/protocol.spec", ["@angular/http", "ng2-rike/protocol"]
                     _super.call(this);
                 }
                 TestProtocol.prototype.prepareRequest = function (options) {
-                    return new http_5.RequestOptions(options).merge({ url: "/request", search: "prepared=true" });
+                    return new http_4.RequestOptions(options).merge({ url: "/request", search: "prepared=true" });
                 };
                 TestProtocol.prototype.writeRequest = function (request, options) {
                     request.written = "written1";
-                    return new http_5.RequestOptions(options).merge({ body: request });
+                    return new http_4.RequestOptions(options).merge({ body: request });
                 };
                 TestProtocol.prototype.readResponse = function (response) {
                     return {
@@ -2479,24 +2532,24 @@ System.register("ng2-rike/protocol.spec", ["@angular/http", "ng2-rike/protocol"]
                     };
                 };
                 return TestProtocol;
-            }(protocol_4.Protocol));
+            }(protocol_5.Protocol));
             describe("Protocol", function () {
                 var protocol = new TestProtocol();
                 it("prepares request before", function () {
-                    var proto = protocol.prior().prepareRequest(function (opts) { return new http_5.RequestOptions(opts).merge({ search: "updated=true" }); });
+                    var proto = protocol.prior().prepareRequest(function (opts) { return new http_4.RequestOptions(opts).merge({ search: "updated=true" }); });
                     var opts = proto.prepareRequest({});
                     expect(opts.url).toBe("/request");
                     expect(opts.search && opts.search.toString()).toEqual("prepared=true");
                 });
                 it("prepares request after", function () {
-                    var proto = protocol.then().prepareRequest(function (opts) { return new http_5.RequestOptions(opts).merge({ search: "updated=true" }); });
+                    var proto = protocol.then().prepareRequest(function (opts) { return new http_4.RequestOptions(opts).merge({ search: "updated=true" }); });
                     var opts = proto.prepareRequest({});
                     expect(opts.url).toBe("/request");
                     expect(opts.search && opts.search.toString()).toEqual("updated=true");
                 });
                 it("writes request", function () {
                     var proto = protocol.instead().writeRequest(function (request, opts) {
-                        return new http_5.RequestOptions(opts).merge({ body: request.request2 });
+                        return new http_4.RequestOptions(opts).merge({ body: request.request2 });
                     });
                     var opts = proto.writeRequest({ request2: "request2" }, {});
                     expect(opts.body).toBe("request2");
@@ -2505,7 +2558,7 @@ System.register("ng2-rike/protocol.spec", ["@angular/http", "ng2-rike/protocol"]
                     var proto = protocol.prior().updateRequest(function (request, opts) {
                         request.update = "update1";
                         request.written = "rewritten1";
-                        return new http_5.RequestOptions(opts).merge({ body: request });
+                        return new http_4.RequestOptions(opts).merge({ body: request });
                     });
                     var opts = proto.writeRequest({ request: "request1" }, {});
                     var body = opts.body;
@@ -2517,7 +2570,7 @@ System.register("ng2-rike/protocol.spec", ["@angular/http", "ng2-rike/protocol"]
                     var proto = protocol.then().updateRequest(function (request, opts) {
                         request.update = "update1";
                         request.written = "rewritten1";
-                        return new http_5.RequestOptions(opts).merge({ body: request });
+                        return new http_4.RequestOptions(opts).merge({ body: request });
                     });
                     var opts = proto.writeRequest({ request: "request1" }, {});
                     var body = opts.body;
@@ -2531,19 +2584,21 @@ System.register("ng2-rike/protocol.spec", ["@angular/http", "ng2-rike/protocol"]
                             response2: "response2"
                         };
                     });
-                    var response = proto.readResponse(new http_5.Response(new http_5.ResponseOptions()));
+                    var response = proto.readResponse(new http_4.Response(new http_4.ResponseOptions()));
                     expect(response.response2).toBe("response2");
                 });
                 it("handles error", function () {
                     var proto = protocol.then().handleError(function (error) {
-                        return { error: error };
+                        var err = error;
+                        err.test = "error1";
+                        return err;
                     });
-                    var error = proto.handleError("abc");
-                    expect(error.error).toBe("abc");
+                    var error = proto.handleError({ response: new http_4.Response(new http_4.ResponseOptions()) });
+                    expect(error.test).toBe("error1");
                 });
             });
             describe("JSON protocol", function () {
-                var protocol = protocol_4.JSON_PROTOCOL;
+                var protocol = protocol_5.JSON_PROTOCOL;
                 it("writes request", function () {
                     var request = { request: "some value", numeric: 13 };
                     var opts = protocol.writeRequest(request, {});
@@ -2557,7 +2612,7 @@ System.register("ng2-rike/protocol.spec", ["@angular/http", "ng2-rike/protocol"]
                         request: "Request1",
                         numeric: 333,
                     };
-                    var read = protocol.readResponse(new http_5.Response(new http_5.ResponseOptions({
+                    var read = protocol.readResponse(new http_4.Response(new http_4.ResponseOptions({
                         body: JSON.stringify(value),
                     })));
                     expect(read.request).toBe(value.request);
@@ -2570,16 +2625,16 @@ System.register("ng2-rike/protocol.spec", ["@angular/http", "ng2-rike/protocol"]
 System.register("ng2-rike/rike.spec", ["@angular/http", "@angular/core/testing", "@angular/http/testing", "ng2-rike", "ng2-rike/rike", "ng2-rike/options", "ng2-rike/protocol"], function(exports_16, context_16) {
     "use strict";
     var __moduleName = context_16 && context_16.id;
-    var http_6, testing_1, testing_2, ng2_rike_1, rike_3, options_5, protocol_5;
+    var http_5, testing_1, testing_2, ng2_rike_1, rike_3, options_5, protocol_6;
     function addRikeProviders() {
         testing_1.addProviders([
-            http_6.HTTP_PROVIDERS,
+            http_5.HTTP_PROVIDERS,
             testing_2.MockBackend,
             {
-                provide: http_6.ConnectionBackend,
+                provide: http_5.ConnectionBackend,
                 useExisting: testing_2.MockBackend
             },
-            http_6.Http,
+            http_5.Http,
             {
                 provide: options_5.RikeOptions,
                 useValue: new options_5.BaseRikeOptions({ baseUrl: "/test-root" })
@@ -2607,8 +2662,8 @@ System.register("ng2-rike/rike.spec", ["@angular/http", "@angular/core/testing",
     exports_16("expectJsonProtocol", expectJsonProtocol);
     return {
         setters:[
-            function (http_6_1) {
-                http_6 = http_6_1;
+            function (http_5_1) {
+                http_5 = http_5_1;
             },
             function (testing_1_1) {
                 testing_1 = testing_1_1;
@@ -2625,8 +2680,8 @@ System.register("ng2-rike/rike.spec", ["@angular/http", "@angular/core/testing",
             function (options_5_1) {
                 options_5 = options_5_1;
             },
-            function (protocol_5_1) {
-                protocol_5 = protocol_5_1;
+            function (protocol_6_1) {
+                protocol_6 = protocol_6_1;
             }],
         execute: function() {
             describe("Rike", function () {
@@ -2645,7 +2700,7 @@ System.register("ng2-rike/rike.spec", ["@angular/http", "@angular/core/testing",
                         back.connections.subscribe(function (connection) {
                             expect(connection.request.method).toBe(method);
                             expect(connection.request.url).toBe("/test-root/request-url");
-                            connection.mockRespond(new http_6.Response(new http_6.ResponseOptions({
+                            connection.mockRespond(new http_5.Response(new http_5.ResponseOptions({
                                 body: "response1",
                             })));
                         });
@@ -2659,16 +2714,16 @@ System.register("ng2-rike/rike.spec", ["@angular/http", "@angular/core/testing",
                         });
                     };
                 }
-                it("processes GET request", loadRequestTest(http_6.RequestMethod.Get, function (rike) { return rike.get; }));
-                it("processes DELETE request", loadRequestTest(http_6.RequestMethod.Delete, function (rike) { return rike.delete; }));
-                it("processes HEAD request", loadRequestTest(http_6.RequestMethod.Head, function (rike) { return rike.head; }));
+                it("processes GET request", loadRequestTest(http_5.RequestMethod.Get, function (rike) { return rike.get; }));
+                it("processes DELETE request", loadRequestTest(http_5.RequestMethod.Delete, function (rike) { return rike.delete; }));
+                it("processes HEAD request", loadRequestTest(http_5.RequestMethod.Head, function (rike) { return rike.head; }));
                 function sendRequestTest(method, read) {
                     return function (done) {
                         back.connections.subscribe(function (connection) {
                             expect(connection.request.method).toBe(method);
                             expect(connection.request.url).toBe("/test-root/send-request-url");
                             expect(connection.request.text()).toBe("request2");
-                            connection.mockRespond(new http_6.Response(new http_6.ResponseOptions({
+                            connection.mockRespond(new http_5.Response(new http_5.ResponseOptions({
                                 body: "response1",
                             })));
                         });
@@ -2678,9 +2733,9 @@ System.register("ng2-rike/rike.spec", ["@angular/http", "@angular/core/testing",
                         });
                     };
                 }
-                it("processes POST request", sendRequestTest(http_6.RequestMethod.Post, function (rike) { return rike.post; }));
-                it("processes PUT request", sendRequestTest(http_6.RequestMethod.Put, function (rike) { return rike.put; }));
-                it("processes PATCH request", sendRequestTest(http_6.RequestMethod.Patch, function (rike) { return rike.patch; }));
+                it("processes POST request", sendRequestTest(http_5.RequestMethod.Post, function (rike) { return rike.post; }));
+                it("processes PUT request", sendRequestTest(http_5.RequestMethod.Put, function (rike) { return rike.put; }));
+                it("processes PATCH request", sendRequestTest(http_5.RequestMethod.Patch, function (rike) { return rike.patch; }));
                 it("processes HTTP error", function (done) {
                     back.connections.subscribe(function (connection) {
                         connection.mockError(new Error("Response error"));
@@ -2688,7 +2743,8 @@ System.register("ng2-rike/rike.spec", ["@angular/http", "@angular/core/testing",
                     rike.get("request-url").subscribe(function () {
                         done.fail("Response received");
                     }, function (error) {
-                        expect(error.message).toBe("Response error");
+                        var err = error.error;
+                        expect(err.message).toBe("Response error");
                         done();
                     });
                 });
@@ -2696,7 +2752,7 @@ System.register("ng2-rike/rike.spec", ["@angular/http", "@angular/core/testing",
                     var targetId = "target1";
                     var target = rike.target(targetId);
                     expect(target.target).toBe(targetId);
-                    expect(target.protocol).toBe(protocol_5.HTTP_PROTOCOL);
+                    expect(target.protocol).toBe(protocol_6.HTTP_PROTOCOL);
                 });
                 it("creates JSON target", function () {
                     var targetId = "target1";
@@ -2705,10 +2761,10 @@ System.register("ng2-rike/rike.spec", ["@angular/http", "@angular/core/testing",
                     expectJsonProtocol(target.protocol);
                 });
                 it("creates target with specified protocol", function () {
-                    var protocol = protocol_5.jsonProtocol()
+                    var protocol = protocol_6.jsonProtocol()
                         .instead()
                         .writeRequest(function (val, opts) {
-                        return new http_6.RequestOptions(opts).merge({ body: val });
+                        return new http_5.RequestOptions(opts).merge({ body: val });
                     });
                     var targetId = "target1";
                     var target = rike.target(targetId, protocol);
@@ -2717,14 +2773,14 @@ System.register("ng2-rike/rike.spec", ["@angular/http", "@angular/core/testing",
                 });
             });
             describe("requestMethod", function () {
-                it("GET", requestMethodTest(http_6.RequestMethod.Get, "GeT"));
-                it("POST", requestMethodTest(http_6.RequestMethod.Post, "pOSt"));
-                it("PUT", requestMethodTest(http_6.RequestMethod.Put, "put"));
-                it("DELETE", requestMethodTest(http_6.RequestMethod.Delete, "deletE"));
-                it("OPTIONS", requestMethodTest(http_6.RequestMethod.Options, "OPTIONS"));
-                it("HEAD", requestMethodTest(http_6.RequestMethod.Head, "hEad"));
-                it("PATCH", requestMethodTest(http_6.RequestMethod.Patch, "pAtch"));
-                it("specified as is", requestMethodTest(http_6.RequestMethod.Post, http_6.RequestMethod.Post));
+                it("GET", requestMethodTest(http_5.RequestMethod.Get, "GeT"));
+                it("POST", requestMethodTest(http_5.RequestMethod.Post, "pOSt"));
+                it("PUT", requestMethodTest(http_5.RequestMethod.Put, "put"));
+                it("DELETE", requestMethodTest(http_5.RequestMethod.Delete, "deletE"));
+                it("OPTIONS", requestMethodTest(http_5.RequestMethod.Options, "OPTIONS"));
+                it("HEAD", requestMethodTest(http_5.RequestMethod.Head, "hEad"));
+                it("PATCH", requestMethodTest(http_5.RequestMethod.Patch, "pAtch"));
+                it("specified as is", requestMethodTest(http_5.RequestMethod.Post, http_5.RequestMethod.Post));
                 it("rejects unknown method", function () {
                     expect(function () { return rike_3.requestMethod("some"); }).toThrow();
                 });
@@ -2738,11 +2794,11 @@ System.register("ng2-rike/rike.spec", ["@angular/http", "@angular/core/testing",
 System.register("ng2-rike/rike-operation.spec", ["@angular/http", "@angular/core/testing", "@angular/http/testing", "ng2-rike/rike", "ng2-rike/rike.spec"], function(exports_17, context_17) {
     "use strict";
     var __moduleName = context_17 && context_17.id;
-    var http_7, testing_3, testing_4, rike_4, rike_spec_1;
+    var http_6, testing_3, testing_4, rike_4, rike_spec_1;
     return {
         setters:[
-            function (http_7_1) {
-                http_7 = http_7_1;
+            function (http_6_1) {
+                http_6 = http_6_1;
             },
             function (testing_3_1) {
                 testing_3 = testing_3_1;
@@ -2772,7 +2828,7 @@ System.register("ng2-rike/rike-operation.spec", ["@angular/http", "@angular/core
                         back.connections.subscribe(function (connection) {
                             expect(connection.request.method).toBe(method);
                             expect(connection.request.url).toBe("/test-root/target-url/request-url");
-                            connection.mockRespond(new http_7.Response(new http_7.ResponseOptions({
+                            connection.mockRespond(new http_6.Response(new http_6.ResponseOptions({
                                 body: "response1",
                             })));
                         });
@@ -2783,16 +2839,16 @@ System.register("ng2-rike/rike-operation.spec", ["@angular/http", "@angular/core
                         });
                     };
                 }
-                it("processes GET request", loadRequestTest(http_7.RequestMethod.Get, function (op) { return op.get; }));
-                it("processes DELETE request", loadRequestTest(http_7.RequestMethod.Delete, function (op) { return op.delete; }));
-                it("processes HEAD request", loadRequestTest(http_7.RequestMethod.Head, function (op) { return op.head; }));
+                it("processes GET request", loadRequestTest(http_6.RequestMethod.Get, function (op) { return op.get; }));
+                it("processes DELETE request", loadRequestTest(http_6.RequestMethod.Delete, function (op) { return op.delete; }));
+                it("processes HEAD request", loadRequestTest(http_6.RequestMethod.Head, function (op) { return op.head; }));
                 function sendRequestTest(method, read) {
                     return function (done) {
                         back.connections.subscribe(function (connection) {
                             expect(connection.request.method).toBe(method);
                             expect(connection.request.url).toBe("/test-root/target-url/send-request-url");
                             expect(connection.request.text()).toBe("request2");
-                            connection.mockRespond(new http_7.Response(new http_7.ResponseOptions({
+                            connection.mockRespond(new http_6.Response(new http_6.ResponseOptions({
                                 body: "response1",
                             })));
                         });
@@ -2807,37 +2863,37 @@ System.register("ng2-rike/rike-operation.spec", ["@angular/http", "@angular/core
                         });
                     };
                 }
-                it("processes POST request", sendRequestTest(http_7.RequestMethod.Post, function (op) { return op.post; }));
-                it("processes PUT request", sendRequestTest(http_7.RequestMethod.Put, function (op) { return op.put; }));
-                it("processes PATCH request", sendRequestTest(http_7.RequestMethod.Patch, function (op) { return op.patch; }));
-                it("loads with GET by default", loadRequestTest(http_7.RequestMethod.Get, function (op) { return op.load; }));
-                it("loads with specified method", loadRequestTest(http_7.RequestMethod.Options, function (op) { return op.withMethod("options").load; }));
+                it("processes POST request", sendRequestTest(http_6.RequestMethod.Post, function (op) { return op.post; }));
+                it("processes PUT request", sendRequestTest(http_6.RequestMethod.Put, function (op) { return op.put; }));
+                it("processes PATCH request", sendRequestTest(http_6.RequestMethod.Patch, function (op) { return op.patch; }));
+                it("loads with GET by default", loadRequestTest(http_6.RequestMethod.Get, function (op) { return op.load; }));
+                it("loads with specified method", loadRequestTest(http_6.RequestMethod.Options, function (op) { return op.withMethod("options").load; }));
                 it("loads from specified URL", function (done) {
                     back.connections.subscribe(function (connection) {
                         expect(connection.request.url).toBe("/test-root/target-url/load-url");
-                        connection.mockRespond(new http_7.Response(new http_7.ResponseOptions()));
+                        connection.mockRespond(new http_6.Response(new http_6.ResponseOptions()));
                     });
                     target.operation("operation1").withUrl("load-url").load().subscribe(done);
                 });
                 it("loads from target URL by default", function (done) {
                     back.connections.subscribe(function (connection) {
                         expect(connection.request.url).toBe("/test-root/target-url");
-                        connection.mockRespond(new http_7.Response(new http_7.ResponseOptions()));
+                        connection.mockRespond(new http_6.Response(new http_6.ResponseOptions()));
                     });
                     target.operation("operation1").load().subscribe(done);
                 });
-                it("sends with specified method", sendRequestTest(http_7.RequestMethod.Put, function (op) { return op.withMethod("put").send; }));
+                it("sends with specified method", sendRequestTest(http_6.RequestMethod.Put, function (op) { return op.withMethod("put").send; }));
                 it("sends to specified URL", function (done) {
                     back.connections.subscribe(function (connection) {
                         expect(connection.request.url).toBe("/test-root/target-url/send-url");
-                        connection.mockRespond(new http_7.Response(new http_7.ResponseOptions()));
+                        connection.mockRespond(new http_6.Response(new http_6.ResponseOptions()));
                     });
                     target.operation("operation1").withUrl("send-url").send("abc").subscribe(done);
                 });
                 it("sends to target URL by default", function (done) {
                     back.connections.subscribe(function (connection) {
                         expect(connection.request.url).toBe("/test-root/target-url");
-                        connection.mockRespond(new http_7.Response(new http_7.ResponseOptions()));
+                        connection.mockRespond(new http_6.Response(new http_6.ResponseOptions()));
                     });
                     target.operation("operation1").send("abc").subscribe(done);
                 });
@@ -2854,7 +2910,7 @@ System.register("ng2-rike/rike-operation.spec", ["@angular/http", "@angular/core
                 }));
                 function mockRespond() {
                     back.connections.subscribe(function (connection) {
-                        connection.mockRespond(new http_7.Response(new http_7.ResponseOptions({
+                        connection.mockRespond(new http_6.Response(new http_6.ResponseOptions({
                             body: "response1",
                         })));
                     });
@@ -2941,14 +2997,14 @@ System.register("ng2-rike/rike-operation.spec", ["@angular/http", "@angular/core
 System.register("ng2-rike/rike-target.spec", ["@angular/core/testing", "@angular/http", "@angular/http/testing", "ng2-rike/rike.spec", "ng2-rike/rike", "ng2-rike/protocol"], function(exports_18, context_18) {
     "use strict";
     var __moduleName = context_18 && context_18.id;
-    var testing_5, http_8, testing_6, rike_spec_2, rike_5, protocol_6;
+    var testing_5, http_7, testing_6, rike_spec_2, rike_5, protocol_7;
     return {
         setters:[
             function (testing_5_1) {
                 testing_5 = testing_5_1;
             },
-            function (http_8_1) {
-                http_8 = http_8_1;
+            function (http_7_1) {
+                http_7 = http_7_1;
             },
             function (testing_6_1) {
                 testing_6 = testing_6_1;
@@ -2959,8 +3015,8 @@ System.register("ng2-rike/rike-target.spec", ["@angular/core/testing", "@angular
             function (rike_5_1) {
                 rike_5 = rike_5_1;
             },
-            function (protocol_6_1) {
-                protocol_6 = protocol_6_1;
+            function (protocol_7_1) {
+                protocol_7 = protocol_7_1;
             }],
         execute: function() {
             describe("RikeTarget", function () {
@@ -2994,10 +3050,10 @@ System.register("ng2-rike/rike-target.spec", ["@angular/core/testing", "@angular
                     rike_spec_2.expectJsonProtocol(op.protocol);
                 });
                 it("creates operation over specified protocol", function () {
-                    var proto = protocol_6.jsonProtocol()
+                    var proto = protocol_7.jsonProtocol()
                         .instead()
                         .writeRequest(function (val, opts) {
-                        return new http_8.RequestOptions(opts).merge({ body: JSON.stringify(val) });
+                        return new http_7.RequestOptions(opts).merge({ body: JSON.stringify(val) });
                     });
                     var op = target.operation("customOperation", proto);
                     expect(op.target).toBe(target);
@@ -3006,7 +3062,7 @@ System.register("ng2-rike/rike-target.spec", ["@angular/core/testing", "@angular
                 });
                 it("current operation updated on request", function (done) {
                     back.connections.subscribe(function (connection) {
-                        connection.mockRespond(new http_8.Response(new http_8.ResponseOptions({
+                        connection.mockRespond(new http_7.Response(new http_7.ResponseOptions({
                             body: "response1",
                         })));
                     });

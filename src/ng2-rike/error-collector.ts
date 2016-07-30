@@ -1,6 +1,6 @@
 import {Injectable, EventEmitter, Optional, Inject} from "@angular/core";
 import {AnonymousSubscription} from "rxjs/Subscription";
-import {FieldErrors, FieldError, toErrorResponse} from "./error";
+import {FieldErrors, FieldError, addFieldErrors} from "./field-error";
 import {RikeEventSource, RikeEvent, RikeErrorEvent} from "./event";
 import {RikeTarget} from "./rike";
 
@@ -30,9 +30,9 @@ export interface ErrorSubscription {
 /**
  * An error collecting service.
  *
- * It collects errors from all available [Rike event sources][RikeEventSource]. It uses `toFieldErrors()` method
- * to build a `FieldErrors` instance to obtain errors from. Then it notifies all subscribers on when errors received or
- * removed.
+ * It collects errors from all available [Rike event sources][RikeEventSource]. It uses `fieldErrors()` method
+ * to obtain a `FieldErrors` instance from {{RikeErrorEvent}}. Then it notifies all subscribers on when errors received
+ * or removed.
  *
  * This service is registered automatically along with every event source by [provideEventSource] method.
  * But unlike event sources it is not a multi-provider.
@@ -103,16 +103,27 @@ export class ErrorCollector {
 
     //noinspection JSMethodCanBeStatic
     /**
-     * Converts arbitrary error to `FieldErrors`.
+     * Converts error to `FieldErrors`.
      *
-     * This method uses [toErrorResponse] function by default. Override it if you are using custom error handler.
+     * This method uses `addFieldErrors` function by default. Override it if you are using custom error handler.
      *
      * @param error arbitrary error passed in [RikeEvent.error] field.
      *
      * @return {FieldErrors} field errors.
      */
-    protected toFieldErrors(error: any): FieldErrors {
-        return toErrorResponse(error).errors;
+    protected fieldErrors(error: RikeErrorEvent): FieldErrors {
+
+        const errorResponse = error.errorResponse;
+
+        if (errorResponse) {
+            return addFieldErrors(errorResponse).fieldErrors;
+        }
+
+        return {
+            "*": [
+                {message: error.error.toString()} as FieldError
+            ]
+        };
     }
 
     private fieldEmitter(field: string) {
@@ -136,12 +147,12 @@ export class ErrorCollector {
     private handleEvent(event: RikeEvent) {
 
         let affectedFields: {[field: string]: any};
-        const error = event.error;
 
-        if (!error) {
+        if (!event.error) {
             affectedFields = this.clearTargetErrors(event.target);
         } else {
-            affectedFields = this.targetErrors(event.target).addAll(this.toFieldErrors(error));
+            affectedFields = this.targetErrors(event.target)
+                .addAll(this.fieldErrors((event as any) as RikeErrorEvent));
         }
 
         for (let field in affectedFields) {

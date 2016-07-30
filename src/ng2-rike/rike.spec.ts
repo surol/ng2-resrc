@@ -13,7 +13,7 @@ import {MockBackend, MockConnection} from "@angular/http/testing";
 import {RIKE_PROVIDERS} from "../ng2-rike";
 import {Rike, requestMethod} from "./rike";
 import {RikeOptions, BaseRikeOptions} from "./options";
-import {HTTP_PROTOCOL, JSON_PROTOCOL, jsonProtocol, Protocol} from "./protocol";
+import {HTTP_PROTOCOL, JSON_PROTOCOL, jsonProtocol, Protocol, ErrorResponse} from "./protocol";
 import {Observable} from "rxjs/Rx";
 
 export function addRikeProviders() {
@@ -111,8 +111,12 @@ describe("Rike", () => {
             () => {
                 done.fail("Response received");
             },
-            (error: Error) => {
-                expect(error.message).toBe("Response error");
+            (error: ErrorResponse) => {
+
+                const err = error.error as Error;
+
+                expect(err.message).toBe("Response error");
+
                 done();
             });
     });
