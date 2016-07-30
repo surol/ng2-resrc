@@ -158,13 +158,13 @@ declare module "ng2-rike/protocol" {
         /**
          * Handles HTTP error.
          *
-         * If absent the error is not modified.
+         * Does not modify error object by default.
          *
          * @param error error to handle.
          *
          * @returns error processing result.
          */
-        readonly abstract handleError?: (error: any) => any;
+        handleError(error: any): any;
         /**
          * Creates protocol addon able to prepend protocol actions with specified functions.
          *

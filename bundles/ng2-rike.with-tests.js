@@ -290,6 +290,19 @@ System.register("ng2-rike/protocol", ["@angular/http"], function(exports_2, cont
                 Protocol.prototype.prepareRequest = function (options) {
                     return options;
                 };
+                //noinspection JSMethodCanBeStatic
+                /**
+                 * Handles HTTP error.
+                 *
+                 * Does not modify error object by default.
+                 *
+                 * @param error error to handle.
+                 *
+                 * @returns error processing result.
+                 */
+                Protocol.prototype.handleError = function (error) {
+                    return error;
+                };
                 /**
                  * Creates protocol addon able to prepend protocol actions with specified functions.
                  *
@@ -324,33 +337,28 @@ System.register("ng2-rike/protocol", ["@angular/http"], function(exports_2, cont
                 }
                 CustomProtocolAddon.prototype.prepareRequest = function (prepare) {
                     var _this = this;
-                    var handleError = this._protocol.handleError;
                     return new CustomProtocol(this._prior
                         ? function (options) { return _this._protocol.prepareRequest(prepare(options)); }
-                        : function (options) { return prepare(_this._protocol.prepareRequest(options)); }, function (request, options) { return _this._protocol.writeRequest(request, options); }, function (response) { return _this._protocol.readResponse(response); }, handleError && (function (error) { return handleError(error); }));
+                        : function (options) { return prepare(_this._protocol.prepareRequest(options)); }, function (request, options) { return _this._protocol.writeRequest(request, options); }, function (response) { return _this._protocol.readResponse(response); }, function (error) { return _this._protocol.handleError(error); });
                 };
                 CustomProtocolAddon.prototype.updateRequest = function (update) {
                     var _this = this;
-                    var handleError = this._protocol.handleError;
                     return new CustomProtocol(function (options) { return _this._protocol.prepareRequest(options); }, this._prior
                         ? function (request, options) { return _this._protocol.writeRequest(request, update(request, options)); }
-                        : function (request, options) { return update(request, _this._protocol.writeRequest(request, options)); }, function (response) { return _this._protocol.readResponse(response); }, handleError && (function (error) { return handleError(error); }));
+                        : function (request, options) { return update(request, _this._protocol.writeRequest(request, options)); }, function (response) { return _this._protocol.readResponse(response); }, function (error) { return _this._protocol.handleError(error); });
                 };
                 CustomProtocolAddon.prototype.handleError = function (handle) {
                     var _this = this;
-                    var handleError = this._protocol.handleError;
-                    return new CustomProtocol(function (options) { return _this._protocol.prepareRequest(options); }, function (request, options) { return _this._protocol.writeRequest(request, options); }, function (response) { return _this._protocol.readResponse(response); }, !handleError ? handle : (this._prior
-                        ? function (error) { return handleError(handle(error)); }
-                        : function (error) { return handle(handleError(error)); }));
+                    return new CustomProtocol(function (options) { return _this._protocol.prepareRequest(options); }, function (request, options) { return _this._protocol.writeRequest(request, options); }, function (response) { return _this._protocol.readResponse(response); }, this._prior
+                        ? function (error) { return _this._protocol.handleError(handle(error)); }
+                        : function (error) { return handle(_this._protocol.handleError(error)); });
                 };
                 CustomProtocolAddon.prototype.apply = function (protocol) {
                     var _this = this;
-                    var handleError = this._protocol.handleError;
-                    var handle = protocol.handleError;
                     if (this._prior) {
-                        return new CustomProtocol(function (options) { return _this._protocol.prepareRequest(protocol.prepareRequest(options)); }, function (request, options) { return _this._protocol.writeRequest(request, options); }, function (response) { return _this._protocol.readResponse(response); }, !handleError ? handle : (!handle ? handleError : (function (error) { return handleError(handle(error)); })));
+                        return new CustomProtocol(function (options) { return _this._protocol.prepareRequest(protocol.prepareRequest(options)); }, function (request, options) { return _this._protocol.writeRequest(request, options); }, function (response) { return _this._protocol.readResponse(response); }, function (error) { return _this._protocol.handleError(protocol.handleError(error)); });
                     }
-                    return new CustomProtocol(function (options) { return protocol.prepareRequest(_this._protocol.prepareRequest(options)); }, function (request, options) { return _this._protocol.writeRequest(request, options); }, function (response) { return _this._protocol.readResponse(response); }, !handleError ? handle : (!handle ? handleError : (function (error) { return handle(handleError(error)); })));
+                    return new CustomProtocol(function (options) { return protocol.prepareRequest(_this._protocol.prepareRequest(options)); }, function (request, options) { return _this._protocol.writeRequest(request, options); }, function (response) { return _this._protocol.readResponse(response); }, function (error) { return protocol.handleError(_this._protocol.handleError(error)); });
                 };
                 return CustomProtocolAddon;
             }());
@@ -378,12 +386,12 @@ System.register("ng2-rike/protocol", ["@angular/http"], function(exports_2, cont
             }());
             CustomProtocol = (function (_super) {
                 __extends(CustomProtocol, _super);
-                function CustomProtocol(_prepareRequest, _writeRequest, _readResponse, handleError) {
+                function CustomProtocol(_prepareRequest, _writeRequest, _readResponse, _handleError) {
                     _super.call(this);
                     this._prepareRequest = _prepareRequest;
                     this._writeRequest = _writeRequest;
                     this._readResponse = _readResponse;
-                    this.handleError = handleError;
+                    this._handleError = _handleError;
                 }
                 CustomProtocol.prototype.prepareRequest = function (options) {
                     return this._prepareRequest(options);
@@ -393,6 +401,9 @@ System.register("ng2-rike/protocol", ["@angular/http"], function(exports_2, cont
                 };
                 CustomProtocol.prototype.readResponse = function (response) {
                     return this._readResponse(response);
+                };
+                CustomProtocol.prototype.handleError = function (error) {
+                    return this._handleError(error);
                 };
                 return CustomProtocol;
             }(Protocol));

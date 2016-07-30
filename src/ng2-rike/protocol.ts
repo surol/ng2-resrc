@@ -53,16 +53,19 @@ export abstract class Protocol<IN, OUT> {
      */
     abstract readResponse(response: Response): OUT;
 
+    //noinspection JSMethodCanBeStatic
     /**
      * Handles HTTP error.
      *
-     * If absent the error is not modified.
+     * Does not modify error object by default.
      *
      * @param error error to handle.
      *
      * @returns error processing result.
      */
-    abstract readonly handleError?: (error: any) => any;
+    handleError(error: any): any {
+        return error;
+    }
 
     /**
      * Creates protocol addon able to prepend protocol actions with specified functions.
@@ -143,63 +146,49 @@ class CustomProtocolAddon<IN, OUT> implements ProtocolAddon<IN, OUT> {
     }
 
     prepareRequest(prepare: (options: RequestOptionsArgs)=>RequestOptionsArgs): Protocol<IN, OUT> {
-
-        const handleError = this._protocol.handleError;
-
         return new CustomProtocol<IN, OUT>(
             this._prior
                 ? options => this._protocol.prepareRequest(prepare(options))
                 : options => prepare(this._protocol.prepareRequest(options)),
             (request, options) => this._protocol.writeRequest(request, options),
             response => this._protocol.readResponse(response),
-            handleError && (error => handleError(error)));
+            error => this._protocol.handleError(error));
     }
 
     updateRequest(update: (request: IN, options: RequestOptionsArgs) => RequestOptionsArgs): Protocol<IN, OUT> {
-
-        const handleError = this._protocol.handleError;
-
         return new CustomProtocol<IN, OUT>(
             options => this._protocol.prepareRequest(options),
             this._prior
                 ? (request, options) => this._protocol.writeRequest(request, update(request, options))
                 : (request, options) => update(request, this._protocol.writeRequest(request, options)),
             response => this._protocol.readResponse(response),
-            handleError && (error => handleError(error)));
+            error => this._protocol.handleError(error));
     }
 
     handleError(handle: (error: any) => any): Protocol<IN, OUT> {
-
-        const handleError = this._protocol.handleError;
-
         return new CustomProtocol<IN, OUT>(
             options => this._protocol.prepareRequest(options),
             (request, options) => this._protocol.writeRequest(request, options),
             response => this._protocol.readResponse(response),
-            !handleError ? handle : (
-                this._prior
-                    ? error => handleError(handle(error))
-                    : error => handle(handleError(error))));
+            this._prior
+                ? error => this._protocol.handleError(handle(error))
+                : error => handle(this._protocol.handleError(error)));
     }
 
     apply(protocol: Protocol<any, any>): Protocol<IN, OUT> {
-
-        const handleError = this._protocol.handleError;
-        const handle = protocol.handleError;
-
         if (this._prior) {
             return new CustomProtocol<IN, OUT>(
                 options => this._protocol.prepareRequest(protocol.prepareRequest(options)),
                 (request, options) => this._protocol.writeRequest(request, options),
                 response => this._protocol.readResponse(response),
-                !handleError ? handle : (!handle ? handleError : (error => handleError(handle(error)))));
+                error => this._protocol.handleError(protocol.handleError(error)));
         }
 
         return new CustomProtocol<IN, OUT>(
             options => protocol.prepareRequest(this._protocol.prepareRequest(options)),
             (request, options) => this._protocol.writeRequest(request, options),
             response => this._protocol.readResponse(response),
-            !handleError ? handle : (!handle ? handleError : (error => handle(handleError(error)))));
+            error => protocol.handleError(this._protocol.handleError(error)));
     }
 
 }
@@ -261,7 +250,7 @@ class CustomProtocolMod<IN, OUT> implements ProtocolMod<IN, OUT> {
             this._protocol.handleError);
     }
 
-    writeRequest<I>(write: (request: I, options: RequestOptionsArgs)=>RequestOptionsArgs): Protocol<I, OUT> {
+    writeRequest<I>(write: (request: I, options: RequestOptionsArgs) => RequestOptionsArgs): Protocol<I, OUT> {
         return new CustomProtocol<I, OUT>(
             options => this._protocol.prepareRequest(options),
             write,
@@ -269,7 +258,7 @@ class CustomProtocolMod<IN, OUT> implements ProtocolMod<IN, OUT> {
             this._protocol.handleError);
     }
 
-    readResponse<O>(read: (response: Response)=>O): Protocol<IN, O> {
+    readResponse<O>(read: (response: Response) => O): Protocol<IN, O> {
         return new CustomProtocol<IN, O>(
             options => this._protocol.prepareRequest(options),
             (request, options) => this._protocol.writeRequest(request, options),
@@ -277,7 +266,7 @@ class CustomProtocolMod<IN, OUT> implements ProtocolMod<IN, OUT> {
             this._protocol.handleError);
     }
 
-    handleError(handle: (error: any)=>any): Protocol<IN, OUT> {
+    handleError(handle: (error: any) => any): Protocol<IN, OUT> {
         return new CustomProtocol<IN, OUT>(
             options => this._protocol.prepareRequest(options),
             (request, options) => this._protocol.writeRequest(request, options),
@@ -293,7 +282,7 @@ class CustomProtocol<IN, OUT> extends Protocol<IN, OUT> {
         private _prepareRequest: (options: RequestOptionsArgs) => RequestOptionsArgs,
         private _writeRequest: (request: IN, options: RequestOptionsArgs) => RequestOptionsArgs,
         private _readResponse: (response: Response) => OUT,
-        public handleError?: (error: any) => any) {
+        private _handleError: (error: any) => any) {
         super();
     }
 
@@ -309,11 +298,12 @@ class CustomProtocol<IN, OUT> extends Protocol<IN, OUT> {
         return this._readResponse(response);
     }
 
+    handleError(error: any): any {
+        return this._handleError(error);
+    }
 }
 
 class JsonProtocol<T> extends Protocol<T, T> {
-
-    readonly handleError?: undefined;
 
     writeRequest(request: T, options: RequestOptionsArgs): RequestOptionsArgs {
 
@@ -354,8 +344,6 @@ export const JSON_PROTOCOL: Protocol<any, any> = new JsonProtocol<any>();
 export const jsonProtocol: (<T>() => Protocol<T, T>) = () => JSON_PROTOCOL;
 
 class HttpProtocol extends Protocol<any, Response> {
-
-    readonly handleError?: undefined;
 
     writeRequest(request: any, options: RequestOptionsArgs): RequestOptionsArgs {
         return new RequestOptions(options).merge({body: request});

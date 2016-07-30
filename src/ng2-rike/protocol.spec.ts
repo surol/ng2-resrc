@@ -22,8 +22,6 @@ interface Out2 {
 
 class TestProtocol extends Protocol<In, Out> {
 
-    readonly handleError?: (error: any) => any;
-
     constructor() {
         super();
     }
