@@ -878,7 +878,10 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
     exports_5("requestMethod", requestMethod);
     function toErrorResponse(error) {
         if (error instanceof http_2.Response) {
-            return { response: error };
+            return {
+                response: error,
+                error: error.status,
+            };
         }
         return syntheticResponse(error);
     }

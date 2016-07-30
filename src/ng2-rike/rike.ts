@@ -259,7 +259,10 @@ export class Rike implements RikeEventSource {
 
 function toErrorResponse(error: any): ErrorResponse {
     if (error instanceof Response) {
-        return {response: error};
+        return {
+            response: error,
+            error: error.status,
+        };
     }
     return syntheticResponse(error);
 }
