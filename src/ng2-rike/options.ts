@@ -42,9 +42,11 @@ export interface RikeOptionsArgs {
     readonly defaultProtocol?: Protocol<any, any>;
 
     /**
-     * Rike operation status labels to use by default.
+     * A map of Rike operations status labels to use by default.
      *
-     * If not specified `DEFAULT_STATUS_LABELS` will be used.
+     * If not specified the `DEFAULT_STATUS_LABELS` will be used.
+     *
+     * Default status labels are always strings.
      */
     readonly defaultStatusLabels?: {[operation: string]: StatusLabels<any>};
 

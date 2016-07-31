@@ -598,6 +598,11 @@ System.register("ng2-rike/status-collector", ["@angular/core", "ng2-rike/event"]
                 event_1 = event_1_1;
             }],
         execute: function() {
+            /**
+             * Default map of Rike operations status labels.
+             *
+             * Default status labels are strings.
+             */
             exports_3("DEFAULT_STATUS_LABELS", DEFAULT_STATUS_LABELS = {
                 "*": {
                     processing: "Processing",
@@ -627,6 +632,20 @@ System.register("ng2-rike/status-collector", ["@angular/core", "ng2-rike/event"]
                     succeed: "Deleted",
                 },
             });
+            /**
+             * Rike operations status collecting service.
+             *
+             * It collects statuses of all available [Rike event sources][RikeEventSource].
+             *
+             * This service is registered automatically along with every event source by `provideEventSource()` method.
+             * But unlike event sources it is not a multi-provider.
+             *
+             * An instance of this class could be created on its own. Then it is necessary to subscribe it on Rike events with
+             * `subscribeOn` method.
+             *
+             * It is possible to read statuses and string labels from the service itself. Alternatively a view can be created
+             * to read labels of arbitrary type.
+             */
             StatusCollector = (function () {
                 function StatusCollector(eventSources) {
                     this._views = {};
@@ -640,6 +659,11 @@ System.register("ng2-rike/status-collector", ["@angular/core", "ng2-rike/event"]
                     }
                 }
                 Object.defineProperty(StatusCollector.prototype, "labels", {
+                    /**
+                     * Current status labels.
+                     *
+                     * @return {string[]} array of string labels.
+                     */
                     get: function () {
                         return this._defaultView ? this._defaultView.labels : [];
                     },
@@ -647,6 +671,9 @@ System.register("ng2-rike/status-collector", ["@angular/core", "ng2-rike/event"]
                     configurable: true
                 });
                 Object.defineProperty(StatusCollector.prototype, "processing", {
+                    /**
+                     * Whether some operation is in process.
+                     */
                     get: function () {
                         return this._defaultView && this._defaultView.processing || false;
                     },
@@ -654,6 +681,9 @@ System.register("ng2-rike/status-collector", ["@angular/core", "ng2-rike/event"]
                     configurable: true
                 });
                 Object.defineProperty(StatusCollector.prototype, "failed", {
+                    /**
+                     * Whether some operation failed.
+                     */
                     get: function () {
                         return this._defaultView && this._defaultView.failed || false;
                     },
@@ -661,6 +691,9 @@ System.register("ng2-rike/status-collector", ["@angular/core", "ng2-rike/event"]
                     configurable: true
                 });
                 Object.defineProperty(StatusCollector.prototype, "cancelled", {
+                    /**
+                     * Whether some operation cancelled.
+                     */
                     get: function () {
                         return this._defaultView && this._defaultView.cancelled || false;
                     },
@@ -668,16 +701,35 @@ System.register("ng2-rike/status-collector", ["@angular/core", "ng2-rike/event"]
                     configurable: true
                 });
                 Object.defineProperty(StatusCollector.prototype, "succeed", {
+                    /**
+                     * Whether some operation succeed.
+                     */
                     get: function () {
                         return this._defaultView && this._defaultView.succeed || false;
                     },
                     enumerable: true,
                     configurable: true
                 });
+                /**
+                 * Subscribes this collector on the given Rike events emitter.
+                 *
+                 * @param events Rike events emitter to subscribe on.
+                 */
                 StatusCollector.prototype.subscribeOn = function (events) {
                     var _this = this;
                     events.subscribe(function (event) { return _this.applyEvent(event); });
                 };
+                /**
+                 * Constructs a Rike operations status view.
+                 *
+                 * When the view is no longer needed a {{StatusView.close}} method should be called to release resources
+                 * associated with it.
+                 *
+                 * @param <L> a type of status labels.
+                 * @param labels a map of Rike operations status labels to use by this view.
+                 *
+                 * @return {StatusView<L>} new status view.
+                 */
                 StatusCollector.prototype.view = function (labels) {
                     return this.addView("" + ++this._viewIdSeq, labels);
                 };
@@ -1905,7 +1957,7 @@ System.register("ng2-rike/error-collector", ["@angular/core", "ng2-rike/field-er
              * to obtain a `FieldErrors` instance from {{RikeErrorEvent}}. Then it notifies all subscribers on when errors received
              * or removed.
              *
-             * This service is registered automatically along with every event source by [provideEventSource] method.
+             * This service is registered automatically along with every event source by `provideEventSource()` function.
              * But unlike event sources it is not a multi-provider.
              *
              * An instance of this class could be created on its own. Then it is necessary to subscribe it on Rike events with
