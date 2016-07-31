@@ -1,4 +1,4 @@
-import {EventEmitter} from "@angular/core";
+import {EventEmitter, Type} from "@angular/core";
 import {RikeTarget, RikeOperation} from "./rike";
 import {ErrorResponse} from "./protocol";
 

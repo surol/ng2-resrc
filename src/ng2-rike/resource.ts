@@ -35,6 +35,30 @@ export abstract class RikeResource implements Resource {
 
 }
 
+export abstract class LoadableResource<T> extends RikeResource {
+
+    constructor(rike: Rike) {
+        super(rike);
+    }
+
+    get rikeTarget(): RikeTarget<T, T> {
+        return this.getRikeTarget();
+    }
+
+    getRikeTarget(): RikeTarget<T, T> {
+        return super.getRikeTarget();
+    }
+
+    load(): Observable<T> {
+        return this.rikeTarget.operation("load").get();
+    }
+
+    protected createRikeTarget(): RikeTarget<T, T> {
+        return this.rike.target(this, jsonProtocol<T, T>());
+    }
+
+}
+
 export abstract class CRUDResource<T> extends RikeResource {
 
     constructor(rike: Rike) {

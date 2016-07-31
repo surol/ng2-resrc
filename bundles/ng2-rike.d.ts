@@ -1038,6 +1038,13 @@ declare module "ng2-rike/resource" {
         getRikeTarget(): RikeTarget<any, any>;
         protected createRikeTarget(): RikeTarget<any, any>;
     }
+    export abstract class LoadableResource<T> extends RikeResource {
+        constructor(rike: Rike);
+        readonly rikeTarget: RikeTarget<T, T>;
+        getRikeTarget(): RikeTarget<T, T>;
+        load(): Observable<T>;
+        protected createRikeTarget(): RikeTarget<T, T>;
+    }
     export abstract class CRUDResource<T> extends RikeResource {
         constructor(rike: Rike);
         readonly rikeTarget: RikeTarget<T, T>;
