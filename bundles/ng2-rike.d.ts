@@ -707,7 +707,6 @@ declare module "ng2-rike/status.component" {
         readonly text: string | undefined;
         ngOnDestroy(): void;
         protected createStatusView(): StatusView<L>;
-        protected configureStatusView(view: StatusView<L>): void;
         private releaseStatusView();
     }
 }

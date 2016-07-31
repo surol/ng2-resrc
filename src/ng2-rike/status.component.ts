@@ -104,17 +104,11 @@ export class RikeStatusComponent<L> implements OnDestroy {
 
     protected createStatusView(): StatusView<L> {
 
-        const status = (this.collector.view(DEFAULT_STATUS_LABELS) as any) as StatusView<L>;
+        const labels =
+            this.rikeStatusLabels
+            || ((DEFAULT_STATUS_LABELS as any) as {[operation: string]: StatusLabels<L>});
 
-        this.configureStatusView(status);
-
-        return status;
-    }
-
-    protected configureStatusView(view: StatusView<L>) {
-        if (this.rikeStatusLabels) {
-            view.withLabels(this.rikeStatusLabels);
-        }
+        return this.collector.view(labels);
     }
 
     private releaseStatusView() {

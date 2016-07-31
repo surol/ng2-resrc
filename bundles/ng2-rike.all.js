@@ -1714,14 +1714,9 @@ System.register("ng2-rike/status.component", ["@angular/core", "ng2-rike/status-
                     this.releaseStatusView();
                 };
                 RikeStatusComponent.prototype.createStatusView = function () {
-                    var status = this.collector.view(status_collector_2.DEFAULT_STATUS_LABELS);
-                    this.configureStatusView(status);
-                    return status;
-                };
-                RikeStatusComponent.prototype.configureStatusView = function (view) {
-                    if (this.rikeStatusLabels) {
-                        view.withLabels(this.rikeStatusLabels);
-                    }
+                    var labels = this.rikeStatusLabels
+                        || status_collector_2.DEFAULT_STATUS_LABELS;
+                    return this.collector.view(labels);
                 };
                 RikeStatusComponent.prototype.releaseStatusView = function () {
                     var statusView = this._statusView;
