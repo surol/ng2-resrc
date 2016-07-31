@@ -16,8 +16,8 @@
     "strictNullChecks": true,
     "forceConsistentCasingInFileNames": true,
     "newLine": "LF",
-    "outFile": "../bundles/ng2-rike.js"
+    "outFile": "../../bundles/ng2-rike.js"
   },
-  "include": ["../src/*", "../src/**/*"],
-  "exclude": ["../src/*.spec.ts", "../src/**/*.spec.ts"]
+  "include": ["../../src/*", "../../src/**/*"],
+  "exclude": ["../../src/*.spec.ts", "../../src/**/*.spec.ts"]
 }
