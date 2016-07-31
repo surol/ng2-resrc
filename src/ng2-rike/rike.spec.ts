@@ -193,7 +193,6 @@ export function expectJsonProtocol(protocol: Protocol<any, any>) {
     const written = protocol.writeRequest(value, {}).body as string;
     const restored: Data = JSON.parse(written);
 
-    console.log(restored);
     expect(restored.a).toBe(value.a, "Invalid data restored from JSON");
     expect(restored.b).toBe(value.b, "Invalid data restored from JSON");
     expect(restored.c).toEqual(value.c, "Invalid data restored from JSON");

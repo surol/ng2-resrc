@@ -333,7 +333,7 @@ declare module "ng2-rike/status-collector" {
     import { RikeTarget } from "ng2-rike/rike";
     import { RikeEvent, RikeEventSource } from "ng2-rike/event";
     export const DEFAULT_STATUS_LABELS: {
-        [operation: string]: StatusLabels<any>;
+        [operation: string]: StatusLabels<string>;
     };
     export interface StatusLabels<L> {
         processing?: L | ((target: RikeTarget<any, any>) => L);
@@ -341,22 +341,38 @@ declare module "ng2-rike/status-collector" {
         cancelled?: L | ((target: RikeTarget<any, any>) => L);
         succeed?: L | ((target: RikeTarget<any, any>) => L);
     }
-    export class StatusCollector<L> {
+    export class StatusCollector {
+        private _views;
         private _targetStatuses;
-        private _labels;
-        private _combined?;
+        private _defaultView?;
+        private _viewIdSeq;
         constructor(eventSources?: RikeEventSource[]);
+        readonly labels: string[];
+        readonly processing: boolean;
+        readonly failed: boolean;
+        readonly cancelled: boolean;
+        readonly succeed: boolean;
         subscribeOn(events: EventEmitter<RikeEvent>): void;
-        withLabels(labels: StatusLabels<L>): this;
-        withLabels(operation: string, labels: StatusLabels<L>): this;
+        view<L>(labels: {
+            [operation: string]: StatusLabels<L>;
+        }): StatusView<L>;
+        private addView<L>(id, labels);
+        private applyEvent(event);
+        private initDefaultView(event);
+        private updateTargetStatuses(event);
+        private resetViews();
+    }
+    export interface StatusView<L> {
         readonly labels: L[];
         readonly processing: boolean;
         readonly failed: boolean;
         readonly cancelled: boolean;
         readonly succeed: boolean;
-        private readonly combined;
-        private labelFor(status);
-        private applyEvent(event);
+        withLabels(labels: {
+            [operation: string]: StatusLabels<L>;
+        }): this;
+        withOperationLabels(operation: string, labels: StatusLabels<L>): this;
+        close(): void;
     }
 }
 declare module "ng2-rike/options" {
@@ -390,6 +406,8 @@ declare module "ng2-rike/options" {
         readonly defaultProtocol?: Protocol<any, any>;
         /**
          * Rike operation status labels to use by default.
+         *
+         * If not specified `DEFAULT_STATUS_LABELS` will be used.
          */
         readonly defaultStatusLabels?: {
             [operation: string]: StatusLabels<any>;
@@ -405,9 +423,9 @@ declare module "ng2-rike/options" {
      */
     export abstract class RikeOptions implements RikeOptionsArgs {
         readonly abstract baseUrl?: string;
-        readonly abstract defaultProtocol?: Protocol<any, any>;
-        abstract defaultStatusLabels?: {
-            [operation: string]: StatusLabels<any>;
+        readonly abstract defaultProtocol: Protocol<any, any>;
+        abstract defaultStatusLabels: {
+            [operation: string]: StatusLabels<string>;
         };
         /**
          * Constructs URL relative to `baseUrl`.
@@ -425,14 +443,14 @@ declare module "ng2-rike/options" {
      */
     export class BaseRikeOptions extends RikeOptions {
         private _baseUrl?;
-        private _defaultProtocol?;
+        private _defaultProtocol;
         private _defaultStatusLabels;
         constructor(opts?: RikeOptionsArgs);
         readonly baseUrl: string | undefined;
-        readonly defaultProtocol: Protocol<any, any> | undefined;
+        readonly defaultProtocol: Protocol<any, any>;
         readonly defaultStatusLabels: {
-            [operation: string]: StatusLabels<any>;
-        } | undefined;
+            [operation: string]: StatusLabels<string>;
+        };
     }
     /**
      * Default resource options.
@@ -670,21 +688,27 @@ declare module "ng2-rike/rike" {
     }
 }
 declare module "ng2-rike/status.component" {
-    import { StatusLabels, StatusCollector } from "ng2-rike/status-collector";
-    import { RikeEventSource } from "ng2-rike/event";
-    export class RikeStatusComponent<L> {
-        private _eventSources;
+    import { OnDestroy } from "@angular/core";
+    import { StatusLabels, StatusCollector, StatusView } from "ng2-rike/status-collector";
+    export class RikeStatusComponent<L> implements OnDestroy {
+        private _collector;
         private _statusLabels?;
-        private _rikeStatus?;
+        private _statusView?;
+        private _ownStatusView;
         private _labelText;
-        constructor(_eventSources: RikeEventSource[]);
-        rikeStatus: StatusCollector<L>;
-        rikeStatusLabels: StatusLabels<L> | undefined;
+        constructor(_collector: StatusCollector);
+        readonly collector: StatusCollector;
+        rikeStatus: StatusView<L>;
+        rikeStatusLabels: {
+            [operation: string]: StatusLabels<L>;
+        } | undefined;
         rikeStatusLabelText: (label: L) => string;
         readonly cssClass: any;
         readonly text: string | undefined;
-        protected createStatus(): StatusCollector<L>;
-        protected configureStatus(status: StatusCollector<L>): void;
+        ngOnDestroy(): void;
+        protected createStatusView(): StatusView<L>;
+        protected configureStatusView(view: StatusView<L>): void;
+        private releaseStatusView();
     }
 }
 declare module "ng2-rike/field-error" {

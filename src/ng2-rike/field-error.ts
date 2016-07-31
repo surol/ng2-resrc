@@ -74,7 +74,7 @@ export function addFieldErrors(error: ErrorResponse): FieldErrorResponse {
         try {
             body = httpResponse.json()
         } catch (e) {
-            console.log("Failed to parse JSON error response", e);
+            console.error("Failed to parse JSON error response", e);
         }
     }
 

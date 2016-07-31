@@ -224,12 +224,9 @@ describe("RikeOperation event", () => {
 
         target.rikeEvents.subscribe(
             (ev: RikeEvent) => {
-                if (!events++) {
-                    expect(ev.operation).toBe(op);
-                    expect(ev.target).toBe(target);
-                } else {
-
-                }
+                events++;
+                expect(ev.operation).toBe(op);
+                expect(ev.target).toBe(target);
             },
             (ev: RikeErrorEvent) => {
                 expect(events).toBe(1, "Start event not received yet");
@@ -241,6 +238,6 @@ describe("RikeOperation event", () => {
                 done();
             });
 
-        op.load().subscribe();
+        expect(() => op.load().subscribe()).toThrowError("error1");
     });
 });

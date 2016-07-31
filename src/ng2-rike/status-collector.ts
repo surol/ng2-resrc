@@ -2,7 +2,7 @@ import {EventEmitter, Injectable, Optional, Inject} from "@angular/core";
 import {RikeTarget} from "./rike";
 import {RikeEvent, RikeEventSource} from "./event";
 
-export const DEFAULT_STATUS_LABELS: {[operation: string]: StatusLabels<any>} = {
+export const DEFAULT_STATUS_LABELS: {[operation: string]: StatusLabels<string>} = {
     "*": {
         processing: "Processing",
         failed: "Error",
@@ -40,11 +40,12 @@ export interface StatusLabels<L> {
 }
 
 @Injectable()
-export class StatusCollector<L> {
+export class StatusCollector {
 
+    private _views: {[id: string]: StatusViewImpl<any>} = {};
     private _targetStatuses: {[targetId: string]: TargetStatus} = {};
-    private _labels: {[operation: string]: StatusLabels<L>} = {};
-    private _combined?: CombinedStatus<L>;
+    private _defaultView?: StatusViewImpl<string>;
+    private _viewIdSeq = 0;
 
     constructor(@Inject(RikeEventSource) @Optional() eventSources?: RikeEventSource[]) {
         if (eventSources) {
@@ -54,29 +55,114 @@ export class StatusCollector<L> {
         }
     }
 
+    get labels(): string[] {
+        return this._defaultView ? this._defaultView.labels : [];
+    }
+
+    get processing(): boolean {
+        return this._defaultView && this._defaultView.processing || false;
+    }
+
+    get failed(): boolean {
+        return this._defaultView && this._defaultView.failed || false;
+    }
+
+    get cancelled(): boolean {
+        return this._defaultView && this._defaultView.cancelled || false;
+    }
+
+    get succeed(): boolean {
+        return this._defaultView && this._defaultView.succeed || false;
+    }
+
     subscribeOn(events: EventEmitter<RikeEvent>) {
         events.subscribe((event: RikeEvent) => this.applyEvent(event));
     }
 
-    withLabels(labels: StatusLabels<L>): this;
+    view<L>(labels: {[operation: string]: StatusLabels<L>}): StatusView<L> {
+        return this.addView("" + ++this._viewIdSeq, labels);
+    }
 
-    withLabels(operation: string, labels: StatusLabels<L>): this;
+    private addView<L>(id: string, labels: {[operation: string]: StatusLabels<L>}): StatusViewImpl<L> {
 
-    withLabels(operation: string | StatusLabels<L>, labels?: StatusLabels<L>): this {
+        const view = new StatusViewImpl<L>(this._views, this._targetStatuses, id).withLabels(labels);
 
-        let id: string;
+        this._views[id] = view;
 
-        if (typeof operation !== "string") {
-            id = "*";
-            labels = operation as StatusLabels<L>;
-        } else {
-            id = operation;
+        return view;
+    }
+
+    private applyEvent(event: RikeEvent) {
+        this.initDefaultView(event);
+        this.updateTargetStatuses(event);
+        this.resetViews();
+    }
+
+    private initDefaultView(event: RikeEvent) {
+        if (!this._defaultView) {
+            this._defaultView = this.addView("default", event.target.rike.options.defaultStatusLabels);
         }
+    }
 
-        this._combined = undefined;
-        this._labels[id] = labels!;
+    private updateTargetStatuses(event: RikeEvent) {
 
-        return this;
+        const uniqueId = event.target.uniqueId;
+
+        if (!event.complete) {
+            this._targetStatuses[uniqueId] = {
+                start: event,
+            }
+        } else {
+
+            const targetStatus = this._targetStatuses[uniqueId];
+
+            if (!targetStatus) {
+                this._targetStatuses[uniqueId] = {start: event, end: event};
+            } else {
+                targetStatus.end = event;
+            }
+        }
+    }
+
+    private resetViews() {
+        for (let id in this._views) {
+            if (this._views.hasOwnProperty(id)) {
+                this._views[id].reset();
+            }
+        }
+    }
+
+}
+
+export interface StatusView<L> {
+
+    readonly labels: L[];
+
+    readonly processing: boolean;
+
+    readonly failed: boolean;
+
+    readonly cancelled: boolean
+
+    readonly succeed: boolean;
+
+    withLabels(labels: {[operation: string]: StatusLabels<L>}): this;
+
+    withOperationLabels(operation: string, labels: StatusLabels<L>): this;
+
+    close(): void;
+
+}
+
+class StatusViewImpl<L> implements StatusView<L> {
+
+    private _labels: {[operation: string]: StatusLabels<L>} = {};
+    private _combined?: CombinedStatus<L>;
+
+    constructor(
+        private _views: {[id: string]: StatusViewImpl<any>},
+        private _targetStatuses: {[targetId: string]: TargetStatus},
+        private _id: string) {
     }
 
     get labels(): L[] {
@@ -97,6 +183,29 @@ export class StatusCollector<L> {
 
     get succeed(): boolean {
         return this.combined && this.combined.succeed || false;
+    }
+
+    withLabels(labels: {[operation: string]: StatusLabels<L>}): this {
+        for (let operation in labels) {
+            if (labels.hasOwnProperty(operation)) {
+                this.withOperationLabels(operation, labels[operation]);
+            }
+        }
+        return this;
+    }
+
+    withOperationLabels(operation: string, labels: StatusLabels<L>): this {
+        this._combined = undefined;
+        this._labels[operation] = labels!;
+        return this;
+    }
+
+    reset() {
+        this._combined = undefined;
+    }
+
+    close() {
+        delete this._views[this._id];
     }
 
     private get combined(): CombinedStatus<L> | undefined {
@@ -123,38 +232,7 @@ export class StatusCollector<L> {
     }
 
     private labelFor(status: TargetStatus): StatusLabel<L> | undefined {
-
-        const operationName = status.start.operation.name;
-        let label = labelOf(status, this._labels[operationName]) || labelOf(status, this._labels["*"]);
-
-        if (label) {
-            return label;
-        }
-
-        const defaultLabels = status.start.target.rike.options.defaultStatusLabels || DEFAULT_STATUS_LABELS;
-
-        return labelOf(status, defaultLabels[operationName]) || labelOf(status, defaultLabels["*"]);
-    }
-
-    private applyEvent(event: RikeEvent) {
-        this._combined = undefined;
-
-        const uniqueId = event.target.uniqueId;
-
-        if (!event.complete) {
-            this._targetStatuses[uniqueId] = {
-                start: event,
-            }
-        } else {
-
-            const targetStatus = this._targetStatuses[uniqueId];
-
-            if (!targetStatus) {
-                this._targetStatuses[uniqueId] = {start: event, end: event};
-            } else {
-                targetStatus.end = event;
-            }
-        }
+        return labelOf(status, this._labels[status.start.operation.name]) || labelOf(status, this._labels["*"]);
     }
 
 }

@@ -1,5 +1,5 @@
-import {Component, Input} from "@angular/core";
-import {StatusLabels, StatusCollector} from "./status-collector";
+import {Component, Input, Optional, OnDestroy} from "@angular/core";
+import {StatusLabels, StatusCollector, StatusView, DEFAULT_STATUS_LABELS} from "./status-collector";
 import {RikeEventSource} from "./event";
 
 @Component({
@@ -9,31 +9,47 @@ import {RikeEventSource} from "./event";
         '[ngClass]': 'cssClass'
     }
 })
-export class RikeStatusComponent<L> {
+export class RikeStatusComponent<L> implements OnDestroy {
 
-    private _statusLabels?: StatusLabels<L>;
-    private _rikeStatus?: StatusCollector<L>;
+    private _statusLabels?: {[operation: string]: StatusLabels<L>};
+    private _statusView?: StatusView<L>;
+    private _ownStatusView = false;
     private _labelText: (label: L) => string = label => label.toString();
 
-    constructor(private _eventSources: RikeEventSource[]) {
+    constructor(private _collector: StatusCollector) {
     }
 
-    get rikeStatus(): StatusCollector<L> {
-        return this._rikeStatus || (this._rikeStatus = this.createStatus());
+    get collector(): StatusCollector {
+        return this._collector;
+    }
+
+    get rikeStatus(): StatusView<L> {
+        if (this._statusView) {
+            return this._statusView;
+        }
+
+        this._statusView = this.createStatusView();
+        this._ownStatusView = true;
+
+        return this._statusView;
     }
 
     @Input()
-    set rikeStatus(status: StatusCollector<L>) {
-        this._rikeStatus = status;
+    set rikeStatus(status: StatusView<L>) {
+        if (status === this._statusView) {
+            return;
+        }
+        this.releaseStatusView();
+        this._statusView = status;
     }
 
-    get rikeStatusLabels(): StatusLabels<L> | undefined {
+    get rikeStatusLabels(): {[operation: string]: StatusLabels<L>} | undefined {
         return this._statusLabels;
     }
 
     @Input()
-    set rikeStatusLabels(labels: StatusLabels<L> | undefined) {
-        this._rikeStatus = undefined;
+    set rikeStatusLabels(labels: {[operation: string]: StatusLabels<L>} | undefined) {
+        this._statusView = undefined;
         this._statusLabels = labels;
     }
 
@@ -41,6 +57,7 @@ export class RikeStatusComponent<L> {
         return this._labelText;
     }
 
+    @Input()
     set rikeStatusLabelText(value: (label: L) => string) {
         this._labelText = value;
     }
@@ -81,21 +98,34 @@ export class RikeStatusComponent<L> {
         return text;
     }
 
-    protected createStatus(): StatusCollector<L> {
+    ngOnDestroy() {
+        this.releaseStatusView();
+    }
 
-        const status = new StatusCollector<L>();
+    protected createStatusView(): StatusView<L> {
 
-        this.configureStatus(status);
+        const status = (this.collector.view(DEFAULT_STATUS_LABELS) as any) as StatusView<L>;
+
+        this.configureStatusView(status);
 
         return status;
     }
 
-    protected configureStatus(status: StatusCollector<L>) {
+    protected configureStatusView(view: StatusView<L>) {
         if (this.rikeStatusLabels) {
-            status.withLabels(this.rikeStatusLabels);
+            view.withLabels(this.rikeStatusLabels);
         }
-        for (let esrc of this._eventSources) {
-            status.subscribeOn(esrc.rikeEvents);
+    }
+
+    private releaseStatusView() {
+
+        const statusView = this._statusView;
+
+        if (statusView) {
+            this._statusView = undefined;
+            if (this._ownStatusView) {
+                statusView.close();
+            }
         }
     }
 

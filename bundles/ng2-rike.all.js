@@ -532,7 +532,7 @@ System.register("ng2-rike/status-collector", ["@angular/core", "ng2-rike/event"]
     "use strict";
     var __moduleName = context_3 && context_3.id;
     var core_1, event_1;
-    var DEFAULT_STATUS_LABELS, StatusCollector;
+    var DEFAULT_STATUS_LABELS, StatusCollector, StatusViewImpl;
     function labelOf(status, labels) {
         if (!labels) {
             return undefined;
@@ -630,8 +630,9 @@ System.register("ng2-rike/status-collector", ["@angular/core", "ng2-rike/event"]
             });
             StatusCollector = (function () {
                 function StatusCollector(eventSources) {
+                    this._views = {};
                     this._targetStatuses = {};
-                    this._labels = {};
+                    this._viewIdSeq = 0;
                     if (eventSources) {
                         for (var _i = 0, eventSources_1 = eventSources; _i < eventSources_1.length; _i++) {
                             var esrc = eventSources_1[_i];
@@ -639,59 +640,158 @@ System.register("ng2-rike/status-collector", ["@angular/core", "ng2-rike/event"]
                         }
                     }
                 }
-                StatusCollector.prototype.subscribeOn = function (events) {
-                    var _this = this;
-                    events.subscribe(function (event) { return _this.applyEvent(event); });
-                };
-                StatusCollector.prototype.withLabels = function (operation, labels) {
-                    var id;
-                    if (typeof operation !== "string") {
-                        id = "*";
-                        labels = operation;
-                    }
-                    else {
-                        id = operation;
-                    }
-                    this._combined = undefined;
-                    this._labels[id] = labels;
-                    return this;
-                };
                 Object.defineProperty(StatusCollector.prototype, "labels", {
                     get: function () {
-                        return this.combined && this.combined.labels || [];
+                        return this._defaultView ? this._defaultView.labels : [];
                     },
                     enumerable: true,
                     configurable: true
                 });
                 Object.defineProperty(StatusCollector.prototype, "processing", {
                     get: function () {
-                        return this.combined && this.combined.processing || false;
+                        return this._defaultView && this._defaultView.processing || false;
                     },
                     enumerable: true,
                     configurable: true
                 });
                 Object.defineProperty(StatusCollector.prototype, "failed", {
                     get: function () {
-                        return this.combined && this.combined.failed || false;
+                        return this._defaultView && this._defaultView.failed || false;
                     },
                     enumerable: true,
                     configurable: true
                 });
                 Object.defineProperty(StatusCollector.prototype, "cancelled", {
                     get: function () {
-                        return this.combined && this.combined.cancelled || false;
+                        return this._defaultView && this._defaultView.cancelled || false;
                     },
                     enumerable: true,
                     configurable: true
                 });
                 Object.defineProperty(StatusCollector.prototype, "succeed", {
                     get: function () {
+                        return this._defaultView && this._defaultView.succeed || false;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                StatusCollector.prototype.subscribeOn = function (events) {
+                    var _this = this;
+                    events.subscribe(function (event) { return _this.applyEvent(event); });
+                };
+                StatusCollector.prototype.view = function (labels) {
+                    return this.addView("" + ++this._viewIdSeq, labels);
+                };
+                StatusCollector.prototype.addView = function (id, labels) {
+                    var view = new StatusViewImpl(this._views, this._targetStatuses, id).withLabels(labels);
+                    this._views[id] = view;
+                    return view;
+                };
+                StatusCollector.prototype.applyEvent = function (event) {
+                    this.initDefaultView(event);
+                    this.updateTargetStatuses(event);
+                    this.resetViews();
+                };
+                StatusCollector.prototype.initDefaultView = function (event) {
+                    if (!this._defaultView) {
+                        this._defaultView = this.addView("default", event.target.rike.options.defaultStatusLabels);
+                    }
+                };
+                StatusCollector.prototype.updateTargetStatuses = function (event) {
+                    var uniqueId = event.target.uniqueId;
+                    if (!event.complete) {
+                        this._targetStatuses[uniqueId] = {
+                            start: event,
+                        };
+                    }
+                    else {
+                        var targetStatus = this._targetStatuses[uniqueId];
+                        if (!targetStatus) {
+                            this._targetStatuses[uniqueId] = { start: event, end: event };
+                        }
+                        else {
+                            targetStatus.end = event;
+                        }
+                    }
+                };
+                StatusCollector.prototype.resetViews = function () {
+                    for (var id in this._views) {
+                        if (this._views.hasOwnProperty(id)) {
+                            this._views[id].reset();
+                        }
+                    }
+                };
+                StatusCollector = __decorate([
+                    core_1.Injectable(),
+                    __param(0, core_1.Inject(event_1.RikeEventSource)),
+                    __param(0, core_1.Optional()), 
+                    __metadata('design:paramtypes', [Array])
+                ], StatusCollector);
+                return StatusCollector;
+            }());
+            exports_3("StatusCollector", StatusCollector);
+            StatusViewImpl = (function () {
+                function StatusViewImpl(_views, _targetStatuses, _id) {
+                    this._views = _views;
+                    this._targetStatuses = _targetStatuses;
+                    this._id = _id;
+                    this._labels = {};
+                }
+                Object.defineProperty(StatusViewImpl.prototype, "labels", {
+                    get: function () {
+                        return this.combined && this.combined.labels || [];
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                Object.defineProperty(StatusViewImpl.prototype, "processing", {
+                    get: function () {
+                        return this.combined && this.combined.processing || false;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                Object.defineProperty(StatusViewImpl.prototype, "failed", {
+                    get: function () {
+                        return this.combined && this.combined.failed || false;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                Object.defineProperty(StatusViewImpl.prototype, "cancelled", {
+                    get: function () {
+                        return this.combined && this.combined.cancelled || false;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                Object.defineProperty(StatusViewImpl.prototype, "succeed", {
+                    get: function () {
                         return this.combined && this.combined.succeed || false;
                     },
                     enumerable: true,
                     configurable: true
                 });
-                Object.defineProperty(StatusCollector.prototype, "combined", {
+                StatusViewImpl.prototype.withLabels = function (labels) {
+                    for (var operation in labels) {
+                        if (labels.hasOwnProperty(operation)) {
+                            this.withOperationLabels(operation, labels[operation]);
+                        }
+                    }
+                    return this;
+                };
+                StatusViewImpl.prototype.withOperationLabels = function (operation, labels) {
+                    this._combined = undefined;
+                    this._labels[operation] = labels;
+                    return this;
+                };
+                StatusViewImpl.prototype.reset = function () {
+                    this._combined = undefined;
+                };
+                StatusViewImpl.prototype.close = function () {
+                    delete this._views[this._id];
+                };
+                Object.defineProperty(StatusViewImpl.prototype, "combined", {
                     get: function () {
                         if (this._combined) {
                             return this._combined;
@@ -711,49 +811,18 @@ System.register("ng2-rike/status-collector", ["@angular/core", "ng2-rike/event"]
                     enumerable: true,
                     configurable: true
                 });
-                StatusCollector.prototype.labelFor = function (status) {
-                    var operationName = status.start.operation.name;
-                    var label = labelOf(status, this._labels[operationName]) || labelOf(status, this._labels["*"]);
-                    if (label) {
-                        return label;
-                    }
-                    var defaultLabels = status.start.target.rike.options.defaultStatusLabels || DEFAULT_STATUS_LABELS;
-                    return labelOf(status, defaultLabels[operationName]) || labelOf(status, defaultLabels["*"]);
+                StatusViewImpl.prototype.labelFor = function (status) {
+                    return labelOf(status, this._labels[status.start.operation.name]) || labelOf(status, this._labels["*"]);
                 };
-                StatusCollector.prototype.applyEvent = function (event) {
-                    this._combined = undefined;
-                    var uniqueId = event.target.uniqueId;
-                    if (!event.complete) {
-                        this._targetStatuses[uniqueId] = {
-                            start: event,
-                        };
-                    }
-                    else {
-                        var targetStatus = this._targetStatuses[uniqueId];
-                        if (!targetStatus) {
-                            this._targetStatuses[uniqueId] = { start: event, end: event };
-                        }
-                        else {
-                            targetStatus.end = event;
-                        }
-                    }
-                };
-                StatusCollector = __decorate([
-                    core_1.Injectable(),
-                    __param(0, core_1.Inject(event_1.RikeEventSource)),
-                    __param(0, core_1.Optional()), 
-                    __metadata('design:paramtypes', [Array])
-                ], StatusCollector);
-                return StatusCollector;
+                return StatusViewImpl;
             }());
-            exports_3("StatusCollector", StatusCollector);
         }
     }
 });
-System.register("ng2-rike/options", ["ng2-rike/status-collector"], function(exports_4, context_4) {
+System.register("ng2-rike/options", ["ng2-rike/protocol", "ng2-rike/status-collector"], function(exports_4, context_4) {
     "use strict";
     var __moduleName = context_4 && context_4.id;
-    var status_collector_1;
+    var protocol_1, status_collector_1;
     var RikeOptions, BaseRikeOptions, DEFAULT_RIKE_OPTIONS;
     /**
      * Constructs URL relative to base URL.
@@ -779,6 +848,9 @@ System.register("ng2-rike/options", ["ng2-rike/status-collector"], function(expo
     exports_4("relativeUrl", relativeUrl);
     return {
         setters:[
+            function (protocol_1_1) {
+                protocol_1 = protocol_1_1;
+            },
             function (status_collector_1_1) {
                 status_collector_1 = status_collector_1_1;
             }],
@@ -816,6 +888,7 @@ System.register("ng2-rike/options", ["ng2-rike/status-collector"], function(expo
                 __extends(BaseRikeOptions, _super);
                 function BaseRikeOptions(opts) {
                     _super.call(this);
+                    this._defaultProtocol = protocol_1.HTTP_PROTOCOL;
                     this._defaultStatusLabels = status_collector_1.DEFAULT_STATUS_LABELS;
                     if (opts) {
                         this._baseUrl = opts.baseUrl;
@@ -863,7 +936,7 @@ System.register("ng2-rike/options", ["ng2-rike/status-collector"], function(expo
 System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "ng2-rike/event", "ng2-rike/options", "ng2-rike/protocol"], function(exports_5, context_5) {
     "use strict";
     var __moduleName = context_5 && context_5.id;
-    var core_2, http_2, Rx_1, event_2, options_1, protocol_1;
+    var core_2, http_2, Rx_1, event_2, options_1, protocol_2;
     var REQUEST_METHODS, Rike, RikeTarget, RikeOperation, RikeTargetImpl, RikeOperationImpl;
     function requestMethod(method) {
         if (typeof method !== "string") {
@@ -913,8 +986,8 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
             function (options_1_1) {
                 options_1 = options_1_1;
             },
-            function (protocol_1_1) {
-                protocol_1 = protocol_1_1;
+            function (protocol_2_1) {
+                protocol_2 = protocol_2_1;
             }],
         execute: function() {
             REQUEST_METHODS = {
@@ -993,7 +1066,7 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                      * @return {Protocol<any, any>} either {{RikeOptions.defaultProtocol}}, or `HTTP_PROTOCOL`.
                      */
                     get: function () {
-                        return this.options.defaultProtocol || protocol_1.HTTP_PROTOCOL;
+                        return this.options.defaultProtocol || protocol_2.HTTP_PROTOCOL;
                     },
                     enumerable: true,
                     configurable: true
@@ -1046,7 +1119,7 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                  * @return {RikeTarget<I, O>} new operations target.
                  */
                 Rike.prototype.json = function (target) {
-                    return this.target(target, protocol_1.jsonProtocol());
+                    return this.target(target, protocol_2.jsonProtocol());
                 };
                 /**
                  * Updates HTTP request options accordingly to global _options_.
@@ -1124,7 +1197,7 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                  * @return {RikeOperation<T, T>} new operation.
                  */
                 RikeTarget.prototype.json = function (name) {
-                    return this.operation(name, protocol_1.jsonProtocol());
+                    return this.operation(name, protocol_2.jsonProtocol());
                 };
                 return RikeTarget;
             }());
@@ -1549,16 +1622,33 @@ System.register("ng2-rike/status.component", ["@angular/core", "ng2-rike/status-
             }],
         execute: function() {
             RikeStatusComponent = (function () {
-                function RikeStatusComponent(_eventSources) {
-                    this._eventSources = _eventSources;
+                function RikeStatusComponent(_collector) {
+                    this._collector = _collector;
+                    this._ownStatusView = false;
                     this._labelText = function (label) { return label.toString(); };
                 }
+                Object.defineProperty(RikeStatusComponent.prototype, "collector", {
+                    get: function () {
+                        return this._collector;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
                 Object.defineProperty(RikeStatusComponent.prototype, "rikeStatus", {
                     get: function () {
-                        return this._rikeStatus || (this._rikeStatus = this.createStatus());
+                        if (this._statusView) {
+                            return this._statusView;
+                        }
+                        this._statusView = this.createStatusView();
+                        this._ownStatusView = true;
+                        return this._statusView;
                     },
                     set: function (status) {
-                        this._rikeStatus = status;
+                        if (status === this._statusView) {
+                            return;
+                        }
+                        this.releaseStatusView();
+                        this._statusView = status;
                     },
                     enumerable: true,
                     configurable: true
@@ -1568,7 +1658,7 @@ System.register("ng2-rike/status.component", ["@angular/core", "ng2-rike/status-
                         return this._statusLabels;
                     },
                     set: function (labels) {
-                        this._rikeStatus = undefined;
+                        this._statusView = undefined;
                         this._statusLabels = labels;
                     },
                     enumerable: true,
@@ -1620,28 +1710,40 @@ System.register("ng2-rike/status.component", ["@angular/core", "ng2-rike/status-
                     enumerable: true,
                     configurable: true
                 });
-                RikeStatusComponent.prototype.createStatus = function () {
-                    var status = new status_collector_2.StatusCollector();
-                    this.configureStatus(status);
+                RikeStatusComponent.prototype.ngOnDestroy = function () {
+                    this.releaseStatusView();
+                };
+                RikeStatusComponent.prototype.createStatusView = function () {
+                    var status = this.collector.view(status_collector_2.DEFAULT_STATUS_LABELS);
+                    this.configureStatusView(status);
                     return status;
                 };
-                RikeStatusComponent.prototype.configureStatus = function (status) {
+                RikeStatusComponent.prototype.configureStatusView = function (view) {
                     if (this.rikeStatusLabels) {
-                        status.withLabels(this.rikeStatusLabels);
+                        view.withLabels(this.rikeStatusLabels);
                     }
-                    for (var _i = 0, _a = this._eventSources; _i < _a.length; _i++) {
-                        var esrc = _a[_i];
-                        status.subscribeOn(esrc.rikeEvents);
+                };
+                RikeStatusComponent.prototype.releaseStatusView = function () {
+                    var statusView = this._statusView;
+                    if (statusView) {
+                        this._statusView = undefined;
+                        if (this._ownStatusView) {
+                            statusView.close();
+                        }
                     }
                 };
                 __decorate([
                     core_3.Input(), 
-                    __metadata('design:type', status_collector_2.StatusCollector)
+                    __metadata('design:type', Object)
                 ], RikeStatusComponent.prototype, "rikeStatus", null);
                 __decorate([
                     core_3.Input(), 
                     __metadata('design:type', Object)
                 ], RikeStatusComponent.prototype, "rikeStatusLabels", null);
+                __decorate([
+                    core_3.Input(), 
+                    __metadata('design:type', Function)
+                ], RikeStatusComponent.prototype, "rikeStatusLabelText", null);
                 RikeStatusComponent = __decorate([
                     core_3.Component({
                         selector: '[rikeStatus],[rikeStatusLabels],[rikeStatusLabelText]',
@@ -1650,7 +1752,7 @@ System.register("ng2-rike/status.component", ["@angular/core", "ng2-rike/status-
                             '[ngClass]': 'cssClass'
                         }
                     }), 
-                    __metadata('design:paramtypes', [Array])
+                    __metadata('design:paramtypes', [status_collector_2.StatusCollector])
                 ], RikeStatusComponent);
                 return RikeStatusComponent;
             }());
@@ -1661,7 +1763,7 @@ System.register("ng2-rike/status.component", ["@angular/core", "ng2-rike/status-
 System.register("ng2-rike/field-error", ["ng2-rike/protocol"], function(exports_7, context_7) {
     "use strict";
     var __moduleName = context_7 && context_7.id;
-    var protocol_2;
+    var protocol_3;
     var _Protocol_import;
     /**
      * Appends field errors to {{ErrorResponse}}.
@@ -1688,7 +1790,7 @@ System.register("ng2-rike/field-error", ["ng2-rike/protocol"], function(exports_
                 body = httpResponse.json();
             }
             catch (e) {
-                console.log("Failed to parse JSON error response", e);
+                console.error("Failed to parse JSON error response", e);
             }
         }
         var fieldErrors = toFieldErrors(body);
@@ -1764,12 +1866,12 @@ System.register("ng2-rike/field-error", ["ng2-rike/protocol"], function(exports_
     }
     return {
         setters:[
-            function (protocol_2_1) {
-                protocol_2 = protocol_2_1;
+            function (protocol_3_1) {
+                protocol_3 = protocol_3_1;
             }],
         execute: function() {
             //noinspection JSUnusedLocalSymbols
-            _Protocol_import = protocol_2.Protocol;
+            _Protocol_import = protocol_3.Protocol;
         }
     }
 });
@@ -2226,15 +2328,15 @@ System.register("ng2-rike/event-source-provider", ["ng2-rike/event", "ng2-rike/s
 System.register("ng2-rike/resource", ["@angular/http", "ng2-rike/protocol", "ng2-rike/options"], function(exports_11, context_11) {
     "use strict";
     var __moduleName = context_11 && context_11.id;
-    var http_3, protocol_3, options_2;
+    var http_3, protocol_4, options_2;
     var Resource, RikeResource, CRUDResource;
     return {
         setters:[
             function (http_3_1) {
                 http_3 = http_3_1;
             },
-            function (protocol_3_1) {
-                protocol_3 = protocol_3_1;
+            function (protocol_4_1) {
+                protocol_4 = protocol_4_1;
             },
             function (options_2_1) {
                 options_2 = options_2_1;
@@ -2268,7 +2370,7 @@ System.register("ng2-rike/resource", ["@angular/http", "ng2-rike/protocol", "ng2
                     return this._rikeTarget || (this._rikeTarget = this.createRikeTarget());
                 };
                 RikeResource.prototype.createRikeTarget = function () {
-                    return this.rike.target(this, protocol_3.JSON_PROTOCOL);
+                    return this.rike.target(this, protocol_4.JSON_PROTOCOL);
                 };
                 return RikeResource;
             }());
@@ -2302,7 +2404,7 @@ System.register("ng2-rike/resource", ["@angular/http", "ng2-rike/protocol", "ng2
                     return this.rikeTarget.operation("delete", this.objectDeleteProtocol(object)).delete();
                 };
                 CRUDResource.prototype.createRikeTarget = function () {
-                    return this.rike.target(this, protocol_3.jsonProtocol());
+                    return this.rike.target(this, protocol_4.jsonProtocol());
                 };
                 CRUDResource.prototype.objectCreateProtocol = function (object) {
                     return this.rikeTarget.protocol.instead().readResponse(function (response) { return object; });
@@ -2426,8 +2528,8 @@ System.register("ng2-rike", ["@angular/core", "ng2-rike/rike", "ng2-rike/status.
             function (options_3_1) {
                 exportStar_1(options_3_1);
             },
-            function (protocol_4_1) {
-                exportStar_1(protocol_4_1);
+            function (protocol_5_1) {
+                exportStar_1(protocol_5_1);
             },
             function (resource_2_1) {
                 exportStar_1(resource_2_1);
@@ -2506,15 +2608,15 @@ System.register("ng2-rike/options.spec", ["ng2-rike/options"], function(exports_
 System.register("ng2-rike/protocol.spec", ["@angular/http", "ng2-rike/protocol"], function(exports_15, context_15) {
     "use strict";
     var __moduleName = context_15 && context_15.id;
-    var http_4, protocol_5;
+    var http_4, protocol_6;
     var TestProtocol;
     return {
         setters:[
             function (http_4_1) {
                 http_4 = http_4_1;
             },
-            function (protocol_5_1) {
-                protocol_5 = protocol_5_1;
+            function (protocol_6_1) {
+                protocol_6 = protocol_6_1;
             }],
         execute: function() {
             TestProtocol = (function (_super) {
@@ -2535,7 +2637,7 @@ System.register("ng2-rike/protocol.spec", ["@angular/http", "ng2-rike/protocol"]
                     };
                 };
                 return TestProtocol;
-            }(protocol_5.Protocol));
+            }(protocol_6.Protocol));
             describe("Protocol", function () {
                 var protocol = new TestProtocol();
                 it("prepares request before", function () {
@@ -2601,7 +2703,7 @@ System.register("ng2-rike/protocol.spec", ["@angular/http", "ng2-rike/protocol"]
                 });
             });
             describe("JSON protocol", function () {
-                var protocol = protocol_5.JSON_PROTOCOL;
+                var protocol = protocol_6.JSON_PROTOCOL;
                 it("writes request", function () {
                     var request = { request: "some value", numeric: 13 };
                     var opts = protocol.writeRequest(request, {});
@@ -2628,7 +2730,7 @@ System.register("ng2-rike/protocol.spec", ["@angular/http", "ng2-rike/protocol"]
 System.register("ng2-rike/rike.spec", ["@angular/http", "@angular/core/testing", "@angular/http/testing", "ng2-rike", "ng2-rike/rike", "ng2-rike/options", "ng2-rike/protocol"], function(exports_16, context_16) {
     "use strict";
     var __moduleName = context_16 && context_16.id;
-    var http_5, testing_1, testing_2, ng2_rike_1, rike_3, options_5, protocol_6;
+    var http_5, testing_1, testing_2, ng2_rike_1, rike_3, options_5, protocol_7;
     function addRikeProviders() {
         testing_1.addProviders([
             http_5.HTTP_PROVIDERS,
@@ -2657,7 +2759,6 @@ System.register("ng2-rike/rike.spec", ["@angular/http", "@angular/core/testing",
         };
         var written = protocol.writeRequest(value, {}).body;
         var restored = JSON.parse(written);
-        console.log(restored);
         expect(restored.a).toBe(value.a, "Invalid data restored from JSON");
         expect(restored.b).toBe(value.b, "Invalid data restored from JSON");
         expect(restored.c).toEqual(value.c, "Invalid data restored from JSON");
@@ -2683,8 +2784,8 @@ System.register("ng2-rike/rike.spec", ["@angular/http", "@angular/core/testing",
             function (options_5_1) {
                 options_5 = options_5_1;
             },
-            function (protocol_6_1) {
-                protocol_6 = protocol_6_1;
+            function (protocol_7_1) {
+                protocol_7 = protocol_7_1;
             }],
         execute: function() {
             describe("Rike", function () {
@@ -2755,7 +2856,7 @@ System.register("ng2-rike/rike.spec", ["@angular/http", "@angular/core/testing",
                     var targetId = "target1";
                     var target = rike.target(targetId);
                     expect(target.target).toBe(targetId);
-                    expect(target.protocol).toBe(protocol_6.HTTP_PROTOCOL);
+                    expect(target.protocol).toBe(protocol_7.HTTP_PROTOCOL);
                 });
                 it("creates JSON target", function () {
                     var targetId = "target1";
@@ -2764,7 +2865,7 @@ System.register("ng2-rike/rike.spec", ["@angular/http", "@angular/core/testing",
                     expectJsonProtocol(target.protocol);
                 });
                 it("creates target with specified protocol", function () {
-                    var protocol = protocol_6.jsonProtocol()
+                    var protocol = protocol_7.jsonProtocol()
                         .instead()
                         .writeRequest(function (val, opts) {
                         return new http_5.RequestOptions(opts).merge({ body: val });
@@ -2978,12 +3079,9 @@ System.register("ng2-rike/rike-operation.spec", ["@angular/http", "@angular/core
                     var op = target.operation("operation");
                     var events = 0;
                     target.rikeEvents.subscribe(function (ev) {
-                        if (!events++) {
-                            expect(ev.operation).toBe(op);
-                            expect(ev.target).toBe(target);
-                        }
-                        else {
-                        }
+                        events++;
+                        expect(ev.operation).toBe(op);
+                        expect(ev.target).toBe(target);
                     }, function (ev) {
                         expect(events).toBe(1, "Start event not received yet");
                         expect(ev.complete).toBeTruthy();
@@ -2991,7 +3089,7 @@ System.register("ng2-rike/rike-operation.spec", ["@angular/http", "@angular/core
                         expect(error.message).toBe("error1");
                         done();
                     });
-                    op.load().subscribe();
+                    expect(function () { return op.load().subscribe(); }).toThrowError("error1");
                 });
             });
         }
@@ -3000,7 +3098,7 @@ System.register("ng2-rike/rike-operation.spec", ["@angular/http", "@angular/core
 System.register("ng2-rike/rike-target.spec", ["@angular/core/testing", "@angular/http", "@angular/http/testing", "ng2-rike/rike.spec", "ng2-rike/rike", "ng2-rike/protocol"], function(exports_18, context_18) {
     "use strict";
     var __moduleName = context_18 && context_18.id;
-    var testing_5, http_7, testing_6, rike_spec_2, rike_5, protocol_7;
+    var testing_5, http_7, testing_6, rike_spec_2, rike_5, protocol_8;
     return {
         setters:[
             function (testing_5_1) {
@@ -3018,8 +3116,8 @@ System.register("ng2-rike/rike-target.spec", ["@angular/core/testing", "@angular
             function (rike_5_1) {
                 rike_5 = rike_5_1;
             },
-            function (protocol_7_1) {
-                protocol_7 = protocol_7_1;
+            function (protocol_8_1) {
+                protocol_8 = protocol_8_1;
             }],
         execute: function() {
             describe("RikeTarget", function () {
@@ -3053,7 +3151,7 @@ System.register("ng2-rike/rike-target.spec", ["@angular/core/testing", "@angular
                     rike_spec_2.expectJsonProtocol(op.protocol);
                 });
                 it("creates operation over specified protocol", function () {
-                    var proto = protocol_7.jsonProtocol()
+                    var proto = protocol_8.jsonProtocol()
                         .instead()
                         .writeRequest(function (val, opts) {
                         return new http_7.RequestOptions(opts).merge({ body: JSON.stringify(val) });
