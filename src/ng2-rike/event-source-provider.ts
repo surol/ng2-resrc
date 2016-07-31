@@ -4,7 +4,7 @@ import {StatusCollector} from "./status-collector";
 import {ErrorCollector} from "./error-collector";
 
 /**
- * Constructs provider recipe for [RikeEventSource]
+ * Constructs provider recipe for {{RikeEventSource}}.
  *
  * @param useClass
  * @param useValue
