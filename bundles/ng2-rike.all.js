@@ -645,7 +645,7 @@ System.register("ng2-rike/status-collector", ["@angular/core", "ng2-rike/event"]
                 };
                 StatusCollector.prototype.withLabels = function (operation, labels) {
                     var id;
-                    if (!labels) {
+                    if (typeof operation !== "string") {
                         id = "*";
                         labels = operation;
                     }

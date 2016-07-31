@@ -62,11 +62,11 @@ export class StatusCollector<L> {
 
     withLabels(operation: string, labels: StatusLabels<L>): this;
 
-    withLabels(operation: string, labels?: StatusLabels<L>): this {
+    withLabels(operation: string | StatusLabels<L>, labels?: StatusLabels<L>): this {
 
         let id: string;
 
-        if (!labels) {
+        if (typeof operation !== "string") {
             id = "*";
             labels = operation as StatusLabels<L>;
         } else {
@@ -74,7 +74,7 @@ export class StatusCollector<L> {
         }
 
         this._combined = undefined;
-        this._labels[id] = labels;
+        this._labels[id] = labels!;
 
         return this;
     }
@@ -218,7 +218,7 @@ function evalLabel<L>(status: TargetStatus, label?: L | ((target: RikeTarget<any
     return labelFn(status.start.target);
 }
 
-function combineLabels<L> (combined?: CombinedStatus<L>, label?: StatusLabel<L>): CombinedStatus<L> | undefined {
+function combineLabels<L>(combined?: CombinedStatus<L>, label?: StatusLabel<L>): CombinedStatus<L> | undefined {
     if (!label) {
         return combined;
     }
