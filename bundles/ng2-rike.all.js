@@ -3099,4 +3099,4 @@ System.register("ng2-rike/rike-target.spec", ["@angular/core/testing", "@angular
         }
     }
 });
-//# sourceMappingURL=ng2-rike.with-tests.js.map
+//# sourceMappingURL=ng2-rike.all.js.map
