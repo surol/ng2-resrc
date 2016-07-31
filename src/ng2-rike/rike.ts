@@ -173,9 +173,9 @@ export class Rike implements RikeEventSource {
      * @param target arbitrary target value.
      * @param protocol operations protocol.
      *
-     * @return {RikeTarget<IN, OUT>} new operations target.
+     * @return {RikeTarget<I, O>} new operations target.
      */
-    target<IN, OUT>(target: any, protocol: Protocol<IN, OUT>): RikeTarget<IN, OUT>;
+    target<I, O>(target: any, protocol: Protocol<I, O>): RikeTarget<I, O>;
 
     target(target: any, protocol?: Protocol<any, any>): RikeTarget<any, any> {
 
@@ -198,10 +198,10 @@ export class Rike implements RikeEventSource {
      *
      * @param target arbitrary target value.
      *
-     * @return {RikeTarget<T>} new operations target.
+     * @return {RikeTarget<I, O>} new operations target.
      */
-    json<T>(target: any): RikeTarget<T, T> {
-        return this.target(target, jsonProtocol<T>());
+    json<I, O>(target: any): RikeTarget<I, O> {
+        return this.target(target, jsonProtocol<I, O>());
     }
 
     /**
@@ -361,9 +361,9 @@ export abstract class RikeTarget<IN, OUT> implements RikeEventSource {
      * @param name operation name.
      * @param protocol operation protocol.
      *
-     * @return {RikeOperation<IN, OUT>} new operation.
+     * @return {RikeOperation<I, O>} new operation.
      */
-    abstract operation<IN, OUT>(name: string, protocol: Protocol<IN, OUT>): RikeOperation<IN, OUT>;
+    abstract operation<I, O>(name: string, protocol: Protocol<I, O>): RikeOperation<I, O>;
 
     /**
      * Constructs JSON operation on this target.
@@ -374,8 +374,8 @@ export abstract class RikeTarget<IN, OUT> implements RikeEventSource {
      *
      * @return {RikeOperation<T, T>} new operation.
      */
-    json<T>(name: string): RikeOperation<T, T> {
-        return this.operation(name, jsonProtocol<T>());
+    json<I, O>(name: string): RikeOperation<I, O> {
+        return this.operation(name, jsonProtocol<I, O>());
     }
 
     /**

@@ -184,7 +184,7 @@ declare module "ng2-rike/protocol" {
      *
      * Sends and receives the data of the given type as JSON over HTTP.
      */
-    export const jsonProtocol: (<T>() => Protocol<T, T>);
+    export const jsonProtocol: (<IN, OUT>() => Protocol<IN, OUT>);
     /**
      * HTTP protocol.
      *
@@ -506,17 +506,17 @@ declare module "ng2-rike/rike" {
          * @param target arbitrary target value.
          * @param protocol operations protocol.
          *
-         * @return {RikeTarget<IN, OUT>} new operations target.
+         * @return {RikeTarget<I, O>} new operations target.
          */
-        target<IN, OUT>(target: any, protocol: Protocol<IN, OUT>): RikeTarget<IN, OUT>;
+        target<I, O>(target: any, protocol: Protocol<I, O>): RikeTarget<I, O>;
         /**
          * Constructs operations target which operates over [JSON protocol][jsonProtocol].
          *
          * @param target arbitrary target value.
          *
-         * @return {RikeTarget<T>} new operations target.
+         * @return {RikeTarget<I, O>} new operations target.
          */
-        json<T>(target: any): RikeTarget<T, T>;
+        json<I, O>(target: any): RikeTarget<I, O>;
         /**
          * Updates HTTP request options accordingly to global _options_.
          *
@@ -606,9 +606,9 @@ declare module "ng2-rike/rike" {
          * @param name operation name.
          * @param protocol operation protocol.
          *
-         * @return {RikeOperation<IN, OUT>} new operation.
+         * @return {RikeOperation<I, O>} new operation.
          */
-        abstract operation<IN, OUT>(name: string, protocol: Protocol<IN, OUT>): RikeOperation<IN, OUT>;
+        abstract operation<I, O>(name: string, protocol: Protocol<I, O>): RikeOperation<I, O>;
         /**
          * Constructs JSON operation on this target.
          *
@@ -618,7 +618,7 @@ declare module "ng2-rike/rike" {
          *
          * @return {RikeOperation<T, T>} new operation.
          */
-        json<T>(name: string): RikeOperation<T, T>;
+        json<I, O>(name: string): RikeOperation<I, O>;
         /**
          * Cancels current operation, if any.
          *

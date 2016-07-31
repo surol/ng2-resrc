@@ -67,7 +67,7 @@ export abstract class CRUDResource<T> extends RikeResource {
     }
 
     protected createRikeTarget(): RikeTarget<T, T> {
-        return this.rike.target(this, jsonProtocol<T>());
+        return this.rike.target(this, jsonProtocol<T, T>());
     }
 
     protected objectCreateProtocol(object: T): Protocol<any, T> {

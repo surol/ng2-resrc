@@ -327,9 +327,9 @@ class CustomProtocol<IN, OUT> extends Protocol<IN, OUT> {
 
 }
 
-class JsonProtocol<T> extends Protocol<T, T> {
+class JsonProtocol<IN, OUT> extends Protocol<IN, OUT> {
 
-    writeRequest(request: T, options: RequestOptionsArgs): RequestOptionsArgs {
+    writeRequest(request: IN, options: RequestOptionsArgs): RequestOptionsArgs {
 
         const opts = new RequestOptions(options).merge({body: JSON.stringify(request)});
 
@@ -345,7 +345,7 @@ class JsonProtocol<T> extends Protocol<T, T> {
         return opts;
     }
 
-    readResponse(response: Response): T {
+    readResponse(response: Response): OUT {
         return response.json();
     }
 
@@ -358,14 +358,14 @@ class JsonProtocol<T> extends Protocol<T, T> {
  *
  * @type {Protocol<any>}
  */
-export const JSON_PROTOCOL: Protocol<any, any> = new JsonProtocol<any>();
+export const JSON_PROTOCOL: Protocol<any, any> = new JsonProtocol<any, any>();
 
 /**
  * Returns JSON protocol.
  *
  * Sends and receives the data of the given type as JSON over HTTP.
  */
-export const jsonProtocol: (<T>() => Protocol<T, T>) = () => JSON_PROTOCOL;
+export const jsonProtocol: (<IN, OUT>() => Protocol<IN, OUT>) = () => JSON_PROTOCOL;
 
 class HttpProtocol extends Protocol<any, Response> {
 

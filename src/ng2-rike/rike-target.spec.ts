@@ -51,7 +51,7 @@ describe("RikeTarget", () => {
 
     it("creates operation over specified protocol", () => {
 
-        const proto = jsonProtocol<string>()
+        const proto = jsonProtocol<string, string>()
             .instead()
             .writeRequest((val: number, opts: RequestOptionsArgs) =>
                 new RequestOptions(opts).merge({body: JSON.stringify(val)}));

@@ -1042,7 +1042,7 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                  *
                  * @param target arbitrary target value.
                  *
-                 * @return {RikeTarget<T>} new operations target.
+                 * @return {RikeTarget<I, O>} new operations target.
                  */
                 Rike.prototype.json = function (target) {
                     return this.target(target, protocol_1.jsonProtocol());

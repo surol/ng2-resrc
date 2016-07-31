@@ -141,7 +141,7 @@ describe("Rike", () => {
 
     it("creates target with specified protocol", () => {
 
-        const protocol = jsonProtocol<string>()
+        const protocol = jsonProtocol<string, string>()
             .instead()
             .writeRequest((val: number, opts: RequestOptionsArgs) =>
                 new RequestOptions(opts).merge({body: val}));
