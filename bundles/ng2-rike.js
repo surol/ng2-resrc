@@ -1711,7 +1711,7 @@ System.register("ng2-rike/field-error", ["ng2-rike/protocol"], function(exports_
         if (data == null) {
             return;
         }
-        if (data instanceof Array) {
+        if (Array.isArray(data)) {
             var fieldErrors = data.map(toFieldError).filter(notEmptyError);
             return fieldErrors.length ? { "*": fieldErrors } : undefined;
         }
@@ -1737,7 +1737,7 @@ System.register("ng2-rike/field-error", ["ng2-rike/protocol"], function(exports_
         if (data == null) {
             return [];
         }
-        if (data instanceof Array) {
+        if (Array.isArray(data)) {
             return data.map(toFieldError).filter(notEmptyError);
         }
         return [toFieldError(data)].filter(notEmptyError);

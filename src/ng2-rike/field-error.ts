@@ -106,7 +106,7 @@ function toFieldErrors(data: any): FieldErrors | undefined {
     if (data == null) {
         return;
     }
-    if (data instanceof Array) {
+    if (Array.isArray(data)) {
 
         const fieldErrors = data.map(toFieldError).filter(notEmptyError);
 
@@ -142,7 +142,7 @@ function toFieldErrorArray(data: any): FieldError[] {
     if (data == null) {
         return [];
     }
-    if (data instanceof Array) {
+    if (Array.isArray(data)) {
         return data.map(toFieldError).filter(notEmptyError);
     }
     return [toFieldError(data)].filter(notEmptyError);
