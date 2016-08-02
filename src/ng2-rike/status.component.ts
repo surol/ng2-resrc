@@ -1,12 +1,11 @@
-import {Component, Input, Optional, OnDestroy} from "@angular/core";
+import {Component, Input, OnDestroy} from "@angular/core";
 import {StatusLabels, StatusCollector, StatusView, DEFAULT_STATUS_LABELS} from "./status-collector";
-import {RikeEventSource} from "./event";
 
 @Component({
-    selector: '[rikeStatus],[rikeStatusLabels],[rikeStatusLabelText]',
+    selector: '[rikeStatus],[rikeStatusLabels],[rikeStatusLabelText],[rikeStatusLabelClass]',
     template: `{{text}}`,
     host: {
-        '[ngClass]': 'cssClass'
+        "[class]": "cssClass",
     }
 })
 export class RikeStatusComponent<L> implements OnDestroy {
@@ -15,6 +14,7 @@ export class RikeStatusComponent<L> implements OnDestroy {
     private _statusView?: StatusView<L>;
     private _ownStatusView = false;
     private _labelText: (label: L) => string = label => label.toString();
+    private _labelClass: (status: StatusView<L>) => string = defaultStatusClass;
 
     constructor(private _collector: StatusCollector) {
     }
@@ -23,7 +23,7 @@ export class RikeStatusComponent<L> implements OnDestroy {
         return this._collector;
     }
 
-    get rikeStatus(): StatusView<L> {
+    get statusView(): StatusView<L> {
         if (this._statusView) {
             return this._statusView;
         }
@@ -34,8 +34,12 @@ export class RikeStatusComponent<L> implements OnDestroy {
         return this._statusView;
     }
 
+    get rikeStatus(): StatusView<L> | undefined {
+        return this._statusView;
+    }
+
     @Input()
-    set rikeStatus(status: StatusView<L>) {
+    set rikeStatus(status: StatusView<L> | undefined) {
         if (status === this._statusView) {
             return;
         }
@@ -62,19 +66,22 @@ export class RikeStatusComponent<L> implements OnDestroy {
         this._labelText = value;
     }
 
-    get cssClass(): any {
-        return {
-            "rike-status": true,
-            "rike-status-processing": this.rikeStatus.processing,
-            "rike-status-failed": this.rikeStatus.failed,
-            "rike-status-cancelled": this.rikeStatus.cancelled,
-            "rike-status-succeed": this.rikeStatus.succeed,
-        }
+    get rikeStatusLabelClass(): (status: StatusView<L>) => string {
+        return this._labelClass;
+    }
+
+    @Input()
+    set rikeStatusLabelClass(value: (status: StatusView<L>) => string) {
+        this._labelClass = value;
+    }
+
+    get cssClass(): string {
+        return this._labelClass(this.statusView);
     }
 
     get text(): string | undefined {
 
-        const labels = this.rikeStatus.labels;
+        const labels = this.statusView.labels;
 
         if (!labels.length) {
             return undefined;
@@ -91,7 +98,7 @@ export class RikeStatusComponent<L> implements OnDestroy {
             }
             text += t;
         }
-        if (this.rikeStatus.processing) {
+        if (this.statusView.processing) {
             text += "...";
         }
 
@@ -123,4 +130,23 @@ export class RikeStatusComponent<L> implements OnDestroy {
         }
     }
 
+}
+
+function defaultStatusClass<L>(status: StatusView<L>) {
+    if (!status.labels.length) {
+        return "rike-status rike-status-hidden";
+    }
+    if (this.statusView.processing) {
+        return "rike-status rike-status-processing";
+    }
+    if (this.statusView.cancelled) {
+        return "rike-status rike-status-cancelled";
+    }
+    if (this.statusView.failed) {
+        return "rike-status rike-status-failed";
+    }
+    if (this.statusView.succeed) {
+        return "rike-status rike-status-succeed";
+    }
+    return "rike-status rike-status-hidden";
 }

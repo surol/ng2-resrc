@@ -1664,6 +1664,24 @@ System.register("ng2-rike/status.component", ["@angular/core", "ng2-rike/status-
     var __moduleName = context_6 && context_6.id;
     var core_3, status_collector_2;
     var RikeStatusComponent;
+    function defaultStatusClass(status) {
+        if (!status.labels.length) {
+            return "rike-status rike-status-hidden";
+        }
+        if (this.statusView.processing) {
+            return "rike-status rike-status-processing";
+        }
+        if (this.statusView.cancelled) {
+            return "rike-status rike-status-cancelled";
+        }
+        if (this.statusView.failed) {
+            return "rike-status rike-status-failed";
+        }
+        if (this.statusView.succeed) {
+            return "rike-status rike-status-succeed";
+        }
+        return "rike-status rike-status-hidden";
+    }
     return {
         setters:[
             function (core_3_1) {
@@ -1678,6 +1696,7 @@ System.register("ng2-rike/status.component", ["@angular/core", "ng2-rike/status-
                     this._collector = _collector;
                     this._ownStatusView = false;
                     this._labelText = function (label) { return label.toString(); };
+                    this._labelClass = defaultStatusClass;
                 }
                 Object.defineProperty(RikeStatusComponent.prototype, "collector", {
                     get: function () {
@@ -1686,13 +1705,20 @@ System.register("ng2-rike/status.component", ["@angular/core", "ng2-rike/status-
                     enumerable: true,
                     configurable: true
                 });
-                Object.defineProperty(RikeStatusComponent.prototype, "rikeStatus", {
+                Object.defineProperty(RikeStatusComponent.prototype, "statusView", {
                     get: function () {
                         if (this._statusView) {
                             return this._statusView;
                         }
                         this._statusView = this.createStatusView();
                         this._ownStatusView = true;
+                        return this._statusView;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                Object.defineProperty(RikeStatusComponent.prototype, "rikeStatus", {
+                    get: function () {
                         return this._statusView;
                     },
                     set: function (status) {
@@ -1726,22 +1752,26 @@ System.register("ng2-rike/status.component", ["@angular/core", "ng2-rike/status-
                     enumerable: true,
                     configurable: true
                 });
+                Object.defineProperty(RikeStatusComponent.prototype, "rikeStatusLabelClass", {
+                    get: function () {
+                        return this._labelClass;
+                    },
+                    set: function (value) {
+                        this._labelClass = value;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
                 Object.defineProperty(RikeStatusComponent.prototype, "cssClass", {
                     get: function () {
-                        return {
-                            "rike-status": true,
-                            "rike-status-processing": this.rikeStatus.processing,
-                            "rike-status-failed": this.rikeStatus.failed,
-                            "rike-status-cancelled": this.rikeStatus.cancelled,
-                            "rike-status-succeed": this.rikeStatus.succeed,
-                        };
+                        return this._labelClass(this.statusView);
                     },
                     enumerable: true,
                     configurable: true
                 });
                 Object.defineProperty(RikeStatusComponent.prototype, "text", {
                     get: function () {
-                        var labels = this.rikeStatus.labels;
+                        var labels = this.statusView.labels;
                         if (!labels.length) {
                             return undefined;
                         }
@@ -1754,7 +1784,7 @@ System.register("ng2-rike/status.component", ["@angular/core", "ng2-rike/status-
                             }
                             text += t;
                         }
-                        if (this.rikeStatus.processing) {
+                        if (this.statusView.processing) {
                             text += "...";
                         }
                         return text;
@@ -1791,12 +1821,16 @@ System.register("ng2-rike/status.component", ["@angular/core", "ng2-rike/status-
                     core_3.Input(), 
                     __metadata('design:type', Function)
                 ], RikeStatusComponent.prototype, "rikeStatusLabelText", null);
+                __decorate([
+                    core_3.Input(), 
+                    __metadata('design:type', Function)
+                ], RikeStatusComponent.prototype, "rikeStatusLabelClass", null);
                 RikeStatusComponent = __decorate([
                     core_3.Component({
-                        selector: '[rikeStatus],[rikeStatusLabels],[rikeStatusLabelText]',
+                        selector: '[rikeStatus],[rikeStatusLabels],[rikeStatusLabelText],[rikeStatusLabelClass]',
                         template: "{{text}}",
                         host: {
-                            '[ngClass]': 'cssClass'
+                            "[class]": "cssClass",
                         }
                     }), 
                     __metadata('design:paramtypes', [status_collector_2.StatusCollector])
