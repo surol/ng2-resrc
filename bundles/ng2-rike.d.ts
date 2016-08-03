@@ -374,11 +374,28 @@ declare module "ng2-rike/status-collector" {
         [operation: string]: StatusLabels<L>;
     }
     /**
+     * Default status label.
+     */
+    export type DefaultStatusLabel = string | {
+        /**
+         * Status identifier.
+         */
+        id?: string;
+        /**
+         * Status message.
+         */
+        message: string;
+        /**
+         * CSS class to indicate this status.
+         */
+        cssClass?: string;
+    };
+    /**
      * Default map of Rike operations status labels.
      *
      * Default status labels are strings.
      */
-    export const DEFAULT_STATUS_LABELS: StatusLabelMap<string>;
+    export const DEFAULT_STATUS_LABELS: StatusLabelMap<DefaultStatusLabel>;
     /**
      * Rike operations status collecting service.
      *
@@ -402,9 +419,9 @@ declare module "ng2-rike/status-collector" {
         /**
          * Current status labels.
          *
-         * @return {string[]} array of string labels.
+         * @return {DefaultStatusLabel[]} array of default labels.
          */
-        readonly labels: string[];
+        readonly labels: DefaultStatusLabel[];
         /**
          * Whether some operation is in process.
          */
@@ -500,7 +517,7 @@ declare module "ng2-rike/status-collector" {
 }
 declare module "ng2-rike/options" {
     import { Protocol } from "ng2-rike/protocol";
-    import { StatusLabels } from "ng2-rike/status-collector";
+    import { StatusLabels, DefaultStatusLabel } from "ng2-rike/status-collector";
     /**
      * Constructs URL relative to base URL.
      *
@@ -532,10 +549,10 @@ declare module "ng2-rike/options" {
          *
          * If not specified the `DEFAULT_STATUS_LABELS` will be used.
          *
-         * Default status labels are always strings.
+         * Default status labels are always of type {{DefaultStatusLabel}}.
          */
         readonly defaultStatusLabels?: {
-            [operation: string]: StatusLabels<any>;
+            [operation: string]: StatusLabels<DefaultStatusLabel>;
         };
     }
     /**
@@ -550,7 +567,7 @@ declare module "ng2-rike/options" {
         readonly abstract baseUrl?: string;
         readonly abstract defaultProtocol: Protocol<any, any>;
         abstract defaultStatusLabels: {
-            [operation: string]: StatusLabels<string>;
+            [operation: string]: StatusLabels<DefaultStatusLabel>;
         };
         /**
          * Constructs URL relative to `baseUrl`.
@@ -574,7 +591,7 @@ declare module "ng2-rike/options" {
         readonly baseUrl: string | undefined;
         readonly defaultProtocol: Protocol<any, any>;
         readonly defaultStatusLabels: {
-            [operation: string]: StatusLabels<string>;
+            [operation: string]: StatusLabels<DefaultStatusLabel>;
         };
     }
     /**

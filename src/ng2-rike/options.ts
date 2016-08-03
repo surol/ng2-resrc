@@ -1,5 +1,5 @@
 import {Protocol, HTTP_PROTOCOL} from "./protocol";
-import {StatusLabels, DEFAULT_STATUS_LABELS} from "./status-collector";
+import {StatusLabels, DEFAULT_STATUS_LABELS, DefaultStatusLabel} from "./status-collector";
 /**
  * Constructs URL relative to base URL.
  *
@@ -46,9 +46,9 @@ export interface RikeOptionsArgs {
      *
      * If not specified the `DEFAULT_STATUS_LABELS` will be used.
      *
-     * Default status labels are always strings.
+     * Default status labels are always of type {{DefaultStatusLabel}}.
      */
-    readonly defaultStatusLabels?: {[operation: string]: StatusLabels<any>};
+    readonly defaultStatusLabels?: {[operation: string]: StatusLabels<DefaultStatusLabel>};
 
 }
 
@@ -66,7 +66,7 @@ export abstract class RikeOptions implements RikeOptionsArgs {
 
     abstract readonly defaultProtocol: Protocol<any, any>;
 
-    abstract defaultStatusLabels: {[operation: string]: StatusLabels<string>};
+    abstract defaultStatusLabels: {[operation: string]: StatusLabels<DefaultStatusLabel>};
 
     /**
      * Constructs URL relative to `baseUrl`.
@@ -113,7 +113,7 @@ export class BaseRikeOptions extends RikeOptions {
         return this._defaultProtocol;
     }
 
-    get defaultStatusLabels(): {[operation: string]: StatusLabels<string>} {
+    get defaultStatusLabels(): {[operation: string]: StatusLabels<DefaultStatusLabel>} {
         return this._defaultStatusLabels;
     }
 

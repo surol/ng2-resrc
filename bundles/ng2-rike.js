@@ -605,31 +605,70 @@ System.register("ng2-rike/status-collector", ["@angular/core", "ng2-rike/event"]
              */
             exports_3("DEFAULT_STATUS_LABELS", DEFAULT_STATUS_LABELS = {
                 "*": {
-                    processing: "Processing",
-                    failed: "Error",
-                    cancelled: "Cancelled"
+                    processing: {
+                        id: "processing",
+                        message: "Processing"
+                    },
+                    failed: {
+                        id: "failed",
+                        message: "Error"
+                    },
+                    cancelled: {
+                        id: "cancelled",
+                        message: "Cancelled"
+                    }
                 },
                 "load": {
-                    processing: "Loading",
+                    processing: {
+                        id: "loading",
+                        message: "Loading",
+                    },
                 },
                 "send": {
-                    processing: "Sending",
-                    succeed: "Sent",
+                    processing: {
+                        id: "sending",
+                        message: "Sending"
+                    },
+                    succeed: {
+                        id: "sent",
+                        message: "Sent"
+                    },
                 },
                 "read": {
-                    processing: "Loading",
+                    processing: {
+                        id: "loading",
+                        message: "Loading"
+                    },
                 },
                 "create": {
-                    processing: "Creating",
-                    succeed: "Created",
+                    processing: {
+                        id: "creating",
+                        message: "Creating"
+                    },
+                    succeed: {
+                        id: "created",
+                        message: "Created"
+                    },
                 },
                 "update": {
-                    processing: "Updating",
-                    succeed: "Updated"
+                    processing: {
+                        id: "updating",
+                        message: "Updating"
+                    },
+                    succeed: {
+                        id: "updated",
+                        message: "Updated"
+                    }
                 },
                 "delete": {
-                    processing: "Deleting",
-                    succeed: "Deleted",
+                    processing: {
+                        id: "deleting",
+                        message: "Deleting"
+                    },
+                    succeed: {
+                        id: "deleted",
+                        message: "Deleted"
+                    },
                 },
             });
             /**
@@ -662,7 +701,7 @@ System.register("ng2-rike/status-collector", ["@angular/core", "ng2-rike/event"]
                     /**
                      * Current status labels.
                      *
-                     * @return {string[]} array of string labels.
+                     * @return {DefaultStatusLabel[]} array of default labels.
                      */
                     get: function () {
                         return this._defaultView ? this._defaultView.labels : [];
@@ -1663,10 +1702,38 @@ System.register("ng2-rike/status.component", ["@angular/core", "ng2-rike/status-
     var __moduleName = context_6 && context_6.id;
     var core_3, status_collector_2;
     var RikeStatusComponent;
+    function defaultLabelText(label) {
+        if (typeof label === "string") {
+            return label;
+        }
+        var defaultLabel = label;
+        if (defaultLabel.message) {
+            return defaultLabel.message;
+        }
+        return label.toString();
+    }
     function defaultStatusClass(status) {
-        if (!status.labels.length) {
+        var labels = status.labels;
+        if (!labels.length) {
             return "rike-status rike-status-hidden";
         }
+        var result = processingTypeClass(status);
+        for (var _i = 0, labels_1 = labels; _i < labels_1.length; _i++) {
+            var label = labels_1[_i];
+            var defaultLabel = label;
+            var cssClass = defaultLabel.cssClass;
+            if (cssClass) {
+                result += " " + cssClass;
+                continue;
+            }
+            var id = defaultLabel.id;
+            if (id) {
+                result += " rike-status-" + id;
+            }
+        }
+        return result;
+    }
+    function processingTypeClass(status) {
         if (this.statusView.processing) {
             return "rike-status rike-status-processing";
         }
@@ -1694,7 +1761,7 @@ System.register("ng2-rike/status.component", ["@angular/core", "ng2-rike/status-
                 function RikeStatusComponent(_collector) {
                     this._collector = _collector;
                     this._ownStatusView = false;
-                    this._labelText = function (label) { return label.toString(); };
+                    this._labelText = defaultLabelText;
                     this._labelClass = defaultStatusClass;
                 }
                 Object.defineProperty(RikeStatusComponent.prototype, "collector", {
@@ -1775,8 +1842,8 @@ System.register("ng2-rike/status.component", ["@angular/core", "ng2-rike/status-
                             return undefined;
                         }
                         var text = "";
-                        for (var _i = 0, labels_1 = labels; _i < labels_1.length; _i++) {
-                            var label = labels_1[_i];
+                        for (var _i = 0, labels_2 = labels; _i < labels_2.length; _i++) {
+                            var label = labels_2[_i];
                             var t = this.rikeStatusLabelText(label);
                             if (text) {
                                 text += ", ";
@@ -1827,7 +1894,7 @@ System.register("ng2-rike/status.component", ["@angular/core", "ng2-rike/status-
                 RikeStatusComponent = __decorate([
                     core_3.Component({
                         selector: '[rikeStatus],[rikeStatusLabels],[rikeStatusLabelText],[rikeStatusLabelClass]',
-                        template: "{{text}}",
+                        template: "<span class=\"rike-status-icon\"></span> {{text}}",
                         host: {
                             "[class]": "cssClass",
                         }

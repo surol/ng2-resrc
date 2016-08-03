@@ -3,7 +3,7 @@ import {StatusLabels, StatusCollector, StatusView, DEFAULT_STATUS_LABELS} from "
 
 @Component({
     selector: '[rikeStatus],[rikeStatusLabels],[rikeStatusLabelText],[rikeStatusLabelClass]',
-    template: `{{text}}`,
+    template: `<span class="rike-status-icon"></span> {{text}}`,
     host: {
         "[class]": "cssClass",
     }
@@ -13,7 +13,7 @@ export class RikeStatusComponent<L> implements OnDestroy {
     private _statusLabels?: {[operation: string]: StatusLabels<L>};
     private _statusView?: StatusView<L>;
     private _ownStatusView = false;
-    private _labelText: (label: L) => string = label => label.toString();
+    private _labelText: (label: L) => string = defaultLabelText;
     private _labelClass: (status: StatusView<L>) => string = defaultStatusClass;
 
     constructor(private _collector: StatusCollector) {
@@ -132,10 +132,52 @@ export class RikeStatusComponent<L> implements OnDestroy {
 
 }
 
+function defaultLabelText(label: any): string  {
+    if (typeof label === "string") {
+        return label;
+    }
+
+    const defaultLabel = label as {message?: string};
+
+    if (defaultLabel.message) {
+        return defaultLabel.message;
+    }
+
+    return label.toString();
+}
+
+
 function defaultStatusClass<L>(status: StatusView<L>) {
-    if (!status.labels.length) {
+
+    const labels = status.labels;
+
+    if (!labels.length) {
         return "rike-status rike-status-hidden";
     }
+
+    let result = processingTypeClass(status);
+
+    for (let label of labels) {
+
+        const defaultLabel = label as {id?: string; cssClass?: string};
+        const cssClass = defaultLabel.cssClass;
+
+        if (cssClass) {
+            result += " " + cssClass;
+            continue;
+        }
+
+        const id = defaultLabel.id;
+
+        if (id) {
+            result += " rike-status-" + id;
+        }
+    }
+
+    return result;
+}
+
+function processingTypeClass(status: StatusView<any>) {
     if (this.statusView.processing) {
         return "rike-status rike-status-processing";
     }
@@ -150,3 +192,4 @@ function defaultStatusClass<L>(status: StatusView<L>) {
     }
     return "rike-status rike-status-hidden";
 }
+

@@ -51,37 +51,98 @@ export interface StatusLabelMap<L> {
 }
 
 /**
+ * Default status label.
+ */
+export type DefaultStatusLabel = string | {
+
+    /**
+     * Status identifier.
+     */
+    id?: string;
+
+    /**
+     * Status message.
+     */
+    message: string;
+
+    /**
+     * CSS class to indicate this status.
+     */
+    cssClass?: string;
+
+}
+
+/**
  * Default map of Rike operations status labels.
  *
  * Default status labels are strings.
  */
-export const DEFAULT_STATUS_LABELS: StatusLabelMap<string> = {
+export const DEFAULT_STATUS_LABELS: StatusLabelMap<DefaultStatusLabel> = {
     "*": {
-        processing: "Processing",
-        failed: "Error",
-        cancelled: "Cancelled"
+        processing: {
+            id: "processing",
+            message: "Processing"
+        },
+        failed: {
+            id: "failed",
+            message: "Error"
+        },
+        cancelled: {
+            id: "cancelled",
+            message: "Cancelled"
+        }
     },
     "load": {
-        processing: "Loading",
+        processing: {
+            id: "loading",
+            message: "Loading",
+        },
     },
     "send": {
-        processing: "Sending",
-        succeed: "Sent",
+        processing: {
+            id: "sending",
+            message: "Sending"
+        },
+        succeed: {
+            id: "sent",
+            message: "Sent"
+        },
     },
     "read": {
-        processing: "Loading",
+        processing: {
+            id: "loading",
+            message: "Loading"
+        },
     },
     "create": {
-        processing: "Creating",
-        succeed: "Created",
+        processing: {
+            id: "creating",
+            message: "Creating"
+        },
+        succeed: {
+            id: "created",
+            message: "Created"
+        },
     },
     "update": {
-        processing: "Updating",
-        succeed: "Updated"
+        processing: {
+            id: "updating",
+            message: "Updating"
+        },
+        succeed: {
+            id: "updated",
+            message: "Updated"
+        }
     },
     "delete": {
-        processing: "Deleting",
-        succeed: "Deleted",
+        processing: {
+            id: "deleting",
+            message: "Deleting"
+        },
+        succeed: {
+            id: "deleted",
+            message: "Deleted"
+        },
     },
 };
 
@@ -104,7 +165,7 @@ export class StatusCollector {
 
     private _views: {[id: string]: StatusViewImpl<any>} = {};
     private _targetStatuses: {[targetId: string]: TargetStatus} = {};
-    private _defaultView?: StatusViewImpl<string>;
+    private _defaultView?: StatusViewImpl<DefaultStatusLabel>;
     private _viewIdSeq = 0;
 
     constructor(@Inject(RikeEventSource) @Optional() eventSources?: RikeEventSource[]) {
@@ -118,9 +179,9 @@ export class StatusCollector {
     /**
      * Current status labels.
      *
-     * @return {string[]} array of string labels.
+     * @return {DefaultStatusLabel[]} array of default labels.
      */
-    get labels(): string[] {
+    get labels(): DefaultStatusLabel[] {
         return this._defaultView ? this._defaultView.labels : [];
     }
 
