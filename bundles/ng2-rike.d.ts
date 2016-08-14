@@ -1283,12 +1283,8 @@ declare module "ng2-rike" {
     export * from "ng2-rike/status-collector";
     export * from "ng2-rike/status.component";
     /**
-     * Provides a basic set of providers to use REST-like services in application.
-     *
-     * The `RIKE_PROVIDERS` should be included either in a component's injector, or in the root injector when bootstrapping
-     * an application.
-     *
-     * @type {any[]}
+     * REST-like services module.
      */
-    export const RIKE_PROVIDERS: any[];
+    export class RikeModule {
+    }
 }

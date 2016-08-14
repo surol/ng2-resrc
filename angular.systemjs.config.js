@@ -19,8 +19,20 @@
                     'testing': 'testing.js'
                 }
             },
-            '@angular/platform-browser': {main: 'index.js', defaultExtension: 'js'},
-            '@angular/platform-browser-dynamic': {main: 'index.js', defaultExtension: 'js'}
+            '@angular/platform-browser': {
+                main: 'index.js',
+                defaultExtension: 'js',
+                map: {
+                    'testing': 'testing.js'
+                }
+            },
+            '@angular/platform-browser-dynamic': {
+                main: 'index.js',
+                defaultExtension: 'js',
+                map: {
+                    'testing': 'testing.js'
+                }
+            }
         }
     };
 

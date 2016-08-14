@@ -1,7 +1,8 @@
 ///<reference types="core-js"/>
-import {PLATFORM_DIRECTIVES} from "@angular/core";
+import {NgModule} from "@angular/core";
+import {HttpModule} from "@angular/http";
+import {CommonModule} from "@angular/common";
 import {Rike} from "./ng2-rike/rike";
-import {RikeEventSource} from "./ng2-rike/event";
 import {RikeStatusComponent} from "./ng2-rike/status.component";
 import {RikeErrorsComponent} from "./ng2-rike/errors.component";
 import {provideEventSource} from "./ng2-rike/event-source-provider";
@@ -20,24 +21,22 @@ export * from "./ng2-rike/status-collector";
 export * from "./ng2-rike/status.component";
 
 /**
- * Provides a basic set of providers to use REST-like services in application.
- *
- * The `RIKE_PROVIDERS` should be included either in a component's injector, or in the root injector when bootstrapping
- * an application.
- *
- * @type {any[]}
+ * REST-like services module.
  */
-export const RIKE_PROVIDERS: any[] = [
-    Rike,
-    provideEventSource({useExisting: Rike}),
-    {
-        provide: PLATFORM_DIRECTIVES,
-        useValue: RikeStatusComponent,
-        multi: true,
-    },
-    {
-        provide: PLATFORM_DIRECTIVES,
-        useValue: RikeErrorsComponent,
-        multi: true,
-    }
-];
+@NgModule({
+    imports: [CommonModule, HttpModule],
+    providers: [
+        Rike,
+        provideEventSource({useExisting: Rike}),
+    ],
+    declarations: [
+        RikeStatusComponent,
+        RikeErrorsComponent,
+    ],
+    exports: [
+        RikeStatusComponent,
+        RikeErrorsComponent,
+    ],
+})
+export class RikeModule {
+}

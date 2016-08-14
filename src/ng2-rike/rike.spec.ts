@@ -1,24 +1,35 @@
+import {Observable} from "rxjs/Rx";
+import {NgModule} from "@angular/core";
 import {
     Http,
     ConnectionBackend,
-    HTTP_PROVIDERS,
     Response,
     ResponseOptions,
     RequestOptionsArgs,
     RequestOptions,
     RequestMethod
 } from "@angular/http";
-import {addProviders, inject} from "@angular/core/testing";
+import {inject, TestBed} from "@angular/core/testing";
 import {MockBackend, MockConnection} from "@angular/http/testing";
-import {RIKE_PROVIDERS} from "../ng2-rike";
+import {platformBrowserDynamicTesting, BrowserDynamicTestingModule} from "@angular/platform-browser-dynamic/testing";
+import {RikeModule} from "../ng2-rike";
 import {Rike, requestMethod} from "./rike";
 import {RikeOptions, BaseRikeOptions} from "./options";
-import {HTTP_PROTOCOL, JSON_PROTOCOL, jsonProtocol, Protocol, ErrorResponse} from "./protocol";
-import {Observable} from "rxjs/Rx";
+import {HTTP_PROTOCOL, jsonProtocol, Protocol, ErrorResponse} from "./protocol";
+
+var initialized = false;
 
 export function addRikeProviders() {
-    addProviders([
-        HTTP_PROVIDERS,
+    if (initialized) {
+        return;
+    }
+    initialized = true;
+    TestBed.initTestEnvironment(RikeTestModule, platformBrowserDynamicTesting());
+}
+
+@NgModule({
+    imports: [BrowserDynamicTestingModule, RikeModule],
+    providers: [
         MockBackend,
         {
             provide: ConnectionBackend,
@@ -29,8 +40,9 @@ export function addRikeProviders() {
             provide: RikeOptions,
             useValue: new BaseRikeOptions({baseUrl: "/test-root"})
         },
-        RIKE_PROVIDERS,
-    ])
+    ]
+})
+export class RikeTestModule {
 }
 
 describe("Rike", () => {

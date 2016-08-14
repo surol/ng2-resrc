@@ -22,7 +22,9 @@ gulp.task('bundle-angular', function(cb) {
                 + ' + @angular/http'
                 + ' + @angular/http/testing'
                 + ' + @angular/platform-browser'
-                + ' + @angular/platform-browser-dynamic',
+                + ' + @angular/platform-browser/testing'
+                + ' + @angular/platform-browser-dynamic'
+                + ' + @angular/platform-browser-dynamic/testing',
                 'bundles/angular.js',
                 {
                     minify: true,

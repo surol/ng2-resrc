@@ -2840,13 +2840,13 @@ System.register("ng2-rike/resource-provider", ["ng2-rike/resource", "ng2-rike/ev
         }
     }
 });
-System.register("ng2-rike", ["@angular/core", "ng2-rike/rike", "ng2-rike/status.component", "ng2-rike/errors.component", "ng2-rike/event-source-provider", "ng2-rike/error-collector", "ng2-rike/event", "ng2-rike/field-error", "ng2-rike/options", "ng2-rike/protocol", "ng2-rike/resource", "ng2-rike/resource-provider", "ng2-rike/status-collector"], function(exports_13, context_13) {
+System.register("ng2-rike", ["@angular/core", "@angular/http", "@angular/common", "ng2-rike/rike", "ng2-rike/status.component", "ng2-rike/errors.component", "ng2-rike/event-source-provider", "ng2-rike/error-collector", "ng2-rike/event", "ng2-rike/field-error", "ng2-rike/options", "ng2-rike/protocol", "ng2-rike/resource", "ng2-rike/resource-provider", "ng2-rike/status-collector"], function(exports_13, context_13) {
     "use strict";
     var __moduleName = context_13 && context_13.id;
-    var core_6, rike_1, status_component_1, errors_component_1, event_source_provider_2;
-    var RIKE_PROVIDERS;
+    var core_6, http_4, common_1, rike_1, status_component_1, errors_component_1, event_source_provider_2;
+    var RikeModule;
     var exportedNames_1 = {
-        'RIKE_PROVIDERS': true
+        'RikeModule': true
     };
     function exportStar_1(m) {
         var exports = {};
@@ -2859,6 +2859,12 @@ System.register("ng2-rike", ["@angular/core", "ng2-rike/rike", "ng2-rike/status.
         setters:[
             function (core_6_1) {
                 core_6 = core_6_1;
+            },
+            function (http_4_1) {
+                http_4 = http_4_1;
+            },
+            function (common_1_1) {
+                common_1 = common_1_1;
             },
             function (rike_1_1) {
                 rike_1 = rike_1_1;
@@ -2902,27 +2908,32 @@ System.register("ng2-rike", ["@angular/core", "ng2-rike/rike", "ng2-rike/status.
             }],
         execute: function() {
             /**
-             * Provides a basic set of providers to use REST-like services in application.
-             *
-             * The `RIKE_PROVIDERS` should be included either in a component's injector, or in the root injector when bootstrapping
-             * an application.
-             *
-             * @type {any[]}
+             * REST-like services module.
              */
-            exports_13("RIKE_PROVIDERS", RIKE_PROVIDERS = [
-                rike_1.Rike,
-                event_source_provider_2.provideEventSource({ useExisting: rike_1.Rike }),
-                {
-                    provide: core_6.PLATFORM_DIRECTIVES,
-                    useValue: status_component_1.RikeStatusComponent,
-                    multi: true,
-                },
-                {
-                    provide: core_6.PLATFORM_DIRECTIVES,
-                    useValue: errors_component_1.RikeErrorsComponent,
-                    multi: true,
+            RikeModule = (function () {
+                function RikeModule() {
                 }
-            ]);
+                RikeModule = __decorate([
+                    core_6.NgModule({
+                        imports: [common_1.CommonModule, http_4.HttpModule],
+                        providers: [
+                            rike_1.Rike,
+                            event_source_provider_2.provideEventSource({ useExisting: rike_1.Rike }),
+                        ],
+                        declarations: [
+                            status_component_1.RikeStatusComponent,
+                            errors_component_1.RikeErrorsComponent,
+                        ],
+                        exports: [
+                            status_component_1.RikeStatusComponent,
+                            errors_component_1.RikeErrorsComponent,
+                        ],
+                    }), 
+                    __metadata('design:paramtypes', [])
+                ], RikeModule);
+                return RikeModule;
+            }());
+            exports_13("RikeModule", RikeModule);
         }
     }
 });

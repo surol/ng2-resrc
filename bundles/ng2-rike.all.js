@@ -2841,13 +2841,13 @@ System.register("ng2-rike/resource-provider", ["ng2-rike/resource", "ng2-rike/ev
         }
     }
 });
-System.register("ng2-rike", ["@angular/core", "ng2-rike/rike", "ng2-rike/status.component", "ng2-rike/errors.component", "ng2-rike/event-source-provider", "ng2-rike/error-collector", "ng2-rike/event", "ng2-rike/field-error", "ng2-rike/options", "ng2-rike/protocol", "ng2-rike/resource", "ng2-rike/resource-provider", "ng2-rike/status-collector"], function(exports_13, context_13) {
+System.register("ng2-rike", ["@angular/core", "@angular/http", "@angular/common", "ng2-rike/rike", "ng2-rike/status.component", "ng2-rike/errors.component", "ng2-rike/event-source-provider", "ng2-rike/error-collector", "ng2-rike/event", "ng2-rike/field-error", "ng2-rike/options", "ng2-rike/protocol", "ng2-rike/resource", "ng2-rike/resource-provider", "ng2-rike/status-collector"], function(exports_13, context_13) {
     "use strict";
     var __moduleName = context_13 && context_13.id;
-    var core_6, rike_1, status_component_1, errors_component_1, event_source_provider_2;
-    var RIKE_PROVIDERS;
+    var core_6, http_4, common_1, rike_1, status_component_1, errors_component_1, event_source_provider_2;
+    var RikeModule;
     var exportedNames_1 = {
-        'RIKE_PROVIDERS': true
+        'RikeModule': true
     };
     function exportStar_1(m) {
         var exports = {};
@@ -2860,6 +2860,12 @@ System.register("ng2-rike", ["@angular/core", "ng2-rike/rike", "ng2-rike/status.
         setters:[
             function (core_6_1) {
                 core_6 = core_6_1;
+            },
+            function (http_4_1) {
+                http_4 = http_4_1;
+            },
+            function (common_1_1) {
+                common_1 = common_1_1;
             },
             function (rike_1_1) {
                 rike_1 = rike_1_1;
@@ -2903,27 +2909,32 @@ System.register("ng2-rike", ["@angular/core", "ng2-rike/rike", "ng2-rike/status.
             }],
         execute: function() {
             /**
-             * Provides a basic set of providers to use REST-like services in application.
-             *
-             * The `RIKE_PROVIDERS` should be included either in a component's injector, or in the root injector when bootstrapping
-             * an application.
-             *
-             * @type {any[]}
+             * REST-like services module.
              */
-            exports_13("RIKE_PROVIDERS", RIKE_PROVIDERS = [
-                rike_1.Rike,
-                event_source_provider_2.provideEventSource({ useExisting: rike_1.Rike }),
-                {
-                    provide: core_6.PLATFORM_DIRECTIVES,
-                    useValue: status_component_1.RikeStatusComponent,
-                    multi: true,
-                },
-                {
-                    provide: core_6.PLATFORM_DIRECTIVES,
-                    useValue: errors_component_1.RikeErrorsComponent,
-                    multi: true,
+            RikeModule = (function () {
+                function RikeModule() {
                 }
-            ]);
+                RikeModule = __decorate([
+                    core_6.NgModule({
+                        imports: [common_1.CommonModule, http_4.HttpModule],
+                        providers: [
+                            rike_1.Rike,
+                            event_source_provider_2.provideEventSource({ useExisting: rike_1.Rike }),
+                        ],
+                        declarations: [
+                            status_component_1.RikeStatusComponent,
+                            errors_component_1.RikeErrorsComponent,
+                        ],
+                        exports: [
+                            status_component_1.RikeStatusComponent,
+                            errors_component_1.RikeErrorsComponent,
+                        ],
+                    }), 
+                    __metadata('design:paramtypes', [])
+                ], RikeModule);
+                return RikeModule;
+            }());
+            exports_13("RikeModule", RikeModule);
         }
     }
 });
@@ -2969,12 +2980,12 @@ System.register("ng2-rike/options.spec", ["ng2-rike/options"], function(exports_
 System.register("ng2-rike/protocol.spec", ["@angular/http", "ng2-rike/protocol"], function(exports_15, context_15) {
     "use strict";
     var __moduleName = context_15 && context_15.id;
-    var http_4, protocol_6;
+    var http_5, protocol_6;
     var TestProtocol;
     return {
         setters:[
-            function (http_4_1) {
-                http_4 = http_4_1;
+            function (http_5_1) {
+                http_5 = http_5_1;
             },
             function (protocol_6_1) {
                 protocol_6 = protocol_6_1;
@@ -2986,11 +2997,11 @@ System.register("ng2-rike/protocol.spec", ["@angular/http", "ng2-rike/protocol"]
                     _super.call(this);
                 }
                 TestProtocol.prototype.prepareRequest = function (options) {
-                    return new http_4.RequestOptions(options).merge({ url: "/request", search: "prepared=true" });
+                    return new http_5.RequestOptions(options).merge({ url: "/request", search: "prepared=true" });
                 };
                 TestProtocol.prototype.writeRequest = function (request, options) {
                     request.written = "written1";
-                    return new http_4.RequestOptions(options).merge({ body: request });
+                    return new http_5.RequestOptions(options).merge({ body: request });
                 };
                 TestProtocol.prototype.readResponse = function (response) {
                     return {
@@ -3002,20 +3013,20 @@ System.register("ng2-rike/protocol.spec", ["@angular/http", "ng2-rike/protocol"]
             describe("Protocol", function () {
                 var protocol = new TestProtocol();
                 it("prepares request before", function () {
-                    var proto = protocol.prior().prepareRequest(function (opts) { return new http_4.RequestOptions(opts).merge({ search: "updated=true" }); });
+                    var proto = protocol.prior().prepareRequest(function (opts) { return new http_5.RequestOptions(opts).merge({ search: "updated=true" }); });
                     var opts = proto.prepareRequest({});
                     expect(opts.url).toBe("/request");
                     expect(opts.search && opts.search.toString()).toEqual("prepared=true");
                 });
                 it("prepares request after", function () {
-                    var proto = protocol.then().prepareRequest(function (opts) { return new http_4.RequestOptions(opts).merge({ search: "updated=true" }); });
+                    var proto = protocol.then().prepareRequest(function (opts) { return new http_5.RequestOptions(opts).merge({ search: "updated=true" }); });
                     var opts = proto.prepareRequest({});
                     expect(opts.url).toBe("/request");
                     expect(opts.search && opts.search.toString()).toEqual("updated=true");
                 });
                 it("writes request", function () {
                     var proto = protocol.instead().writeRequest(function (request, opts) {
-                        return new http_4.RequestOptions(opts).merge({ body: request.request2 });
+                        return new http_5.RequestOptions(opts).merge({ body: request.request2 });
                     });
                     var opts = proto.writeRequest({ request2: "request2" }, {});
                     expect(opts.body).toBe("request2");
@@ -3024,7 +3035,7 @@ System.register("ng2-rike/protocol.spec", ["@angular/http", "ng2-rike/protocol"]
                     var proto = protocol.prior().updateRequest(function (request, opts) {
                         request.update = "update1";
                         request.written = "rewritten1";
-                        return new http_4.RequestOptions(opts).merge({ body: request });
+                        return new http_5.RequestOptions(opts).merge({ body: request });
                     });
                     var opts = proto.writeRequest({ request: "request1" }, {});
                     var body = opts.body;
@@ -3036,7 +3047,7 @@ System.register("ng2-rike/protocol.spec", ["@angular/http", "ng2-rike/protocol"]
                     var proto = protocol.then().updateRequest(function (request, opts) {
                         request.update = "update1";
                         request.written = "rewritten1";
-                        return new http_4.RequestOptions(opts).merge({ body: request });
+                        return new http_5.RequestOptions(opts).merge({ body: request });
                     });
                     var opts = proto.writeRequest({ request: "request1" }, {});
                     var body = opts.body;
@@ -3050,7 +3061,7 @@ System.register("ng2-rike/protocol.spec", ["@angular/http", "ng2-rike/protocol"]
                             response2: "response2"
                         };
                     });
-                    var response = proto.readResponse(new http_4.Response(new http_4.ResponseOptions()));
+                    var response = proto.readResponse(new http_5.Response(new http_5.ResponseOptions()));
                     expect(response.response2).toBe("response2");
                 });
                 it("handles error", function () {
@@ -3059,7 +3070,7 @@ System.register("ng2-rike/protocol.spec", ["@angular/http", "ng2-rike/protocol"]
                         err.test = "error1";
                         return err;
                     });
-                    var error = proto.handleError({ response: new http_4.Response(new http_4.ResponseOptions()) });
+                    var error = proto.handleError({ response: new http_5.Response(new http_5.ResponseOptions()) });
                     expect(error.test).toBe("error1");
                 });
             });
@@ -3078,7 +3089,7 @@ System.register("ng2-rike/protocol.spec", ["@angular/http", "ng2-rike/protocol"]
                         request: "Request1",
                         numeric: 333,
                     };
-                    var read = protocol.readResponse(new http_4.Response(new http_4.ResponseOptions({
+                    var read = protocol.readResponse(new http_5.Response(new http_5.ResponseOptions({
                         body: JSON.stringify(value),
                     })));
                     expect(read.request).toBe(value.request);
@@ -3088,25 +3099,17 @@ System.register("ng2-rike/protocol.spec", ["@angular/http", "ng2-rike/protocol"]
         }
     }
 });
-System.register("ng2-rike/rike.spec", ["@angular/http", "@angular/core/testing", "@angular/http/testing", "ng2-rike", "ng2-rike/rike", "ng2-rike/options", "ng2-rike/protocol"], function(exports_16, context_16) {
+System.register("ng2-rike/rike.spec", ["@angular/core", "@angular/http", "@angular/core/testing", "@angular/http/testing", "@angular/platform-browser-dynamic/testing", "ng2-rike", "ng2-rike/rike", "ng2-rike/options", "ng2-rike/protocol"], function(exports_16, context_16) {
     "use strict";
     var __moduleName = context_16 && context_16.id;
-    var http_5, testing_1, testing_2, ng2_rike_1, rike_3, options_5, protocol_7;
+    var core_7, http_6, testing_1, testing_2, testing_3, ng2_rike_1, rike_3, options_5, protocol_7;
+    var initialized, RikeTestModule;
     function addRikeProviders() {
-        testing_1.addProviders([
-            http_5.HTTP_PROVIDERS,
-            testing_2.MockBackend,
-            {
-                provide: http_5.ConnectionBackend,
-                useExisting: testing_2.MockBackend
-            },
-            http_5.Http,
-            {
-                provide: options_5.RikeOptions,
-                useValue: new options_5.BaseRikeOptions({ baseUrl: "/test-root" })
-            },
-            ng2_rike_1.RIKE_PROVIDERS,
-        ]);
+        if (initialized) {
+            return;
+        }
+        initialized = true;
+        testing_1.TestBed.initTestEnvironment(RikeTestModule, testing_3.platformBrowserDynamicTesting());
     }
     exports_16("addRikeProviders", addRikeProviders);
     function requestMethodTest(method, value) {
@@ -3127,14 +3130,20 @@ System.register("ng2-rike/rike.spec", ["@angular/http", "@angular/core/testing",
     exports_16("expectJsonProtocol", expectJsonProtocol);
     return {
         setters:[
-            function (http_5_1) {
-                http_5 = http_5_1;
+            function (core_7_1) {
+                core_7 = core_7_1;
+            },
+            function (http_6_1) {
+                http_6 = http_6_1;
             },
             function (testing_1_1) {
                 testing_1 = testing_1_1;
             },
             function (testing_2_1) {
                 testing_2 = testing_2_1;
+            },
+            function (testing_3_1) {
+                testing_3 = testing_3_1;
             },
             function (ng2_rike_1_1) {
                 ng2_rike_1 = ng2_rike_1_1;
@@ -3149,6 +3158,31 @@ System.register("ng2-rike/rike.spec", ["@angular/http", "@angular/core/testing",
                 protocol_7 = protocol_7_1;
             }],
         execute: function() {
+            initialized = false;
+            RikeTestModule = (function () {
+                function RikeTestModule() {
+                }
+                RikeTestModule = __decorate([
+                    core_7.NgModule({
+                        imports: [testing_3.BrowserDynamicTestingModule, ng2_rike_1.RikeModule],
+                        providers: [
+                            testing_2.MockBackend,
+                            {
+                                provide: http_6.ConnectionBackend,
+                                useExisting: testing_2.MockBackend
+                            },
+                            http_6.Http,
+                            {
+                                provide: options_5.RikeOptions,
+                                useValue: new options_5.BaseRikeOptions({ baseUrl: "/test-root" })
+                            },
+                        ]
+                    }), 
+                    __metadata('design:paramtypes', [])
+                ], RikeTestModule);
+                return RikeTestModule;
+            }());
+            exports_16("RikeTestModule", RikeTestModule);
             describe("Rike", function () {
                 var rike;
                 var back;
@@ -3165,7 +3199,7 @@ System.register("ng2-rike/rike.spec", ["@angular/http", "@angular/core/testing",
                         back.connections.subscribe(function (connection) {
                             expect(connection.request.method).toBe(method);
                             expect(connection.request.url).toBe("/test-root/request-url");
-                            connection.mockRespond(new http_5.Response(new http_5.ResponseOptions({
+                            connection.mockRespond(new http_6.Response(new http_6.ResponseOptions({
                                 body: "response1",
                             })));
                         });
@@ -3179,16 +3213,16 @@ System.register("ng2-rike/rike.spec", ["@angular/http", "@angular/core/testing",
                         });
                     };
                 }
-                it("processes GET request", loadRequestTest(http_5.RequestMethod.Get, function (rike) { return rike.get; }));
-                it("processes DELETE request", loadRequestTest(http_5.RequestMethod.Delete, function (rike) { return rike.delete; }));
-                it("processes HEAD request", loadRequestTest(http_5.RequestMethod.Head, function (rike) { return rike.head; }));
+                it("processes GET request", loadRequestTest(http_6.RequestMethod.Get, function (rike) { return rike.get; }));
+                it("processes DELETE request", loadRequestTest(http_6.RequestMethod.Delete, function (rike) { return rike.delete; }));
+                it("processes HEAD request", loadRequestTest(http_6.RequestMethod.Head, function (rike) { return rike.head; }));
                 function sendRequestTest(method, read) {
                     return function (done) {
                         back.connections.subscribe(function (connection) {
                             expect(connection.request.method).toBe(method);
                             expect(connection.request.url).toBe("/test-root/send-request-url");
                             expect(connection.request.text()).toBe("request2");
-                            connection.mockRespond(new http_5.Response(new http_5.ResponseOptions({
+                            connection.mockRespond(new http_6.Response(new http_6.ResponseOptions({
                                 body: "response1",
                             })));
                         });
@@ -3198,9 +3232,9 @@ System.register("ng2-rike/rike.spec", ["@angular/http", "@angular/core/testing",
                         });
                     };
                 }
-                it("processes POST request", sendRequestTest(http_5.RequestMethod.Post, function (rike) { return rike.post; }));
-                it("processes PUT request", sendRequestTest(http_5.RequestMethod.Put, function (rike) { return rike.put; }));
-                it("processes PATCH request", sendRequestTest(http_5.RequestMethod.Patch, function (rike) { return rike.patch; }));
+                it("processes POST request", sendRequestTest(http_6.RequestMethod.Post, function (rike) { return rike.post; }));
+                it("processes PUT request", sendRequestTest(http_6.RequestMethod.Put, function (rike) { return rike.put; }));
+                it("processes PATCH request", sendRequestTest(http_6.RequestMethod.Patch, function (rike) { return rike.patch; }));
                 it("processes HTTP error", function (done) {
                     back.connections.subscribe(function (connection) {
                         connection.mockError(new Error("Response error"));
@@ -3229,7 +3263,7 @@ System.register("ng2-rike/rike.spec", ["@angular/http", "@angular/core/testing",
                     var protocol = protocol_7.jsonProtocol()
                         .instead()
                         .writeRequest(function (val, opts) {
-                        return new http_5.RequestOptions(opts).merge({ body: val });
+                        return new http_6.RequestOptions(opts).merge({ body: val });
                     });
                     var targetId = "target1";
                     var target = rike.target(targetId, protocol);
@@ -3238,14 +3272,14 @@ System.register("ng2-rike/rike.spec", ["@angular/http", "@angular/core/testing",
                 });
             });
             describe("requestMethod", function () {
-                it("GET", requestMethodTest(http_5.RequestMethod.Get, "GeT"));
-                it("POST", requestMethodTest(http_5.RequestMethod.Post, "pOSt"));
-                it("PUT", requestMethodTest(http_5.RequestMethod.Put, "put"));
-                it("DELETE", requestMethodTest(http_5.RequestMethod.Delete, "deletE"));
-                it("OPTIONS", requestMethodTest(http_5.RequestMethod.Options, "OPTIONS"));
-                it("HEAD", requestMethodTest(http_5.RequestMethod.Head, "hEad"));
-                it("PATCH", requestMethodTest(http_5.RequestMethod.Patch, "pAtch"));
-                it("specified as is", requestMethodTest(http_5.RequestMethod.Post, http_5.RequestMethod.Post));
+                it("GET", requestMethodTest(http_6.RequestMethod.Get, "GeT"));
+                it("POST", requestMethodTest(http_6.RequestMethod.Post, "pOSt"));
+                it("PUT", requestMethodTest(http_6.RequestMethod.Put, "put"));
+                it("DELETE", requestMethodTest(http_6.RequestMethod.Delete, "deletE"));
+                it("OPTIONS", requestMethodTest(http_6.RequestMethod.Options, "OPTIONS"));
+                it("HEAD", requestMethodTest(http_6.RequestMethod.Head, "hEad"));
+                it("PATCH", requestMethodTest(http_6.RequestMethod.Patch, "pAtch"));
+                it("specified as is", requestMethodTest(http_6.RequestMethod.Post, http_6.RequestMethod.Post));
                 it("rejects unknown method", function () {
                     expect(function () { return rike_3.requestMethod("some"); }).toThrow();
                 });
@@ -3259,17 +3293,17 @@ System.register("ng2-rike/rike.spec", ["@angular/http", "@angular/core/testing",
 System.register("ng2-rike/rike-operation.spec", ["@angular/http", "@angular/core/testing", "@angular/http/testing", "ng2-rike/rike", "ng2-rike/rike.spec"], function(exports_17, context_17) {
     "use strict";
     var __moduleName = context_17 && context_17.id;
-    var http_6, testing_3, testing_4, rike_4, rike_spec_1;
+    var http_7, testing_4, testing_5, rike_4, rike_spec_1;
     return {
         setters:[
-            function (http_6_1) {
-                http_6 = http_6_1;
-            },
-            function (testing_3_1) {
-                testing_3 = testing_3_1;
+            function (http_7_1) {
+                http_7 = http_7_1;
             },
             function (testing_4_1) {
                 testing_4 = testing_4_1;
+            },
+            function (testing_5_1) {
+                testing_5 = testing_5_1;
             },
             function (rike_4_1) {
                 rike_4 = rike_4_1;
@@ -3283,7 +3317,7 @@ System.register("ng2-rike/rike-operation.spec", ["@angular/http", "@angular/core
                 var back;
                 var target;
                 beforeEach(function () { return rike_spec_1.addRikeProviders(); });
-                beforeEach(testing_3.inject([testing_4.MockBackend, rike_4.Rike], function (_be, _rike) {
+                beforeEach(testing_4.inject([testing_5.MockBackend, rike_4.Rike], function (_be, _rike) {
                     back = _be;
                     rike = _rike;
                     target = rike.target("target").withBaseUrl("target-url");
@@ -3293,7 +3327,7 @@ System.register("ng2-rike/rike-operation.spec", ["@angular/http", "@angular/core
                         back.connections.subscribe(function (connection) {
                             expect(connection.request.method).toBe(method);
                             expect(connection.request.url).toBe("/test-root/target-url/request-url");
-                            connection.mockRespond(new http_6.Response(new http_6.ResponseOptions({
+                            connection.mockRespond(new http_7.Response(new http_7.ResponseOptions({
                                 body: "response1",
                             })));
                         });
@@ -3304,16 +3338,16 @@ System.register("ng2-rike/rike-operation.spec", ["@angular/http", "@angular/core
                         });
                     };
                 }
-                it("processes GET request", loadRequestTest(http_6.RequestMethod.Get, function (op) { return op.get; }));
-                it("processes DELETE request", loadRequestTest(http_6.RequestMethod.Delete, function (op) { return op.delete; }));
-                it("processes HEAD request", loadRequestTest(http_6.RequestMethod.Head, function (op) { return op.head; }));
+                it("processes GET request", loadRequestTest(http_7.RequestMethod.Get, function (op) { return op.get; }));
+                it("processes DELETE request", loadRequestTest(http_7.RequestMethod.Delete, function (op) { return op.delete; }));
+                it("processes HEAD request", loadRequestTest(http_7.RequestMethod.Head, function (op) { return op.head; }));
                 function sendRequestTest(method, read) {
                     return function (done) {
                         back.connections.subscribe(function (connection) {
                             expect(connection.request.method).toBe(method);
                             expect(connection.request.url).toBe("/test-root/target-url/send-request-url");
                             expect(connection.request.text()).toBe("request2");
-                            connection.mockRespond(new http_6.Response(new http_6.ResponseOptions({
+                            connection.mockRespond(new http_7.Response(new http_7.ResponseOptions({
                                 body: "response1",
                             })));
                         });
@@ -3328,37 +3362,37 @@ System.register("ng2-rike/rike-operation.spec", ["@angular/http", "@angular/core
                         });
                     };
                 }
-                it("processes POST request", sendRequestTest(http_6.RequestMethod.Post, function (op) { return op.post; }));
-                it("processes PUT request", sendRequestTest(http_6.RequestMethod.Put, function (op) { return op.put; }));
-                it("processes PATCH request", sendRequestTest(http_6.RequestMethod.Patch, function (op) { return op.patch; }));
-                it("loads with GET by default", loadRequestTest(http_6.RequestMethod.Get, function (op) { return op.load; }));
-                it("loads with specified method", loadRequestTest(http_6.RequestMethod.Options, function (op) { return op.withMethod("options").load; }));
+                it("processes POST request", sendRequestTest(http_7.RequestMethod.Post, function (op) { return op.post; }));
+                it("processes PUT request", sendRequestTest(http_7.RequestMethod.Put, function (op) { return op.put; }));
+                it("processes PATCH request", sendRequestTest(http_7.RequestMethod.Patch, function (op) { return op.patch; }));
+                it("loads with GET by default", loadRequestTest(http_7.RequestMethod.Get, function (op) { return op.load; }));
+                it("loads with specified method", loadRequestTest(http_7.RequestMethod.Options, function (op) { return op.withMethod("options").load; }));
                 it("loads from specified URL", function (done) {
                     back.connections.subscribe(function (connection) {
                         expect(connection.request.url).toBe("/test-root/target-url/load-url");
-                        connection.mockRespond(new http_6.Response(new http_6.ResponseOptions()));
+                        connection.mockRespond(new http_7.Response(new http_7.ResponseOptions()));
                     });
                     target.operation("operation1").withUrl("load-url").load().subscribe(done);
                 });
                 it("loads from target URL by default", function (done) {
                     back.connections.subscribe(function (connection) {
                         expect(connection.request.url).toBe("/test-root/target-url");
-                        connection.mockRespond(new http_6.Response(new http_6.ResponseOptions()));
+                        connection.mockRespond(new http_7.Response(new http_7.ResponseOptions()));
                     });
                     target.operation("operation1").load().subscribe(done);
                 });
-                it("sends with specified method", sendRequestTest(http_6.RequestMethod.Put, function (op) { return op.withMethod("put").send; }));
+                it("sends with specified method", sendRequestTest(http_7.RequestMethod.Put, function (op) { return op.withMethod("put").send; }));
                 it("sends to specified URL", function (done) {
                     back.connections.subscribe(function (connection) {
                         expect(connection.request.url).toBe("/test-root/target-url/send-url");
-                        connection.mockRespond(new http_6.Response(new http_6.ResponseOptions()));
+                        connection.mockRespond(new http_7.Response(new http_7.ResponseOptions()));
                     });
                     target.operation("operation1").withUrl("send-url").send("abc").subscribe(done);
                 });
                 it("sends to target URL by default", function (done) {
                     back.connections.subscribe(function (connection) {
                         expect(connection.request.url).toBe("/test-root/target-url");
-                        connection.mockRespond(new http_6.Response(new http_6.ResponseOptions()));
+                        connection.mockRespond(new http_7.Response(new http_7.ResponseOptions()));
                     });
                     target.operation("operation1").send("abc").subscribe(done);
                 });
@@ -3368,14 +3402,14 @@ System.register("ng2-rike/rike-operation.spec", ["@angular/http", "@angular/core
                 var back;
                 var target;
                 beforeEach(function () { return rike_spec_1.addRikeProviders(); });
-                beforeEach(testing_3.inject([testing_4.MockBackend, rike_4.Rike], function (_be, _rike) {
+                beforeEach(testing_4.inject([testing_5.MockBackend, rike_4.Rike], function (_be, _rike) {
                     back = _be;
                     rike = _rike;
                     target = rike.target("target").withBaseUrl("target-url");
                 }));
                 function mockRespond() {
                     back.connections.subscribe(function (connection) {
-                        connection.mockRespond(new http_6.Response(new http_6.ResponseOptions({
+                        connection.mockRespond(new http_7.Response(new http_7.ResponseOptions({
                             body: "response1",
                         })));
                     });
@@ -3459,17 +3493,17 @@ System.register("ng2-rike/rike-operation.spec", ["@angular/http", "@angular/core
 System.register("ng2-rike/rike-target.spec", ["@angular/core/testing", "@angular/http", "@angular/http/testing", "ng2-rike/rike.spec", "ng2-rike/rike", "ng2-rike/protocol"], function(exports_18, context_18) {
     "use strict";
     var __moduleName = context_18 && context_18.id;
-    var testing_5, http_7, testing_6, rike_spec_2, rike_5, protocol_8;
+    var testing_6, http_8, testing_7, rike_spec_2, rike_5, protocol_8;
     return {
         setters:[
-            function (testing_5_1) {
-                testing_5 = testing_5_1;
-            },
-            function (http_7_1) {
-                http_7 = http_7_1;
-            },
             function (testing_6_1) {
                 testing_6 = testing_6_1;
+            },
+            function (http_8_1) {
+                http_8 = http_8_1;
+            },
+            function (testing_7_1) {
+                testing_7 = testing_7_1;
             },
             function (rike_spec_2_1) {
                 rike_spec_2 = rike_spec_2_1;
@@ -3486,7 +3520,7 @@ System.register("ng2-rike/rike-target.spec", ["@angular/core/testing", "@angular
                 var back;
                 var target;
                 beforeEach(function () { return rike_spec_2.addRikeProviders(); });
-                beforeEach(testing_5.inject([testing_6.MockBackend, rike_5.Rike], function (_be, _rike) {
+                beforeEach(testing_6.inject([testing_7.MockBackend, rike_5.Rike], function (_be, _rike) {
                     back = _be;
                     rike = _rike;
                     target = rike.target("target");
@@ -3515,7 +3549,7 @@ System.register("ng2-rike/rike-target.spec", ["@angular/core/testing", "@angular
                     var proto = protocol_8.jsonProtocol()
                         .instead()
                         .writeRequest(function (val, opts) {
-                        return new http_7.RequestOptions(opts).merge({ body: JSON.stringify(val) });
+                        return new http_8.RequestOptions(opts).merge({ body: JSON.stringify(val) });
                     });
                     var op = target.operation("customOperation", proto);
                     expect(op.target).toBe(target);
@@ -3524,7 +3558,7 @@ System.register("ng2-rike/rike-target.spec", ["@angular/core/testing", "@angular
                 });
                 it("current operation updated on request", function (done) {
                     back.connections.subscribe(function (connection) {
-                        connection.mockRespond(new http_7.Response(new http_7.ResponseOptions({
+                        connection.mockRespond(new http_8.Response(new http_8.ResponseOptions({
                             body: "response1",
                         })));
                     });
