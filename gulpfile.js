@@ -11,7 +11,7 @@ gulp.task('bundle-angular', function(cb) {
 
     var builder = new SystemBuilder('node_modules');
 
-    builder.loadConfig('angular.systemjs.config.js')
+    builder.loadConfig('systemjs.config.js')
         .then(function() {
             builder.bundle(
                 'rxjs'

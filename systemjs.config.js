@@ -2,7 +2,7 @@
 
     var config = {
         packages: {
-            'rxjs': {defaultExtension: 'js'},
+            'rxjs': {main: 'Rx.js', defaultExtension: 'js'},
             '@angular/common': {main: 'index.js', defaultExtension: 'js'},
             '@angular/compiler': {main: 'index.js', defaultExtension: 'js'},
             '@angular/core': {
