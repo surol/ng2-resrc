@@ -12,6 +12,7 @@
     "strictNullChecks": true,
     "forceConsistentCasingInFileNames": true,
     "newLine": "LF",
+    "types": ["core-js"],
     "outFile": "../../bundles/ng2-rike.min.js"
   },
   "include": ["../../src/*", "../../src/**/*"],

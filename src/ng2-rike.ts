@@ -1,4 +1,3 @@
-///<reference types="core-js"/>
 import {NgModule} from "@angular/core";
 import {HttpModule} from "@angular/http";
 import {CommonModule} from "@angular/common";
