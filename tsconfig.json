@@ -15,7 +15,7 @@
     "forceConsistentCasingInFileNames": true,
     "newLine": "LF",
     "types": ["core-js", "jasmine"],
-    "outFile": "bundles/ng2-rike.all.js"
+    "outFile": "bundles/ng2rike.all.js"
   },
   "include": ["src/*", "src/**/*"]
 }

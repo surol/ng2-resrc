@@ -17,7 +17,7 @@
     "forceConsistentCasingInFileNames": true,
     "newLine": "LF",
     "types": ["core-js"],
-    "outFile": "../../bundles/ng2-rike.js"
+    "outFile": "../../bundles/ng2rike.js"
   },
   "include": ["../../src/*", "../../src/**/*"],
   "exclude": ["../../src/*.spec.ts", "../../src/**/*.spec.ts"]

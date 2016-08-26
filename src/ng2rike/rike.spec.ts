@@ -12,7 +12,7 @@ import {
 import {inject, TestBed} from "@angular/core/testing";
 import {MockBackend, MockConnection} from "@angular/http/testing";
 import {platformBrowserDynamicTesting, BrowserDynamicTestingModule} from "@angular/platform-browser-dynamic/testing";
-import {RikeModule} from "../ng2-rike";
+import {RikeModule} from "../ng2rike";
 import {Rike, requestMethod} from "./rike";
 import {RikeOptions, BaseRikeOptions} from "./options";
 import {HTTP_PROTOCOL, jsonProtocol, Protocol, ErrorResponse} from "./protocol";

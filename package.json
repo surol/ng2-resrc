@@ -1,5 +1,5 @@
 {
-  "name": "ng2-rike",
+  "name": "ng2rike",
   "version": "0.0.1-dev",
   "description": "REST-like API for Angular2",
   "license": "MIT",
@@ -7,7 +7,7 @@
   "homepage": "https://github.com/surol/ng2-rike",
   "repository": {
     "type": "git",
-    "url": "git@github.com:surol/ng2-rike.git"
+    "url": "git@github.com:surol/ng2rike.git"
   },
   "typings": "./bundles/ng2-rike.d.ts",
   "dependencies": {
