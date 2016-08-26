@@ -4,12 +4,12 @@
   "description": "REST-like API for Angular2",
   "license": "MIT",
   "author": "Ruslan Lopatin<ruslan.lopatin@gmail.com>",
-  "homepage": "https://github.com/surol/ng2-rike",
+  "homepage": "https://github.com/surol/ng2rike",
   "repository": {
     "type": "git",
     "url": "git@github.com:surol/ng2rike.git"
   },
-  "typings": "./bundles/ng2-rike.d.ts",
+  "typings": "./bundles/ng2rike.d.ts",
   "dependencies": {
     "@angular/common": "2.0.0-rc.5",
     "@angular/compiler": "2.0.0-rc.5",

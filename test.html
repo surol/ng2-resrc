@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>ng2-rike: Tests</title>
+    <title>ng2rike: Tests</title>
     <link rel="stylesheet" href="node_modules/jasmine-core/lib/jasmine-core/jasmine.css"/>
 
     <script src="node_modules/core-js/client/shim.min.js"></script>
@@ -14,7 +14,7 @@
     <script src="node_modules/systemjs/dist/system.src.js"></script>
     <script src="systemjs.config.js"></script>
     <script src="bundles/angular.js"></script>
-    <script src="bundles/ng2-rike.all.js"></script>
+    <script src="bundles/ng2rike.all.js"></script>
 
     <script src="node_modules/jasmine-core/lib/jasmine-core/jasmine.js"></script>
     <script src="node_modules/jasmine-core/lib/jasmine-core/jasmine-html.js"></script>
@@ -23,11 +23,11 @@
 <body>
     <script>
         Promise.all([
-            System.import('ng2-rike/options.spec'),
-            System.import('ng2-rike/protocol.spec'),
-            System.import('ng2-rike/rike.spec'),
-            System.import('ng2-rike/rike-target.spec'),
-            System.import('ng2-rike/rike-operation.spec')
+            System.import('ng2rike/options.spec'),
+            System.import('ng2rike/protocol.spec'),
+            System.import('ng2rike/rike.spec'),
+            System.import('ng2rike/rike-target.spec'),
+            System.import('ng2rike/rike-operation.spec')
         ]).then(null, console.error.bind(console));
     </script>
 </body>
