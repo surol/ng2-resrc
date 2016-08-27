@@ -178,16 +178,16 @@ function defaultStatusClass<L>(status: StatusView<L>) {
 }
 
 function processingTypeClass(status: StatusView<any>) {
-    if (this.statusView.processing) {
+    if (status.processing) {
         return "rike-status rike-status-processing";
     }
-    if (this.statusView.cancelled) {
+    if (status.cancelled) {
         return "rike-status rike-status-cancelled";
     }
-    if (this.statusView.failed) {
+    if (status.failed) {
         return "rike-status rike-status-failed";
     }
-    if (this.statusView.succeed) {
+    if (status.succeed) {
         return "rike-status rike-status-succeed";
     }
     return "rike-status rike-status-hidden";
