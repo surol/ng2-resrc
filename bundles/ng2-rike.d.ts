@@ -1,5 +1,5 @@
 /// <reference types="core-js" />
-declare module "ng2rike/protocol" {
+declare module "ng2-rike/protocol" {
     import { Response, RequestOptionsArgs } from "@angular/http";
     /**
      * Error response.
@@ -194,10 +194,10 @@ declare module "ng2rike/protocol" {
      */
     export const HTTP_PROTOCOL: Protocol<any, Response>;
 }
-declare module "ng2rike/event" {
+declare module "ng2-rike/event" {
     import { EventEmitter } from "@angular/core";
-    import { RikeTarget, RikeOperation } from "ng2rike/rike";
-    import { ErrorResponse } from "ng2rike/protocol";
+    import { RikeTarget, RikeOperation } from "ng2-rike/rike";
+    import { ErrorResponse } from "ng2-rike/protocol";
     /**
      * REST-like resource access event emitter.
      *
@@ -328,10 +328,10 @@ declare module "ng2rike/event" {
         readonly cancelledBy: RikeOperationEvent | undefined;
     }
 }
-declare module "ng2rike/status-collector" {
+declare module "ng2-rike/status-collector" {
     import { EventEmitter } from "@angular/core";
-    import { RikeTarget } from "ng2rike/rike";
-    import { RikeEvent, RikeEventSource } from "ng2rike/event";
+    import { RikeTarget } from "ng2-rike/rike";
+    import { RikeEvent, RikeEventSource } from "ng2-rike/event";
     /**
      * Rike operation status labels.
      *
@@ -515,9 +515,9 @@ declare module "ng2rike/status-collector" {
         close(): void;
     }
 }
-declare module "ng2rike/options" {
-    import { Protocol } from "ng2rike/protocol";
-    import { StatusLabels, DefaultStatusLabel } from "ng2rike/status-collector";
+declare module "ng2-rike/options" {
+    import { Protocol } from "ng2-rike/protocol";
+    import { StatusLabels, DefaultStatusLabel } from "ng2-rike/status-collector";
     /**
      * Constructs URL relative to base URL.
      *
@@ -601,13 +601,13 @@ declare module "ng2rike/options" {
      */
     export const DEFAULT_RIKE_OPTIONS: RikeOptions;
 }
-declare module "ng2rike/rike" {
+declare module "ng2-rike/rike" {
     import { EventEmitter } from "@angular/core";
     import { Request, RequestOptionsArgs, Response, Http, RequestMethod, RequestOptions } from "@angular/http";
     import { Observable } from "rxjs/Rx";
-    import { RikeEvent, RikeEventSource } from "ng2rike/event";
-    import { RikeOptions } from "ng2rike/options";
-    import { Protocol } from "ng2rike/protocol";
+    import { RikeEvent, RikeEventSource } from "ng2-rike/event";
+    import { RikeOptions } from "ng2-rike/options";
+    import { Protocol } from "ng2-rike/protocol";
     export function requestMethod(method: string | RequestMethod): RequestMethod;
     /**
      * REST-like resource operations service.
@@ -829,9 +829,9 @@ declare module "ng2rike/rike" {
         abstract head(url?: string, options?: RequestOptionsArgs): Observable<OUT>;
     }
 }
-declare module "ng2rike/status.component" {
+declare module "ng2-rike/status.component" {
     import { OnDestroy } from "@angular/core";
-    import { StatusLabels, StatusCollector, StatusView } from "ng2rike/status-collector";
+    import { StatusLabels, StatusCollector, StatusView } from "ng2-rike/status-collector";
     export class RikeStatusComponent<L> implements OnDestroy {
         private _collector;
         private _statusLabels?;
@@ -855,8 +855,8 @@ declare module "ng2rike/status.component" {
         private releaseStatusView();
     }
 }
-declare module "ng2rike/field-error" {
-    import { ErrorResponse } from "ng2rike/protocol";
+declare module "ng2-rike/field-error" {
+    import { ErrorResponse } from "ng2-rike/protocol";
     /**
      * Error response.
      *
@@ -904,11 +904,11 @@ declare module "ng2rike/field-error" {
      */
     export function addFieldErrors(error: ErrorResponse): FieldErrorResponse;
 }
-declare module "ng2rike/error-collector" {
+declare module "ng2-rike/error-collector" {
     import { EventEmitter } from "@angular/core";
     import { AnonymousSubscription } from "rxjs/Subscription";
-    import { FieldErrors } from "ng2rike/field-error";
-    import { RikeEventSource, RikeEvent, RikeErrorEvent } from "ng2rike/event";
+    import { FieldErrors } from "ng2-rike/field-error";
+    import { RikeEventSource, RikeEvent, RikeErrorEvent } from "ng2-rike/event";
     /**
      * Field errors subscription.
      *
@@ -998,10 +998,10 @@ declare module "ng2rike/error-collector" {
         private notify(field);
     }
 }
-declare module "ng2rike/errors.component" {
+declare module "ng2-rike/errors.component" {
     import { OnInit, OnDestroy } from "@angular/core";
-    import { ErrorCollector } from "ng2rike/error-collector";
-    import { FieldErrors, FieldError } from "ng2rike/field-error";
+    import { ErrorCollector } from "ng2-rike/error-collector";
+    import { FieldErrors, FieldError } from "ng2-rike/field-error";
     export class RikeErrorsComponent implements OnInit, OnDestroy {
         private _collector?;
         private _rikeErrorsField;
@@ -1020,7 +1020,7 @@ declare module "ng2rike/errors.component" {
         private unsubscribe();
     }
 }
-declare module "ng2rike/event-source-provider" {
+declare module "ng2-rike/event-source-provider" {
     import { Type } from "@angular/core";
     /**
      * Constructs provider recipe for {{RikeEventSource}}.
@@ -1042,10 +1042,10 @@ declare module "ng2rike/event-source-provider" {
         multi?: boolean;
     }): any[];
 }
-declare module "ng2rike/resource" {
+declare module "ng2-rike/resource" {
     import { Observable } from "rxjs/Rx";
-    import { Protocol } from "ng2rike/protocol";
-    import { RikeTarget, Rike } from "ng2rike/rike";
+    import { Protocol } from "ng2-rike/protocol";
+    import { RikeTarget, Rike } from "ng2-rike/rike";
     /**
      * An interface of REST-like resources.
      *
@@ -1243,7 +1243,7 @@ declare module "ng2rike/resource" {
         protected objectUrl(baseUrl: string | undefined, id: any): string;
     }
 }
-declare module "ng2rike/resource-provider" {
+declare module "ng2-rike/resource-provider" {
     import { Type } from "@angular/core";
     /**
      * Constructs provider recipe for {{Resource}}.
@@ -1269,19 +1269,19 @@ declare module "ng2rike/resource-provider" {
         multi?: boolean;
     }): any;
 }
-declare module "ng2rike" {
-    export * from "ng2rike/error-collector";
-    export * from "ng2rike/errors.component";
-    export * from "ng2rike/event";
-    export * from "ng2rike/event-source-provider";
-    export * from "ng2rike/field-error";
-    export * from "ng2rike/options";
-    export * from "ng2rike/protocol";
-    export * from "ng2rike/resource";
-    export * from "ng2rike/resource-provider";
-    export * from "ng2rike/rike";
-    export * from "ng2rike/status-collector";
-    export * from "ng2rike/status.component";
+declare module "ng2-rike" {
+    export * from "ng2-rike/error-collector";
+    export * from "ng2-rike/errors.component";
+    export * from "ng2-rike/event";
+    export * from "ng2-rike/event-source-provider";
+    export * from "ng2-rike/field-error";
+    export * from "ng2-rike/options";
+    export * from "ng2-rike/protocol";
+    export * from "ng2-rike/resource";
+    export * from "ng2-rike/resource-provider";
+    export * from "ng2-rike/rike";
+    export * from "ng2-rike/status-collector";
+    export * from "ng2-rike/status.component";
     /**
      * REST-like services module.
      */

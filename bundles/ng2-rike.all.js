@@ -15,7 +15,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
-System.register("ng2rike/protocol", ["@angular/http"], function(exports_1, context_1) {
+System.register("ng2-rike/protocol", ["@angular/http"], function(exports_1, context_1) {
     "use strict";
     var __moduleName = context_1 && context_1.id;
     var http_1;
@@ -232,7 +232,7 @@ System.register("ng2rike/protocol", ["@angular/http"], function(exports_1, conte
         }
     }
 });
-System.register("ng2rike/event", [], function(exports_2, context_2) {
+System.register("ng2-rike/event", [], function(exports_2, context_2) {
     "use strict";
     var __moduleName = context_2 && context_2.id;
     var RikeEventSource, RikeEvent, RikeOperationEvent, RikeSuccessEvent, RikeErrorEvent, RikeExceptionEvent, RikeErrorResponseEvent, RikeCancelEvent;
@@ -527,7 +527,7 @@ System.register("ng2rike/event", [], function(exports_2, context_2) {
         }
     }
 });
-System.register("ng2rike/status-collector", ["@angular/core", "ng2rike/event"], function(exports_3, context_3) {
+System.register("ng2-rike/status-collector", ["@angular/core", "ng2-rike/event"], function(exports_3, context_3) {
     "use strict";
     var __moduleName = context_3 && context_3.id;
     var core_1, event_1;
@@ -909,7 +909,7 @@ System.register("ng2rike/status-collector", ["@angular/core", "ng2rike/event"], 
         }
     }
 });
-System.register("ng2rike/options", ["ng2rike/protocol", "ng2rike/status-collector"], function(exports_4, context_4) {
+System.register("ng2-rike/options", ["ng2-rike/protocol", "ng2-rike/status-collector"], function(exports_4, context_4) {
     "use strict";
     var __moduleName = context_4 && context_4.id;
     var protocol_1, status_collector_1;
@@ -1023,7 +1023,7 @@ System.register("ng2rike/options", ["ng2rike/protocol", "ng2rike/status-collecto
         }
     }
 });
-System.register("ng2rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "ng2rike/event", "ng2rike/options", "ng2rike/protocol"], function(exports_5, context_5) {
+System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "ng2-rike/event", "ng2-rike/options", "ng2-rike/protocol"], function(exports_5, context_5) {
     "use strict";
     var __moduleName = context_5 && context_5.id;
     var core_2, http_2, Rx_1, event_2, options_1, protocol_2;
@@ -1697,7 +1697,7 @@ System.register("ng2rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "n
         }
     }
 });
-System.register("ng2rike/status.component", ["@angular/core", "ng2rike/status-collector"], function(exports_6, context_6) {
+System.register("ng2-rike/status.component", ["@angular/core", "ng2-rike/status-collector"], function(exports_6, context_6) {
     "use strict";
     var __moduleName = context_6 && context_6.id;
     var core_3, status_collector_2;
@@ -1907,7 +1907,7 @@ System.register("ng2rike/status.component", ["@angular/core", "ng2rike/status-co
         }
     }
 });
-System.register("ng2rike/field-error", ["ng2rike/protocol"], function(exports_7, context_7) {
+System.register("ng2-rike/field-error", ["ng2-rike/protocol"], function(exports_7, context_7) {
     "use strict";
     var __moduleName = context_7 && context_7.id;
     var protocol_3;
@@ -2022,7 +2022,7 @@ System.register("ng2rike/field-error", ["ng2rike/protocol"], function(exports_7,
         }
     }
 });
-System.register("ng2rike/error-collector", ["@angular/core", "ng2rike/field-error", "ng2rike/event"], function(exports_8, context_8) {
+System.register("ng2-rike/error-collector", ["@angular/core", "ng2-rike/field-error", "ng2-rike/event"], function(exports_8, context_8) {
     "use strict";
     var __moduleName = context_8 && context_8.id;
     var core_4, field_error_1, event_3;
@@ -2308,7 +2308,7 @@ System.register("ng2rike/error-collector", ["@angular/core", "ng2rike/field-erro
         }
     }
 });
-System.register("ng2rike/errors.component", ["@angular/core", "ng2rike/error-collector"], function(exports_9, context_9) {
+System.register("ng2-rike/errors.component", ["@angular/core", "ng2-rike/error-collector"], function(exports_9, context_9) {
     "use strict";
     var __moduleName = context_9 && context_9.id;
     var core_5, error_collector_1;
@@ -2424,7 +2424,7 @@ System.register("ng2rike/errors.component", ["@angular/core", "ng2rike/error-col
         }
     }
 });
-System.register("ng2rike/event-source-provider", ["ng2rike/event", "ng2rike/status-collector", "ng2rike/error-collector"], function(exports_10, context_10) {
+System.register("ng2-rike/event-source-provider", ["ng2-rike/event", "ng2-rike/status-collector", "ng2-rike/error-collector"], function(exports_10, context_10) {
     "use strict";
     var __moduleName = context_10 && context_10.id;
     var event_4, status_collector_3, error_collector_2;
@@ -2472,7 +2472,7 @@ System.register("ng2rike/event-source-provider", ["ng2rike/event", "ng2rike/stat
         }
     }
 });
-System.register("ng2rike/resource", ["@angular/http", "rxjs/Rx", "ng2rike/protocol", "ng2rike/options"], function(exports_11, context_11) {
+System.register("ng2-rike/resource", ["@angular/http", "rxjs/Rx", "ng2-rike/protocol", "ng2-rike/options"], function(exports_11, context_11) {
     "use strict";
     var __moduleName = context_11 && context_11.id;
     var http_3, Rx_2, protocol_4, options_2;
@@ -2791,7 +2791,7 @@ System.register("ng2rike/resource", ["@angular/http", "rxjs/Rx", "ng2rike/protoc
         }
     }
 });
-System.register("ng2rike/resource-provider", ["ng2rike/resource", "ng2rike/event-source-provider"], function(exports_12, context_12) {
+System.register("ng2-rike/resource-provider", ["ng2-rike/resource", "ng2-rike/event-source-provider"], function(exports_12, context_12) {
     "use strict";
     var __moduleName = context_12 && context_12.id;
     var resource_1, event_source_provider_1;
@@ -2840,7 +2840,7 @@ System.register("ng2rike/resource-provider", ["ng2rike/resource", "ng2rike/event
         }
     }
 });
-System.register("ng2rike", ["@angular/core", "@angular/http", "@angular/common", "ng2rike/rike", "ng2rike/status.component", "ng2rike/errors.component", "ng2rike/event-source-provider", "ng2rike/error-collector", "ng2rike/event", "ng2rike/field-error", "ng2rike/options", "ng2rike/protocol", "ng2rike/resource", "ng2rike/resource-provider", "ng2rike/status-collector"], function(exports_13, context_13) {
+System.register("ng2-rike", ["@angular/core", "@angular/http", "@angular/common", "ng2-rike/rike", "ng2-rike/status.component", "ng2-rike/errors.component", "ng2-rike/event-source-provider", "ng2-rike/error-collector", "ng2-rike/event", "ng2-rike/field-error", "ng2-rike/options", "ng2-rike/protocol", "ng2-rike/resource", "ng2-rike/resource-provider", "ng2-rike/status-collector"], function(exports_13, context_13) {
     "use strict";
     var __moduleName = context_13 && context_13.id;
     var core_6, http_4, common_1, rike_1, status_component_1, errors_component_1, event_source_provider_2;
@@ -2937,7 +2937,7 @@ System.register("ng2rike", ["@angular/core", "@angular/http", "@angular/common",
         }
     }
 });
-System.register("ng2rike/options.spec", ["ng2rike/options"], function(exports_14, context_14) {
+System.register("ng2-rike/options.spec", ["ng2-rike/options"], function(exports_14, context_14) {
     "use strict";
     var __moduleName = context_14 && context_14.id;
     var options_4;
@@ -2976,7 +2976,7 @@ System.register("ng2rike/options.spec", ["ng2rike/options"], function(exports_14
         }
     }
 });
-System.register("ng2rike/protocol.spec", ["@angular/http", "ng2rike/protocol"], function(exports_15, context_15) {
+System.register("ng2-rike/protocol.spec", ["@angular/http", "ng2-rike/protocol"], function(exports_15, context_15) {
     "use strict";
     var __moduleName = context_15 && context_15.id;
     var http_5, protocol_6;
@@ -3098,10 +3098,10 @@ System.register("ng2rike/protocol.spec", ["@angular/http", "ng2rike/protocol"], 
         }
     }
 });
-System.register("ng2rike/rike.spec", ["@angular/core", "@angular/http", "@angular/core/testing", "@angular/http/testing", "@angular/platform-browser-dynamic/testing", "ng2rike", "ng2rike/rike", "ng2rike/options", "ng2rike/protocol"], function(exports_16, context_16) {
+System.register("ng2-rike/rike.spec", ["@angular/core", "@angular/http", "@angular/core/testing", "@angular/http/testing", "@angular/platform-browser-dynamic/testing", "ng2-rike", "ng2-rike/rike", "ng2-rike/options", "ng2-rike/protocol"], function(exports_16, context_16) {
     "use strict";
     var __moduleName = context_16 && context_16.id;
-    var core_7, http_6, testing_1, testing_2, testing_3, ng2rike_1, rike_3, options_5, protocol_7;
+    var core_7, http_6, testing_1, testing_2, testing_3, ng2_rike_1, rike_3, options_5, protocol_7;
     var initialized, RikeTestModule;
     function addRikeProviders() {
         if (initialized) {
@@ -3144,8 +3144,8 @@ System.register("ng2rike/rike.spec", ["@angular/core", "@angular/http", "@angula
             function (testing_3_1) {
                 testing_3 = testing_3_1;
             },
-            function (ng2rike_1_1) {
-                ng2rike_1 = ng2rike_1_1;
+            function (ng2_rike_1_1) {
+                ng2_rike_1 = ng2_rike_1_1;
             },
             function (rike_3_1) {
                 rike_3 = rike_3_1;
@@ -3163,7 +3163,7 @@ System.register("ng2rike/rike.spec", ["@angular/core", "@angular/http", "@angula
                 }
                 RikeTestModule = __decorate([
                     core_7.NgModule({
-                        imports: [testing_3.BrowserDynamicTestingModule, ng2rike_1.RikeModule],
+                        imports: [testing_3.BrowserDynamicTestingModule, ng2_rike_1.RikeModule],
                         providers: [
                             testing_2.MockBackend,
                             {
@@ -3289,7 +3289,7 @@ System.register("ng2rike/rike.spec", ["@angular/core", "@angular/http", "@angula
         }
     }
 });
-System.register("ng2rike/rike-operation.spec", ["@angular/http", "@angular/core/testing", "@angular/http/testing", "ng2rike/rike", "ng2rike/rike.spec"], function(exports_17, context_17) {
+System.register("ng2-rike/rike-operation.spec", ["@angular/http", "@angular/core/testing", "@angular/http/testing", "ng2-rike/rike", "ng2-rike/rike.spec"], function(exports_17, context_17) {
     "use strict";
     var __moduleName = context_17 && context_17.id;
     var http_7, testing_4, testing_5, rike_4, rike_spec_1;
@@ -3489,7 +3489,7 @@ System.register("ng2rike/rike-operation.spec", ["@angular/http", "@angular/core/
         }
     }
 });
-System.register("ng2rike/rike-target.spec", ["@angular/core/testing", "@angular/http", "@angular/http/testing", "ng2rike/rike.spec", "ng2rike/rike", "ng2rike/protocol"], function(exports_18, context_18) {
+System.register("ng2-rike/rike-target.spec", ["@angular/core/testing", "@angular/http", "@angular/http/testing", "ng2-rike/rike.spec", "ng2-rike/rike", "ng2-rike/protocol"], function(exports_18, context_18) {
     "use strict";
     var __moduleName = context_18 && context_18.id;
     var testing_6, http_8, testing_7, rike_spec_2, rike_5, protocol_8;
@@ -3591,4 +3591,4 @@ System.register("ng2rike/rike-target.spec", ["@angular/core/testing", "@angular/
         }
     }
 });
-//# sourceMappingURL=ng2rike.all.js.map
+//# sourceMappingURL=ng2-rike.all.js.map
