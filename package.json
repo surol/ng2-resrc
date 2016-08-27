@@ -9,7 +9,7 @@
     "type": "git",
     "url": "git@github.com:surol/ng2-rike.git"
   },
-  "typings": "./bundles/ng2-rike.d.ts",
+  "typings": "./ng2-rike.d.ts",
   "dependencies": {
     "@angular/common": "2.0.0-rc.5",
     "@angular/compiler": "2.0.0-rc.5",
@@ -27,7 +27,11 @@
     "@types/jasmine": "^2.2.31",
     "del": "^2.2.2",
     "gulp": "^3.9.1",
+    "gulp-filter": "^4.0.0",
+    "gulp-sourcemaps": "^1.6.0",
+    "gulp-typescript": "^2.13.6",
     "jasmine-core": "^2.4.1",
+    "merge2": "^1.0.2",
     "systemjs-builder": "0.15.26",
     "typescript": "^2.0.0"
   }
