@@ -3,7 +3,7 @@ import {ErrorCollector, ErrorSubscription} from "./error-collector";
 import {FieldErrors, FieldError} from "./field-error";
 
 @Component({
-    selector: '[rikeErrors],[rikeErrorsField]',
+    selector: '[rikeErrors],[rikeErrorsOf]',
     template:
     `
     <ul class="rike-error-list" *ngIf="errors.length">
@@ -16,37 +16,42 @@ import {FieldErrors, FieldError} from "./field-error";
 })
 export class RikeErrorsComponent implements OnInit, OnDestroy {
 
-    private _rikeErrorsField = "*";
+    private _field?: string;
     private _errors: FieldError[] = [];
-    private _init = false;
+    private _initialized = false;
     private _subscription?: ErrorSubscription;
 
     constructor(@Optional() private _collector?: ErrorCollector) {
     }
 
-    get rikeErrorsField(): string {
-        return this._rikeErrorsField;
+    get rikeErrors(): string | undefined {
+        return this._field;
     }
 
     @Input()
-    set rikeErrorsField(field: string) {
-        if (this._rikeErrorsField === field) {
+    set rikeErrors(field: string | undefined) {
+        if (this._field === field) {
             return;
         }
-        this._rikeErrorsField = field;
-        if (this._init) {
-            this.unsubscribe();
-            this.subscribe();
-        }
+        this._field = field;
+        this.reinit();
     }
 
-    get rikeErrors(): ErrorCollector {
+    get errorCollector(): ErrorCollector {
         return this._collector || (this._collector = this.createCollector());
     }
 
+    get rikeErrorsOf(): ErrorCollector | undefined {
+        return this._collector;
+    }
+
     @Input()
-    set rikeErrors(collector: ErrorCollector) {
+    set rikeErrorsOf(collector: ErrorCollector | undefined) {
+        if (this._collector === collector) {
+            return;
+        }
         this._collector = collector;
+        this.reinit();
     }
 
     get errors(): FieldError[] {
@@ -54,12 +59,12 @@ export class RikeErrorsComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit() {
-        this._init = true;
+        this._initialized = true;
         this.subscribe();
     }
 
     ngOnDestroy() {
-        this._init = false;
+        this._initialized = false;
         this.unsubscribe();
     }
 
@@ -81,10 +86,20 @@ export class RikeErrorsComponent implements OnInit, OnDestroy {
         this._errors = list;
     }
 
+    private reinit() {
+        if (this._initialized) {
+            this.unsubscribe();
+            this.subscribe();
+        }
+    }
+
     private subscribe() {
-        if (this.rikeErrorsField) {
+        if (this._field) {
             this._subscription =
-                this.rikeErrors.subscribe(this.rikeErrorsField, errors => this.updateErrors(errors)).refresh();
+                this.errorCollector.subscribe(this._field, errors => this.updateErrors(errors)).refresh();
+        } else {
+            this._subscription =
+                this.errorCollector.subscribeForRest(errors => this.updateErrors(errors)).refresh();
         }
     }
 
