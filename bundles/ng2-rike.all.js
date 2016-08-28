@@ -1787,12 +1787,12 @@ System.register("ng2-rike/status.component", ["@angular/core", "ng2-rike/status-
                     get: function () {
                         return this._statusView;
                     },
-                    set: function (status) {
-                        if (status === this._statusView) {
+                    set: function (statusView) {
+                        if (statusView === this._statusView) {
                             return;
                         }
                         this.releaseStatusView();
-                        this._statusView = status;
+                        this._statusView = statusView;
                     },
                     enumerable: true,
                     configurable: true
@@ -2174,7 +2174,7 @@ System.register("ng2-rike/error-collector", ["@angular/core", "ng2-rike/field-er
                     var id = target.uniqueId;
                     var targetErrors = this._targetErrors[id];
                     if (!targetErrors) {
-                        return [];
+                        return {};
                     }
                     delete this._targetErrors[id];
                     return targetErrors.fieldsWithErrors;
@@ -2275,7 +2275,7 @@ System.register("ng2-rike/error-collector", ["@angular/core", "ng2-rike/field-er
                     }
                     var existing = this._errors[field];
                     if (!existing) {
-                        this._errors[field] = existing;
+                        this._errors[field] = errors;
                     }
                     else {
                         (_a = this._errors[field]).push.apply(_a, errors);
@@ -2298,7 +2298,7 @@ System.register("ng2-rike/error-collector", ["@angular/core", "ng2-rike/field-er
                     }
                     // Append errors for all fields except the ones with subscribers.
                     for (var f in this._errors) {
-                        if (this._errors.hasOwnProperty(f) && !this._emitters[f]) {
+                        if (f === "*" || this._errors.hasOwnProperty(f) && !this._emitters[f]) {
                             appendErrorsTo(f, out, this._errors[f]);
                         }
                     }
@@ -2325,33 +2325,40 @@ System.register("ng2-rike/errors.component", ["@angular/core", "ng2-rike/error-c
             RikeErrorsComponent = (function () {
                 function RikeErrorsComponent(_collector) {
                     this._collector = _collector;
-                    this._rikeErrorsField = "*";
                     this._errors = [];
-                    this._init = false;
+                    this._initialized = false;
                 }
-                Object.defineProperty(RikeErrorsComponent.prototype, "rikeErrorsField", {
+                Object.defineProperty(RikeErrorsComponent.prototype, "rikeErrors", {
                     get: function () {
-                        return this._rikeErrorsField;
+                        return this._field;
                     },
                     set: function (field) {
-                        if (this._rikeErrorsField === field) {
+                        if (this._field === field) {
                             return;
                         }
-                        this._rikeErrorsField = field;
-                        if (this._init) {
-                            this.unsubscribe();
-                            this.subscribe();
-                        }
+                        this._field = field;
+                        this.reinit();
                     },
                     enumerable: true,
                     configurable: true
                 });
-                Object.defineProperty(RikeErrorsComponent.prototype, "rikeErrors", {
+                Object.defineProperty(RikeErrorsComponent.prototype, "errorCollector", {
                     get: function () {
                         return this._collector || (this._collector = this.createCollector());
                     },
+                    enumerable: true,
+                    configurable: true
+                });
+                Object.defineProperty(RikeErrorsComponent.prototype, "rikeErrorsOf", {
+                    get: function () {
+                        return this._collector;
+                    },
                     set: function (collector) {
+                        if (this._collector === collector) {
+                            return;
+                        }
                         this._collector = collector;
+                        this.reinit();
                     },
                     enumerable: true,
                     configurable: true
@@ -2364,11 +2371,11 @@ System.register("ng2-rike/errors.component", ["@angular/core", "ng2-rike/error-c
                     configurable: true
                 });
                 RikeErrorsComponent.prototype.ngOnInit = function () {
-                    this._init = true;
+                    this._initialized = true;
                     this.subscribe();
                 };
                 RikeErrorsComponent.prototype.ngOnDestroy = function () {
-                    this._init = false;
+                    this._initialized = false;
                     this.unsubscribe();
                 };
                 //noinspection JSMethodCanBeStatic
@@ -2384,11 +2391,21 @@ System.register("ng2-rike/errors.component", ["@angular/core", "ng2-rike/error-c
                     }
                     this._errors = list;
                 };
+                RikeErrorsComponent.prototype.reinit = function () {
+                    if (this._initialized) {
+                        this.unsubscribe();
+                        this.subscribe();
+                    }
+                };
                 RikeErrorsComponent.prototype.subscribe = function () {
                     var _this = this;
-                    if (this.rikeErrorsField) {
+                    if (this._field) {
                         this._subscription =
-                            this.rikeErrors.subscribe(this.rikeErrorsField, function (errors) { return _this.updateErrors(errors); }).refresh();
+                            this.errorCollector.subscribe(this._field, function (errors) { return _this.updateErrors(errors); }).refresh();
+                    }
+                    else {
+                        this._subscription =
+                            this.errorCollector.subscribeForRest(function (errors) { return _this.updateErrors(errors); }).refresh();
                     }
                 };
                 RikeErrorsComponent.prototype.unsubscribe = function () {
@@ -2401,15 +2418,15 @@ System.register("ng2-rike/errors.component", ["@angular/core", "ng2-rike/error-c
                 };
                 __decorate([
                     core_5.Input(), 
-                    __metadata('design:type', String)
-                ], RikeErrorsComponent.prototype, "rikeErrorsField", null);
+                    __metadata('design:type', Object)
+                ], RikeErrorsComponent.prototype, "rikeErrors", null);
                 __decorate([
                     core_5.Input(), 
-                    __metadata('design:type', error_collector_1.ErrorCollector)
-                ], RikeErrorsComponent.prototype, "rikeErrors", null);
+                    __metadata('design:type', Object)
+                ], RikeErrorsComponent.prototype, "rikeErrorsOf", null);
                 RikeErrorsComponent = __decorate([
                     core_5.Component({
-                        selector: '[rikeErrors],[rikeErrorsField]',
+                        selector: '[rikeErrors],[rikeErrorsOf]',
                         template: "\n    <ul class=\"rike-error-list\" *ngIf=\"errors.length\">\n        <li class=\"rike-error\" *ngFor=\"let error of errors\">{{error.message}}</li>\n    </ul>\n    ",
                         host: {
                             "[class.rike-errors]": "true"
@@ -2468,7 +2485,6 @@ System.register("ng2-rike/event-source-provider", ["ng2-rike/event", "ng2-rike/s
                 error_collector_2 = error_collector_2_1;
             }],
         execute: function() {
-            ;
         }
     }
 });

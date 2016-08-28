@@ -17,7 +17,7 @@ import {provideEventSource} from "./event-source-provider";
  * @return new provider recipe.
  */
 export function provideResource({provide, useClass, useValue, useExisting, useFactory, deps}: {
-    provide: any,
+    provide?: any,
     useClass?: Type;
     useValue?: any;
     useExisting?: any;

@@ -30,6 +30,5 @@ function provideEventSource(_a) {
     ];
 }
 exports.provideEventSource = provideEventSource;
-;
 
 //# sourceMappingURL=event-source-provider.js.map

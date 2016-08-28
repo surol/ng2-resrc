@@ -1,5 +1,5 @@
 import {Component, Input, OnDestroy} from "@angular/core";
-import {StatusLabels, StatusCollector, StatusView, DEFAULT_STATUS_LABELS} from "./status-collector";
+import {StatusLabels, StatusCollector, StatusView, DEFAULT_STATUS_LABELS, StatusLabelMap} from "./status-collector";
 
 @Component({
     selector: '[rikeStatus],[rikeStatusLabels],[rikeStatusLabelText],[rikeStatusLabelClass]',
@@ -10,7 +10,7 @@ import {StatusLabels, StatusCollector, StatusView, DEFAULT_STATUS_LABELS} from "
 })
 export class RikeStatusComponent<L> implements OnDestroy {
 
-    private _statusLabels?: {[operation: string]: StatusLabels<L>};
+    private _statusLabels?: StatusLabelMap<L>;
     private _statusView?: StatusView<L>;
     private _ownStatusView = false;
     private _labelText: (label: L) => string = defaultLabelText;
@@ -39,20 +39,20 @@ export class RikeStatusComponent<L> implements OnDestroy {
     }
 
     @Input()
-    set rikeStatus(status: StatusView<L> | undefined) {
-        if (status === this._statusView) {
+    set rikeStatus(statusView: StatusView<L> | undefined) {
+        if (statusView === this._statusView) {
             return;
         }
         this.releaseStatusView();
-        this._statusView = status;
+        this._statusView = statusView;
     }
 
-    get rikeStatusLabels(): {[operation: string]: StatusLabels<L>} | undefined {
+    get rikeStatusLabels(): StatusLabelMap<L> | undefined {
         return this._statusLabels;
     }
 
     @Input()
-    set rikeStatusLabels(labels: {[operation: string]: StatusLabels<L>} | undefined) {
+    set rikeStatusLabels(labels: StatusLabelMap<L> | undefined) {
         this._statusView = undefined;
         this._statusLabels = labels;
     }

@@ -15,7 +15,7 @@ import { Type } from "@angular/core";
  * @return new provider recipe.
  */
 export declare function provideResource({provide, useClass, useValue, useExisting, useFactory, deps}: {
-    provide: any;
+    provide?: any;
     useClass?: Type;
     useValue?: any;
     useExisting?: any;

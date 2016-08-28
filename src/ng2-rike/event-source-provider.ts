@@ -35,4 +35,4 @@ export function provideEventSource({useClass, useValue, useExisting, useFactory,
             deps,
         },
     ];
-};
+}

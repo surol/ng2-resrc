@@ -40,12 +40,12 @@ var RikeStatusComponent = (function () {
         get: function () {
             return this._statusView;
         },
-        set: function (status) {
-            if (status === this._statusView) {
+        set: function (statusView) {
+            if (statusView === this._statusView) {
                 return;
             }
             this.releaseStatusView();
-            this._statusView = status;
+            this._statusView = statusView;
         },
         enumerable: true,
         configurable: true
