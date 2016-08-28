@@ -1,16 +1,23 @@
 import {Injectable, Optional, EventEmitter} from "@angular/core";
 import {
-    Request, RequestOptionsArgs, Response, Http, RequestMethod, RequestOptions,
-    ResponseOptions, ResponseType
+    Request,
+    RequestOptionsArgs,
+    Response,
+    Http,
+    RequestMethod,
+    RequestOptions,
+    ResponseOptions,
+    ResponseType
 } from "@angular/http";
 import {Observable, Observer, Subscription} from "rxjs/Rx";
 import {
     RikeEvent,
-    RikeErrorEvent,
     RikeSuccessEvent,
     RikeOperationEvent,
     RikeCancelEvent,
-    RikeEventSource, RikeErrorResponseEvent, RikeExceptionEvent
+    RikeEventSource,
+    RikeErrorResponseEvent,
+    RikeExceptionEvent
 } from "./event";
 import {RikeOptions, DEFAULT_RIKE_OPTIONS, relativeUrl} from "./options";
 import {Protocol, HTTP_PROTOCOL, jsonProtocol, ErrorResponse} from "./protocol";

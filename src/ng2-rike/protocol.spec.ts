@@ -1,4 +1,4 @@
-import {RequestOptionsArgs, Response, RequestOptions, URLSearchParams, ResponseOptions} from "@angular/http";
+import {RequestOptionsArgs, Response, RequestOptions, ResponseOptions} from "@angular/http";
 import {Protocol, JSON_PROTOCOL, ErrorResponse} from "./protocol";
 
 interface In {

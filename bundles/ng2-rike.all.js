@@ -1907,17 +1907,15 @@ System.register("ng2-rike/status.component", ["@angular/core", "ng2-rike/status-
         }
     }
 });
-System.register("ng2-rike/field-error", ["ng2-rike/protocol"], function(exports_7, context_7) {
+System.register("ng2-rike/field-error", [], function(exports_7, context_7) {
     "use strict";
     var __moduleName = context_7 && context_7.id;
-    var protocol_3;
-    var _Protocol_import;
     /**
      * Appends field errors to {{ErrorResponse}}.
      *
      * If field errors already present in `ErrorResponse` then does nothing.
      *
-     * This function can be used as {{Protocol}} error handler error handler.
+     * This function can be used as {{Protocol}} error handler.
      *
      * @param error object to convert.
      *
@@ -2012,13 +2010,8 @@ System.register("ng2-rike/field-error", ["ng2-rike/protocol"], function(exports_
         return !!item && (!!item.message || !!item.code);
     }
     return {
-        setters:[
-            function (protocol_3_1) {
-                protocol_3 = protocol_3_1;
-            }],
+        setters:[],
         execute: function() {
-            //noinspection JSUnusedLocalSymbols
-            _Protocol_import = protocol_3.Protocol;
         }
     }
 });
@@ -2491,7 +2484,7 @@ System.register("ng2-rike/event-source-provider", ["ng2-rike/event", "ng2-rike/s
 System.register("ng2-rike/resource", ["@angular/http", "rxjs/Rx", "ng2-rike/protocol", "ng2-rike/options"], function(exports_11, context_11) {
     "use strict";
     var __moduleName = context_11 && context_11.id;
-    var http_3, Rx_2, protocol_4, options_2;
+    var http_3, Rx_2, protocol_3, options_2;
     var Resource, RikeResource, LoadableResource, CRUDResource;
     return {
         setters:[
@@ -2501,8 +2494,8 @@ System.register("ng2-rike/resource", ["@angular/http", "rxjs/Rx", "ng2-rike/prot
             function (Rx_2_1) {
                 Rx_2 = Rx_2_1;
             },
-            function (protocol_4_1) {
-                protocol_4 = protocol_4_1;
+            function (protocol_3_1) {
+                protocol_3 = protocol_3_1;
             },
             function (options_2_1) {
                 options_2 = options_2_1;
@@ -2569,7 +2562,7 @@ System.register("ng2-rike/resource", ["@angular/http", "rxjs/Rx", "ng2-rike/prot
                  * @return {RikeTarget<any, any>} new Rike target.
                  */
                 RikeResource.prototype.createRikeTarget = function () {
-                    return this.rike.target(this, protocol_4.JSON_PROTOCOL);
+                    return this.rike.target(this, protocol_3.JSON_PROTOCOL);
                 };
                 return RikeResource;
             }());
@@ -2644,7 +2637,7 @@ System.register("ng2-rike/resource", ["@angular/http", "rxjs/Rx", "ng2-rike/prot
                     this._data = undefined;
                 };
                 LoadableResource.prototype.createRikeTarget = function () {
-                    return this.rike.target(this, protocol_4.jsonProtocol());
+                    return this.rike.target(this, protocol_3.jsonProtocol());
                 };
                 return LoadableResource;
             }(RikeResource));
@@ -2720,7 +2713,7 @@ System.register("ng2-rike/resource", ["@angular/http", "rxjs/Rx", "ng2-rike/prot
                     return this.rikeTarget.operation("delete", this.objectDeleteProtocol(object)).delete();
                 };
                 CRUDResource.prototype.createRikeTarget = function () {
-                    return this.rike.target(this, protocol_4.jsonProtocol());
+                    return this.rike.target(this, protocol_3.jsonProtocol());
                 };
                 /**
                  * Constructs object creation protocol.
@@ -2910,8 +2903,8 @@ System.register("ng2-rike", ["@angular/core", "@angular/http", "@angular/common"
             function (options_3_1) {
                 exportStar_1(options_3_1);
             },
-            function (protocol_5_1) {
-                exportStar_1(protocol_5_1);
+            function (protocol_4_1) {
+                exportStar_1(protocol_4_1);
             },
             function (resource_2_1) {
                 exportStar_1(resource_2_1);
@@ -2995,15 +2988,15 @@ System.register("ng2-rike/options.spec", ["ng2-rike/options"], function(exports_
 System.register("ng2-rike/protocol.spec", ["@angular/http", "ng2-rike/protocol"], function(exports_15, context_15) {
     "use strict";
     var __moduleName = context_15 && context_15.id;
-    var http_5, protocol_6;
+    var http_5, protocol_5;
     var TestProtocol;
     return {
         setters:[
             function (http_5_1) {
                 http_5 = http_5_1;
             },
-            function (protocol_6_1) {
-                protocol_6 = protocol_6_1;
+            function (protocol_5_1) {
+                protocol_5 = protocol_5_1;
             }],
         execute: function() {
             TestProtocol = (function (_super) {
@@ -3024,7 +3017,7 @@ System.register("ng2-rike/protocol.spec", ["@angular/http", "ng2-rike/protocol"]
                     };
                 };
                 return TestProtocol;
-            }(protocol_6.Protocol));
+            }(protocol_5.Protocol));
             describe("Protocol", function () {
                 var protocol = new TestProtocol();
                 it("prepares request before", function () {
@@ -3090,7 +3083,7 @@ System.register("ng2-rike/protocol.spec", ["@angular/http", "ng2-rike/protocol"]
                 });
             });
             describe("JSON protocol", function () {
-                var protocol = protocol_6.JSON_PROTOCOL;
+                var protocol = protocol_5.JSON_PROTOCOL;
                 it("writes request", function () {
                     var request = { request: "some value", numeric: 13 };
                     var opts = protocol.writeRequest(request, {});
@@ -3117,7 +3110,7 @@ System.register("ng2-rike/protocol.spec", ["@angular/http", "ng2-rike/protocol"]
 System.register("ng2-rike/rike.spec", ["@angular/core", "@angular/http", "@angular/core/testing", "@angular/http/testing", "@angular/platform-browser-dynamic/testing", "ng2-rike", "ng2-rike/rike", "ng2-rike/options", "ng2-rike/protocol"], function(exports_16, context_16) {
     "use strict";
     var __moduleName = context_16 && context_16.id;
-    var core_7, http_6, testing_1, testing_2, testing_3, ng2_rike_1, rike_3, options_5, protocol_7;
+    var core_7, http_6, testing_1, testing_2, testing_3, ng2_rike_1, rike_3, options_5, protocol_6;
     var initialized, RikeTestModule;
     function addRikeProviders() {
         if (initialized) {
@@ -3169,8 +3162,8 @@ System.register("ng2-rike/rike.spec", ["@angular/core", "@angular/http", "@angul
             function (options_5_1) {
                 options_5 = options_5_1;
             },
-            function (protocol_7_1) {
-                protocol_7 = protocol_7_1;
+            function (protocol_6_1) {
+                protocol_6 = protocol_6_1;
             }],
         execute: function() {
             initialized = false;
@@ -3266,7 +3259,7 @@ System.register("ng2-rike/rike.spec", ["@angular/core", "@angular/http", "@angul
                     var targetId = "target1";
                     var target = rike.target(targetId);
                     expect(target.target).toBe(targetId);
-                    expect(target.protocol).toBe(protocol_7.HTTP_PROTOCOL);
+                    expect(target.protocol).toBe(protocol_6.HTTP_PROTOCOL);
                 });
                 it("creates JSON target", function () {
                     var targetId = "target1";
@@ -3275,7 +3268,7 @@ System.register("ng2-rike/rike.spec", ["@angular/core", "@angular/http", "@angul
                     expectJsonProtocol(target.protocol);
                 });
                 it("creates target with specified protocol", function () {
-                    var protocol = protocol_7.jsonProtocol()
+                    var protocol = protocol_6.jsonProtocol()
                         .instead()
                         .writeRequest(function (val, opts) {
                         return new http_6.RequestOptions(opts).merge({ body: val });
@@ -3508,7 +3501,7 @@ System.register("ng2-rike/rike-operation.spec", ["@angular/http", "@angular/core
 System.register("ng2-rike/rike-target.spec", ["@angular/core/testing", "@angular/http", "@angular/http/testing", "ng2-rike/rike.spec", "ng2-rike/rike", "ng2-rike/protocol"], function(exports_18, context_18) {
     "use strict";
     var __moduleName = context_18 && context_18.id;
-    var testing_6, http_8, testing_7, rike_spec_2, rike_5, protocol_8;
+    var testing_6, http_8, testing_7, rike_spec_2, rike_5, protocol_7;
     return {
         setters:[
             function (testing_6_1) {
@@ -3526,8 +3519,8 @@ System.register("ng2-rike/rike-target.spec", ["@angular/core/testing", "@angular
             function (rike_5_1) {
                 rike_5 = rike_5_1;
             },
-            function (protocol_8_1) {
-                protocol_8 = protocol_8_1;
+            function (protocol_7_1) {
+                protocol_7 = protocol_7_1;
             }],
         execute: function() {
             describe("RikeTarget", function () {
@@ -3561,7 +3554,7 @@ System.register("ng2-rike/rike-target.spec", ["@angular/core/testing", "@angular
                     rike_spec_2.expectJsonProtocol(op.protocol);
                 });
                 it("creates operation over specified protocol", function () {
-                    var proto = protocol_8.jsonProtocol()
+                    var proto = protocol_7.jsonProtocol()
                         .instead()
                         .writeRequest(function (val, opts) {
                         return new http_8.RequestOptions(opts).merge({ body: JSON.stringify(val) });

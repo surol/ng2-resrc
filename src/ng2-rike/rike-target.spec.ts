@@ -3,7 +3,7 @@ import {Response, RequestOptionsArgs, RequestOptions, ResponseOptions} from "@an
 import {MockBackend, MockConnection} from "@angular/http/testing";
 import {addRikeProviders, expectJsonProtocol} from "./rike.spec";
 import {Rike, RikeTarget} from "./rike";
-import {JSON_PROTOCOL, jsonProtocol} from "./protocol";
+import {jsonProtocol} from "./protocol";
 
 describe("RikeTarget", () => {
 

@@ -38,7 +38,7 @@ export interface FieldError {
  *
  * If field errors already present in `ErrorResponse` then does nothing.
  *
- * This function can be used as {{Protocol}} error handler error handler.
+ * This function can be used as {{Protocol}} error handler.
  *
  * @param error object to convert.
  *

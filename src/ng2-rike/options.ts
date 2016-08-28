@@ -1,5 +1,6 @@
 import {Protocol, HTTP_PROTOCOL} from "./protocol";
 import {StatusLabels, DEFAULT_STATUS_LABELS, DefaultStatusLabel} from "./status-collector";
+
 /**
  * Constructs URL relative to base URL.
  *
