@@ -1,4 +1,5 @@
 import {ErrorResponse} from "./protocol";
+import {Response} from "@angular/http";
 
 /**
  * Error response.
@@ -42,6 +43,23 @@ export interface FieldError {
 
 }
 
+function isJsonResponse(httpResponse: Response): boolean {
+
+    let contentType = httpResponse.headers.get("Content-Type");
+
+    if (!contentType) {
+        return false;
+    }
+
+    const idx = contentType.indexOf(";");
+
+    if (idx >= 0) {
+        contentType = contentType.substring(0, idx);
+    }
+
+    return contentType.trim() === "application/json";
+}
+
 /**
  * Appends field errors to {{ErrorResponse}}.
  *
@@ -66,7 +84,7 @@ export function addFieldErrors(error: ErrorResponse): FieldErrorResponse {
     let body: any | undefined = undefined;
 
     // Attempt to parse JSON body
-    if (httpResponse.headers.get("Content-Type") === "application/json") {
+    if (isJsonResponse(httpResponse)) {
         try {
             body = httpResponse.json()
         } catch (e) {

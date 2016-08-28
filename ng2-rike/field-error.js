@@ -1,4 +1,15 @@
 "use strict";
+function isJsonResponse(httpResponse) {
+    var contentType = httpResponse.headers.get("Content-Type");
+    if (!contentType) {
+        return false;
+    }
+    var idx = contentType.indexOf(";");
+    if (idx >= 0) {
+        contentType = contentType.substring(0, idx);
+    }
+    return contentType.trim() === "application/json";
+}
 /**
  * Appends field errors to {{ErrorResponse}}.
  *
@@ -19,7 +30,7 @@ function addFieldErrors(error) {
     var httpResponse = error.response;
     var body = undefined;
     // Attempt to parse JSON body
-    if (httpResponse.headers.get("Content-Type") === "application/json") {
+    if (isJsonResponse(httpResponse)) {
         try {
             body = httpResponse.json();
         }

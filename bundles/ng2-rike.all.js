@@ -1910,6 +1910,17 @@ System.register("ng2-rike/status.component", ["@angular/core", "ng2-rike/status-
 System.register("ng2-rike/field-error", [], function(exports_7, context_7) {
     "use strict";
     var __moduleName = context_7 && context_7.id;
+    function isJsonResponse(httpResponse) {
+        var contentType = httpResponse.headers.get("Content-Type");
+        if (!contentType) {
+            return false;
+        }
+        var idx = contentType.indexOf(";");
+        if (idx >= 0) {
+            contentType = contentType.substring(0, idx);
+        }
+        return contentType.trim() === "application/json";
+    }
     /**
      * Appends field errors to {{ErrorResponse}}.
      *
@@ -1930,7 +1941,7 @@ System.register("ng2-rike/field-error", [], function(exports_7, context_7) {
         var httpResponse = error.response;
         var body = undefined;
         // Attempt to parse JSON body
-        if (httpResponse.headers.get("Content-Type") === "application/json") {
+        if (isJsonResponse(httpResponse)) {
             try {
                 body = httpResponse.json();
             }
