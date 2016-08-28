@@ -137,7 +137,7 @@ var ErrorCollector = (function () {
         var id = target.uniqueId;
         var targetErrors = this._targetErrors[id];
         if (!targetErrors) {
-            return [];
+            return {};
         }
         delete this._targetErrors[id];
         return targetErrors.fieldsWithErrors;
@@ -238,7 +238,7 @@ var TargetErrors = (function () {
         }
         var existing = this._errors[field];
         if (!existing) {
-            this._errors[field] = existing;
+            this._errors[field] = errors;
         }
         else {
             (_a = this._errors[field]).push.apply(_a, errors);
@@ -261,7 +261,7 @@ var TargetErrors = (function () {
         }
         // Append errors for all fields except the ones with subscribers.
         for (var f in this._errors) {
-            if (this._errors.hasOwnProperty(f) && !this._emitters[f]) {
+            if (f === "*" || this._errors.hasOwnProperty(f) && !this._emitters[f]) {
                 appendErrorsTo(f, out, this._errors[f]);
             }
         }

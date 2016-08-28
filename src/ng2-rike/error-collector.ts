@@ -180,7 +180,7 @@ export class ErrorCollector {
         const targetErrors = this._targetErrors[id];
 
         if (!targetErrors) {
-            return [];
+            return {};
         }
 
         delete this._targetErrors[id];
@@ -302,7 +302,7 @@ class TargetErrors {
         const existing = this._errors[field];
 
         if (!existing) {
-            this._errors[field] = existing;
+            this._errors[field] = errors;
         } else {
             this._errors[field].push(...errors);
         }
@@ -326,7 +326,7 @@ class TargetErrors {
 
         // Append errors for all fields except the ones with subscribers.
         for (let f in this._errors) {
-            if (this._errors.hasOwnProperty(f) && !this._emitters[f]) {
+            if (f === "*" || this._errors.hasOwnProperty(f) && !this._emitters[f]) {
                 appendErrorsTo(f, out, this._errors[f]);
             }
         }
