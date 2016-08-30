@@ -115,8 +115,7 @@ var RikeStatusComponent = (function () {
         this.releaseStatusView();
     };
     RikeStatusComponent.prototype.createStatusView = function () {
-        var labels = this.rikeStatusLabels
-            || status_collector_1.DEFAULT_STATUS_LABELS;
+        var labels = this.rikeStatusLabels || status_collector_1.DEFAULT_STATUS_LABELS;
         return this.collector.view(labels);
     };
     RikeStatusComponent.prototype.releaseStatusView = function () {

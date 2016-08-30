@@ -156,10 +156,12 @@ export class ErrorCollector {
         }
 
         for (let field in affectedFields) {
-            if (affectedFields.hasOwnProperty(field)) {
+            if (field !== "*" && affectedFields.hasOwnProperty(field)) {
                 this.notify(field);
             }
         }
+
+        this.notify("*");// Always notify about common errors
     }
 
     private handleError(error: RikeErrorEvent) {

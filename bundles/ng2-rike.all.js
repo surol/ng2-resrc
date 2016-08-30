@@ -1865,8 +1865,7 @@ System.register("ng2-rike/status.component", ["@angular/core", "ng2-rike/status-
                     this.releaseStatusView();
                 };
                 RikeStatusComponent.prototype.createStatusView = function () {
-                    var labels = this.rikeStatusLabels
-                        || status_collector_2.DEFAULT_STATUS_LABELS;
+                    var labels = this.rikeStatusLabels || status_collector_2.DEFAULT_STATUS_LABELS;
                     return this.collector.view(labels);
                 };
                 RikeStatusComponent.prototype.releaseStatusView = function () {
@@ -2164,10 +2163,11 @@ System.register("ng2-rike/error-collector", ["@angular/core", "ng2-rike/field-er
                             .addAll(this.fieldErrors(event));
                     }
                     for (var field in affectedFields) {
-                        if (affectedFields.hasOwnProperty(field)) {
+                        if (field !== "*" && affectedFields.hasOwnProperty(field)) {
                             this.notify(field);
                         }
                     }
+                    this.notify("*"); // Always notify about common errors
                 };
                 ErrorCollector.prototype.handleError = function (error) {
                     this.targetErrors(error.target).add("*", { message: error.error.toString() });

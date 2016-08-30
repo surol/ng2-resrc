@@ -120,10 +120,11 @@ var ErrorCollector = (function () {
                 .addAll(this.fieldErrors(event));
         }
         for (var field in affectedFields) {
-            if (affectedFields.hasOwnProperty(field)) {
+            if (field !== "*" && affectedFields.hasOwnProperty(field)) {
                 this.notify(field);
             }
         }
+        this.notify("*"); // Always notify about common errors
     };
     ErrorCollector.prototype.handleError = function (error) {
         this.targetErrors(error.target).add("*", { message: error.error.toString() });
