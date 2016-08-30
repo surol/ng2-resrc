@@ -629,6 +629,7 @@ class RikeTargetImpl<IN, OUT> extends RikeTarget<IN, OUT> {
                         responseObserver.next(response);
                         this._rikeEvents.emit(new RikeSuccessEvent(operation, response));
                     } catch (e) {
+                        console.error("Failed to handle Rike response", e);
                         this._rikeEvents.error(new RikeExceptionEvent(
                             operation,
                             e,
@@ -648,6 +649,7 @@ class RikeTargetImpl<IN, OUT> extends RikeTarget<IN, OUT> {
                         responseObserver.error(errorResponse);
                         this._rikeEvents.emit(new RikeErrorResponseEvent(operation, errorResponse));
                     } catch (e) {
+                        console.error("Failed to handle Rike error", e);
                         errorResponse.error = e;
                         this._rikeEvents.error(new RikeExceptionEvent(operation, e, errorResponse));
                     } finally {
@@ -658,6 +660,7 @@ class RikeTargetImpl<IN, OUT> extends RikeTarget<IN, OUT> {
                     try {
                         responseObserver.complete();
                     } catch (e) {
+                        console.error("Failed to complete Rike response", e);
                         this._rikeEvents.error(new RikeExceptionEvent(operation, e));
                     } finally {
                         cleanup();

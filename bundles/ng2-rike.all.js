@@ -1472,6 +1472,7 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                                 _this._rikeEvents.emit(new event_2.RikeSuccessEvent(operation, response_1));
                             }
                             catch (e) {
+                                console.error("Failed to handle Rike response", e);
                                 _this._rikeEvents.error(new event_2.RikeExceptionEvent(operation, e, {
                                     response: httpResponse,
                                     error: e
@@ -1486,6 +1487,7 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                                 _this._rikeEvents.emit(new event_2.RikeErrorResponseEvent(operation, errorResponse));
                             }
                             catch (e) {
+                                console.error("Failed to handle Rike error", e);
                                 errorResponse.error = e;
                                 _this._rikeEvents.error(new event_2.RikeExceptionEvent(operation, e, errorResponse));
                             }
@@ -1497,6 +1499,7 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
                                 responseObserver.complete();
                             }
                             catch (e) {
+                                console.error("Failed to complete Rike response", e);
                                 _this._rikeEvents.error(new event_2.RikeExceptionEvent(operation, e));
                             }
                             finally {

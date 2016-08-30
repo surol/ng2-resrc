@@ -445,6 +445,7 @@ var RikeTargetImpl = (function (_super) {
                     _this._rikeEvents.emit(new event_1.RikeSuccessEvent(operation, response_1));
                 }
                 catch (e) {
+                    console.error("Failed to handle Rike response", e);
                     _this._rikeEvents.error(new event_1.RikeExceptionEvent(operation, e, {
                         response: httpResponse,
                         error: e
@@ -459,6 +460,7 @@ var RikeTargetImpl = (function (_super) {
                     _this._rikeEvents.emit(new event_1.RikeErrorResponseEvent(operation, errorResponse));
                 }
                 catch (e) {
+                    console.error("Failed to handle Rike error", e);
                     errorResponse.error = e;
                     _this._rikeEvents.error(new event_1.RikeExceptionEvent(operation, e, errorResponse));
                 }
@@ -470,6 +472,7 @@ var RikeTargetImpl = (function (_super) {
                     responseObserver.complete();
                 }
                 catch (e) {
+                    console.error("Failed to complete Rike response", e);
                     _this._rikeEvents.error(new event_1.RikeExceptionEvent(operation, e));
                 }
                 finally {
