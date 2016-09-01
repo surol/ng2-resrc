@@ -1,6 +1,6 @@
 {
   "name": "ng2-rike",
-  "version": "0.0.1-dev",
+  "version": "0.1.0",
   "description": "REST-like API for Angular2",
   "license": "MIT",
   "author": "Ruslan Lopatin<ruslan.lopatin@gmail.com>",
