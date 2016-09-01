@@ -145,7 +145,7 @@ function defaultLabelText(label: any): string  {
 }
 
 
-function defaultStatusClass<L>(status: StatusView<L>) {
+function defaultStatusClass<L>(status: StatusView<L>): string {
 
     const labels = status.labels;
 
