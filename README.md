@@ -69,7 +69,7 @@ Operations are performed using _protocols_ (`Protocol`). Protocol can be configu
 (using `RikeOptions`, see below), set for target (`Rike.target(id, protocol)`), or for particular operation
 (`RikeTarget.operation(name, protocol)`).
 
-The protocol defines input and output data type. A value of input type is passed to operation when performing
+The protocol defines input and output data types. A value of input type is passed to operation when performing
 `POST`, `PUT`, or `PATCH` HTTP requests. A value of output type is reported as operation result.
 
 Rike contains a few predefined protocols:
@@ -134,7 +134,7 @@ const CUSTOM_PROTOCOL = JSON_PROTOCOL
 ### Field Errors
 
 Rike contains an implementation of error handler, which treats JSON responses in a predefined format as input field
-errors, if possible. Otherwise it handles reports errors in a generic way.
+errors, if possible. Otherwise it handles errors in a generic way.
  
 The expected error response format is following JSON:
 ```
@@ -149,8 +149,8 @@ The expected error response format is following JSON:
   ...
 }
 ```
-Where `field` is arbitrary input field caused this error. There are multiple errors possible per field, and multiple
-fields with errors could be reported. The special field named `*` is reserved to report generic errors.
+Where `field` is arbitrary input field name caused this error. There are multiple errors possible per field,
+and multiple fields with errors could be reported. The special field named `*` is reserved to report generic errors.
 
 The error handler appends a `fieldErrors` field to generic `ErrorResponse`, thus effectively converting it to
 `FieldErrorResponse` object.
@@ -220,8 +220,8 @@ The following options supported:
 - `defaultStatusLabels` - operation processing status labels used by `StatusCollector` by default,
   and reported by `rikeStatus` component. See below.
 
-These defaults could be overridden in `RikeTarget`:
-`RikeTarget` options are the defaults for `RikeOperation` ones and could be overridden there too.
+These defaults could be overridden in `RikeTarget`. `RikeTarget` options are in turn the defaults for `RikeOperation`
+ones and could be overridden there too.
 
 ```typescript
 import {Component} from "@angular/core";
@@ -254,11 +254,11 @@ Resources
 
 Rike _resource_ is an injectable Angular service incorporating a single Rike _target_.
 
-Such service should be registered with `provideResource` function.
-Then all of events emitted by operations on resource target will be reported and to event consumers.
+Such service should be registered with `provideResource` function. Then all of events emitted by operations on resource
+target will be reported to event consumers.
 
-An examples of such consumers are `StatusCollector` and `ErrorCollector` - an injectable Angular services also
-registered with `provideResource` function, as well as at application level. These services are used by `rikeStatus`
+An examples of such consumers are `StatusCollector` and `ErrorCollector` - an injectable Angular services automatically
+registered by `provideResource` function, as well as at application level. These services are used by `rikeStatus`
 and `rikeErrors` component to report status and errors of all available resources. These services could be injected
 to your component or service as well, and used directly. 
 
@@ -295,7 +295,7 @@ class MyComponent implements OnInit {
 
 It is possible to register arbitrary number of resources in the same component (or at the application level).
 All of them will emit events to the same set of event consumers. E.g. `StatusCollector` and `ErrorsCollector`
-would contain information combined from all resources.
+would contain information combined from all registered resources.
 
 ### Resources Implementations
 
@@ -376,31 +376,32 @@ It is bound to `[rikeStatus]` and other attributes. The meaning of attributes is
 - `[rikeStatus]` optionally accepts a `StatusView` instance, that can be constructed by `StatusCollector.view()` method.
 - `[rikeStatusLabels]` accepts a `StatusLabelMap` instance, that can be used to customize statuses.
 - `[rikeStatusLabelText]` function converts status label to text to display. Supports string labels and labels
-  of type `DefaultStatusLabel` which are used by default. Everything else is converted to string by default.
+  of type `DefaultStatusLabel` which is used by default. Everything else is converted to string by default.
 - `[rikeStatusLabelClass]` function returns status label CSS class according to `StatusView` state.
-  By default supports classes provided by `DefaultStatusLabel.cssClass` or uses default classes.
+  By default supports classes provided by `DefaultStatusLabel.cssClass`, `DefaultStatusLabel.id`,
+  or uses default classes.
 
 By default CSS classes has a form like `rike-status rike-status-XXX`.
 
 Some default status classes:
 
 - `rike-status-hidden` - indicates the status indicator should be hidden.
-  Use when no status labels known.
+  Used when there are no status labels known.
   Some labels may wish to hide status component e.g. when operation completed successfully.
 - `rike-status-processing` - indicates the operation is in process.
-- `rike-status-cancelled` - indicates the operation have ben cancelled.
+- `rike-status-cancelled` - indicates the operation has been cancelled.
 - `rike-status-failed` - indicated the operation failure.
 - `rike-status-succeed` - indicates the operation success.
 
-Additional status classes can be added for operations defined in base resource implementations. For example:
+Additional status classes can be appended for operations defined in the base resource implementations. For example:
 
 - `rike-status-loading` - for `load` operation (of `LoadableResource`).
 - `rike-status-reading` - for `read` operation (of `CRUDResource`).
 - `rike-status-sending` - for `send` operation.
 
-You may call you operation similarly to apply this classes.
+You may call your operation similarly to apply these classes.
 
-The generated HTML looks like this:
+The generated HTML wood look like this:
 ```html
 <any-tag class="rike-status rike-status-CLASS...">
     <span class="rike-status-icon"></span>
@@ -416,10 +417,10 @@ can be used, and provided either globally (`RikeOptions.defaultStatusLabels`), o
 
 The `RikeErrorsComponent` is a list of all operation errors combined from all registered resources.
  
-It utilizes `ErrorCollector` service and uses `FieldErrorResponse` to parse field errors in responses.
-Even if `addFieldErrors()` function is not used in operation protocol, this component applies it to error responses. 
+It utilizes `ErrorCollector` service and uses `FieldErrorResponse` to detect field errors. Even if `addFieldErrors()`
+function is not used in operation protocol, this component applies it to error response. 
 
-It is bound to `[rikeErrors]` and other attributes. The meaning of attributes is following:
+The component is bound to `[rikeErrors]` and other attributes. The meaning of attributes is following:
 
 - `[rikeErrors]` optionally accepts a field name. If not specified or `*` is used, then component displays generic
   errors, and errors for fields for which error consumers are not registered, i.e. no corresponding `[rikeErrors]`
@@ -430,8 +431,8 @@ Note that you don't have to create a `[rikeErrors]` component for each of the in
 reported as generic ones. Also, if there is a `[rikeErrors]` component for particular field, the errors for this
 field won't be reported as generic ones.
 
-The most correct way to display errors for e.g. form is to place one `<span rikeErrors></span>` component to report
-generic errors, and several `<span rikeErrors="field"></span>` components to report errors for particular fields.
+The correct way to display errors for e.g. form is to place one `<span rikeErrors></span>` component to report
+generic errors, and several `<span rikeErrors="field"></span>` components to report errors for each field.
 
 The generated HTML would look like this:
 ```html
