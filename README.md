@@ -12,7 +12,7 @@ See the API documentation for the detailed description.
 Usage
 -----
 
-To use it import a `RikeModule` to you application:
+To use it import a `RikeModule` to your application:
 ```typescript
 import {NgModule} from "@angular/core";
 import {RikeModule} from "ng2-rike";
