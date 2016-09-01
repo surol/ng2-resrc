@@ -2,6 +2,7 @@
   "name": "ng2-rike",
   "version": "0.1.1-dev",
   "description": "REST-like API for Angular2",
+  "keywords": ["angular2", "ng2", "http", "rest"],
   "license": "MIT",
   "author": "Ruslan Lopatin<ruslan.lopatin@gmail.com>",
   "homepage": "https://github.com/surol/ng2-rike",
