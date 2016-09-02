@@ -1,5 +1,6 @@
 import {Component, Input, OnDestroy} from "@angular/core";
 import {StatusLabels, StatusCollector, StatusView, DEFAULT_STATUS_LABELS, StatusLabelMap} from "./status-collector";
+import {isArray} from "rxjs/util/isArray";
 
 @Component({
     selector: '[rikeStatus],[rikeStatusLabels],[rikeStatusLabelText],[rikeStatusLabelClass]',
@@ -10,7 +11,7 @@ import {StatusLabels, StatusCollector, StatusView, DEFAULT_STATUS_LABELS, Status
 })
 export class RikeStatusComponent<L> implements OnDestroy {
 
-    private _statusLabels?: StatusLabelMap<L>;
+    private _statusLabels?: StatusLabelMap<L> | StatusLabelMap<L>[];
     private _statusView?: StatusView<L>;
     private _ownStatusView = false;
     private _labelText: (label: L) => string = defaultLabelText;
@@ -47,12 +48,12 @@ export class RikeStatusComponent<L> implements OnDestroy {
         this._statusView = statusView;
     }
 
-    get rikeStatusLabels(): StatusLabelMap<L> | undefined {
+    get rikeStatusLabels(): StatusLabelMap<L> | StatusLabelMap<L>[] | undefined {
         return this._statusLabels;
     }
 
     @Input()
-    set rikeStatusLabels(labels: StatusLabelMap<L> | undefined) {
+    set rikeStatusLabels(labels: StatusLabelMap<L> | StatusLabelMap<L>[] | undefined) {
         this._statusView = undefined;
         this._statusLabels = labels;
     }
@@ -111,9 +112,18 @@ export class RikeStatusComponent<L> implements OnDestroy {
 
     protected createStatusView(): StatusView<L> {
 
-        const labels = this.rikeStatusLabels || ((DEFAULT_STATUS_LABELS as any) as StatusLabelMap<L>);
+        const labels = this.rikeStatusLabels;
 
-        return this.collector.view(labels);
+        if (labels) {
+            if (!isArray(labels)) {
+                return this.collector.view(labels);
+            }
+            if (labels.length) {
+                return this.collector.view(...labels);
+            }
+        }
+
+        return this.collector.view((DEFAULT_STATUS_LABELS as any) as StatusLabelMap<L>);
     }
 
     private releaseStatusView() {

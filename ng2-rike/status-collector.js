@@ -12,6 +12,7 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
 var core_1 = require("@angular/core");
+var isArray_1 = require("rxjs/util/isArray");
 var event_1 = require("./event");
 /**
  * Default map of Rike operations status labels.
@@ -180,17 +181,26 @@ var StatusCollector = (function () {
      * associated with it.
      *
      * @param <L> a type of status labels.
-     * @param labels a map of Rike operations status labels to use by this view.
+     * @param labels a map(s) of Rike operations status labels to use by this view.
      *
      * @return {StatusView<L>} new status view.
      */
-    StatusCollector.prototype.view = function (labels) {
-        return this.addView("" + ++this._viewIdSeq, labels);
+    StatusCollector.prototype.view = function () {
+        var labels = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            labels[_i - 0] = arguments[_i];
+        }
+        return this.addView.apply(this, ["" + ++this._viewIdSeq].concat(labels));
     };
-    StatusCollector.prototype.addView = function (id, labels) {
-        var view = new StatusViewImpl(this._views, this._targetStatuses, id).withLabels(labels);
+    StatusCollector.prototype.addView = function (id) {
+        var labels = [];
+        for (var _i = 1; _i < arguments.length; _i++) {
+            labels[_i - 1] = arguments[_i];
+        }
+        var view = (_a = new StatusViewImpl(this._views, this._targetStatuses, id)).withLabels.apply(_a, labels);
         this._views[id] = view;
         return view;
+        var _a;
     };
     StatusCollector.prototype.applyEvent = function (event) {
         this.initDefaultView(event);
@@ -199,7 +209,13 @@ var StatusCollector = (function () {
     };
     StatusCollector.prototype.initDefaultView = function (event) {
         if (!this._defaultView) {
-            this._defaultView = this.addView("default", event.target.rike.options.defaultStatusLabels);
+            var defaultStatusLabels = event.target.rike.options.defaultStatusLabels;
+            if (isArray_1.isArray(defaultStatusLabels)) {
+                this._defaultView = this.addView.apply(this, ["default"].concat(defaultStatusLabels));
+            }
+            else {
+                this._defaultView = this.addView("default", defaultStatusLabels);
+            }
         }
     };
     StatusCollector.prototype.updateTargetStatuses = function (event) {
@@ -240,7 +256,7 @@ var StatusViewImpl = (function () {
         this._views = _views;
         this._targetStatuses = _targetStatuses;
         this._id = _id;
-        this._labels = {};
+        this._labels = [];
     }
     Object.defineProperty(StatusViewImpl.prototype, "labels", {
         get: function () {
@@ -277,18 +293,31 @@ var StatusViewImpl = (function () {
         enumerable: true,
         configurable: true
     });
-    StatusViewImpl.prototype.withLabels = function (labels) {
-        for (var operation in labels) {
-            if (labels.hasOwnProperty(operation)) {
-                this.withOperationLabels(operation, labels[operation]);
-            }
+    StatusViewImpl.prototype.withLabels = function () {
+        var labels = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            labels[_i - 0] = arguments[_i];
+        }
+        this._combined = undefined;
+        (_a = this._labels).unshift.apply(_a, labels);
+        return this;
+        var _a;
+    };
+    StatusViewImpl.prototype.withOperationLabels = function (operation) {
+        var labels = [];
+        for (var _i = 1; _i < arguments.length; _i++) {
+            labels[_i - 1] = arguments[_i];
+        }
+        this._combined = undefined;
+        for (var _a = 0, labels_1 = labels; _a < labels_1.length; _a++) {
+            var l = labels_1[_a];
+            this.withLabels((_b = {},
+                _b[operation] = l,
+                _b
+            ));
         }
         return this;
-    };
-    StatusViewImpl.prototype.withOperationLabels = function (operation, labels) {
-        this._combined = undefined;
-        this._labels[operation] = labels;
-        return this;
+        var _b;
     };
     StatusViewImpl.prototype.reset = function () {
         this._combined = undefined;
@@ -317,7 +346,17 @@ var StatusViewImpl = (function () {
         configurable: true
     });
     StatusViewImpl.prototype.labelFor = function (status) {
-        return labelOf(status, this._labels[status.start.operation.name]) || labelOf(status, this._labels["*"]);
+        return this.operationLabel(status.start.operation.name, status) || this.operationLabel("*", status);
+    };
+    StatusViewImpl.prototype.operationLabel = function (operation, status) {
+        for (var _i = 0, _a = this._labels; _i < _a.length; _i++) {
+            var l = _a[_i];
+            var label = labelOf(status, l[operation]);
+            if (label) {
+                return label;
+            }
+        }
+        return undefined;
     };
     return StatusViewImpl;
 }());

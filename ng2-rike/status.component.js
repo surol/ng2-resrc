@@ -10,6 +10,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 var core_1 = require("@angular/core");
 var status_collector_1 = require("./status-collector");
+var isArray_1 = require("rxjs/util/isArray");
 var RikeStatusComponent = (function () {
     function RikeStatusComponent(_collector) {
         this._collector = _collector;
@@ -115,8 +116,17 @@ var RikeStatusComponent = (function () {
         this.releaseStatusView();
     };
     RikeStatusComponent.prototype.createStatusView = function () {
-        var labels = this.rikeStatusLabels || status_collector_1.DEFAULT_STATUS_LABELS;
-        return this.collector.view(labels);
+        var labels = this.rikeStatusLabels;
+        if (labels) {
+            if (!isArray_1.isArray(labels)) {
+                return this.collector.view(labels);
+            }
+            if (labels.length) {
+                return (_a = this.collector).view.apply(_a, labels);
+            }
+        }
+        return this.collector.view(status_collector_1.DEFAULT_STATUS_LABELS);
+        var _a;
     };
     RikeStatusComponent.prototype.releaseStatusView = function () {
         var statusView = this._statusView;

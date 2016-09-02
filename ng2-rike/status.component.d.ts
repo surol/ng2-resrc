@@ -11,7 +11,7 @@ export declare class RikeStatusComponent<L> implements OnDestroy {
     readonly collector: StatusCollector;
     readonly statusView: StatusView<L>;
     rikeStatus: StatusView<L> | undefined;
-    rikeStatusLabels: StatusLabelMap<L> | undefined;
+    rikeStatusLabels: StatusLabelMap<L> | StatusLabelMap<L>[] | undefined;
     rikeStatusLabelText: (label: L) => string;
     rikeStatusLabelClass: (status: StatusView<L>) => string;
     readonly cssClass: string;

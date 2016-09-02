@@ -1,4 +1,5 @@
 import {EventEmitter, Injectable, Optional, Inject} from "@angular/core";
+import {isArray} from "rxjs/util/isArray";
 import {RikeTarget} from "./rike";
 import {RikeEvent, RikeEventSource} from "./event";
 
@@ -229,17 +230,17 @@ export class StatusCollector {
      * associated with it.
      *
      * @param <L> a type of status labels.
-     * @param labels a map of Rike operations status labels to use by this view.
+     * @param labels a map(s) of Rike operations status labels to use by this view.
      *
      * @return {StatusView<L>} new status view.
      */
-    view<L>(labels: StatusLabelMap<L>): StatusView<L> {
-        return this.addView("" + ++this._viewIdSeq, labels);
+    view<L>(...labels: StatusLabelMap<L>[]): StatusView<L> {
+        return this.addView("" + ++this._viewIdSeq, ...labels);
     }
 
-    private addView<L>(id: string, labels: StatusLabelMap<L>): StatusViewImpl<L> {
+    private addView<L>(id: string, ...labels: StatusLabelMap<L>[]): StatusViewImpl<L> {
 
-        const view = new StatusViewImpl<L>(this._views, this._targetStatuses, id).withLabels(labels);
+        const view = new StatusViewImpl<L>(this._views, this._targetStatuses, id).withLabels(...labels);
 
         this._views[id] = view;
 
@@ -254,7 +255,14 @@ export class StatusCollector {
 
     private initDefaultView(event: RikeEvent) {
         if (!this._defaultView) {
-            this._defaultView = this.addView("default", event.target.rike.options.defaultStatusLabels);
+
+            const defaultStatusLabels = event.target.rike.options.defaultStatusLabels;
+
+            if (isArray(defaultStatusLabels)) {
+                this._defaultView = this.addView("default", ...defaultStatusLabels);
+            } else {
+                this._defaultView = this.addView("default", defaultStatusLabels);
+            }
         }
     }
 
@@ -352,7 +360,7 @@ export interface StatusView<L> {
 
 class StatusViewImpl<L> implements StatusView<L> {
 
-    private _labels: StatusLabelMap<L> = {};
+    private _labels: StatusLabelMap<L>[] = [];
     private _combined?: CombinedStatus<L>;
 
     constructor(
@@ -381,18 +389,19 @@ class StatusViewImpl<L> implements StatusView<L> {
         return this.combined && this.combined.succeed || false;
     }
 
-    withLabels(labels: StatusLabelMap<L>): this {
-        for (let operation in labels) {
-            if (labels.hasOwnProperty(operation)) {
-                this.withOperationLabels(operation, labels[operation]);
-            }
-        }
+    withLabels(...labels: StatusLabelMap<L>[]): this {
+        this._combined = undefined;
+        this._labels.unshift(...labels);
         return this;
     }
 
-    withOperationLabels(operation: string, labels: StatusLabels<L>): this {
+    withOperationLabels(operation: string, ...labels: StatusLabels<L>[]): this {
         this._combined = undefined;
-        this._labels[operation] = labels!;
+        for (let l of labels) {
+            this.withLabels({
+                [operation]: l
+            });
+        }
         return this;
     }
 
@@ -428,7 +437,19 @@ class StatusViewImpl<L> implements StatusView<L> {
     }
 
     private labelFor(status: TargetStatus): StatusLabel<L> | undefined {
-        return labelOf(status, this._labels[status.start.operation.name]) || labelOf(status, this._labels["*"]);
+        return this.operationLabel(status.start.operation.name, status) || this.operationLabel("*", status);
+    }
+
+    private operationLabel(operation: string, status: TargetStatus): StatusLabel<L> | undefined {
+        for (let l of this._labels) {
+
+            const label = labelOf(status, l[operation]);
+
+            if (label) {
+                return label;
+            }
+        }
+        return undefined;
     }
 
 }

@@ -120,12 +120,12 @@ export declare class StatusCollector {
      * associated with it.
      *
      * @param <L> a type of status labels.
-     * @param labels a map of Rike operations status labels to use by this view.
+     * @param labels a map(s) of Rike operations status labels to use by this view.
      *
      * @return {StatusView<L>} new status view.
      */
-    view<L>(labels: StatusLabelMap<L>): StatusView<L>;
-    private addView<L>(id, labels);
+    view<L>(...labels: StatusLabelMap<L>[]): StatusView<L>;
+    private addView<L>(id, ...labels);
     private applyEvent(event);
     private initDefaultView(event);
     private updateTargetStatuses(event);

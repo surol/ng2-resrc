@@ -527,10 +527,10 @@ System.register("ng2-rike/event", [], function(exports_2, context_2) {
         }
     }
 });
-System.register("ng2-rike/status-collector", ["@angular/core", "ng2-rike/event"], function(exports_3, context_3) {
+System.register("ng2-rike/status-collector", ["@angular/core", "rxjs/util/isArray", "ng2-rike/event"], function(exports_3, context_3) {
     "use strict";
     var __moduleName = context_3 && context_3.id;
-    var core_1, event_1;
+    var core_1, isArray_1, event_1;
     var DEFAULT_STATUS_LABELS, StatusCollector, StatusViewImpl;
     function labelOf(status, labels) {
         if (!labels) {
@@ -593,6 +593,9 @@ System.register("ng2-rike/status-collector", ["@angular/core", "ng2-rike/event"]
         setters:[
             function (core_1_1) {
                 core_1 = core_1_1;
+            },
+            function (isArray_1_1) {
+                isArray_1 = isArray_1_1;
             },
             function (event_1_1) {
                 event_1 = event_1_1;
@@ -765,17 +768,26 @@ System.register("ng2-rike/status-collector", ["@angular/core", "ng2-rike/event"]
                  * associated with it.
                  *
                  * @param <L> a type of status labels.
-                 * @param labels a map of Rike operations status labels to use by this view.
+                 * @param labels a map(s) of Rike operations status labels to use by this view.
                  *
                  * @return {StatusView<L>} new status view.
                  */
-                StatusCollector.prototype.view = function (labels) {
-                    return this.addView("" + ++this._viewIdSeq, labels);
+                StatusCollector.prototype.view = function () {
+                    var labels = [];
+                    for (var _i = 0; _i < arguments.length; _i++) {
+                        labels[_i - 0] = arguments[_i];
+                    }
+                    return this.addView.apply(this, ["" + ++this._viewIdSeq].concat(labels));
                 };
-                StatusCollector.prototype.addView = function (id, labels) {
-                    var view = new StatusViewImpl(this._views, this._targetStatuses, id).withLabels(labels);
+                StatusCollector.prototype.addView = function (id) {
+                    var labels = [];
+                    for (var _i = 1; _i < arguments.length; _i++) {
+                        labels[_i - 1] = arguments[_i];
+                    }
+                    var view = (_a = new StatusViewImpl(this._views, this._targetStatuses, id)).withLabels.apply(_a, labels);
                     this._views[id] = view;
                     return view;
+                    var _a;
                 };
                 StatusCollector.prototype.applyEvent = function (event) {
                     this.initDefaultView(event);
@@ -784,7 +796,13 @@ System.register("ng2-rike/status-collector", ["@angular/core", "ng2-rike/event"]
                 };
                 StatusCollector.prototype.initDefaultView = function (event) {
                     if (!this._defaultView) {
-                        this._defaultView = this.addView("default", event.target.rike.options.defaultStatusLabels);
+                        var defaultStatusLabels = event.target.rike.options.defaultStatusLabels;
+                        if (isArray_1.isArray(defaultStatusLabels)) {
+                            this._defaultView = this.addView.apply(this, ["default"].concat(defaultStatusLabels));
+                        }
+                        else {
+                            this._defaultView = this.addView("default", defaultStatusLabels);
+                        }
                     }
                 };
                 StatusCollector.prototype.updateTargetStatuses = function (event) {
@@ -825,7 +843,7 @@ System.register("ng2-rike/status-collector", ["@angular/core", "ng2-rike/event"]
                     this._views = _views;
                     this._targetStatuses = _targetStatuses;
                     this._id = _id;
-                    this._labels = {};
+                    this._labels = [];
                 }
                 Object.defineProperty(StatusViewImpl.prototype, "labels", {
                     get: function () {
@@ -862,18 +880,31 @@ System.register("ng2-rike/status-collector", ["@angular/core", "ng2-rike/event"]
                     enumerable: true,
                     configurable: true
                 });
-                StatusViewImpl.prototype.withLabels = function (labels) {
-                    for (var operation in labels) {
-                        if (labels.hasOwnProperty(operation)) {
-                            this.withOperationLabels(operation, labels[operation]);
-                        }
+                StatusViewImpl.prototype.withLabels = function () {
+                    var labels = [];
+                    for (var _i = 0; _i < arguments.length; _i++) {
+                        labels[_i - 0] = arguments[_i];
+                    }
+                    this._combined = undefined;
+                    (_a = this._labels).unshift.apply(_a, labels);
+                    return this;
+                    var _a;
+                };
+                StatusViewImpl.prototype.withOperationLabels = function (operation) {
+                    var labels = [];
+                    for (var _i = 1; _i < arguments.length; _i++) {
+                        labels[_i - 1] = arguments[_i];
+                    }
+                    this._combined = undefined;
+                    for (var _a = 0, labels_1 = labels; _a < labels_1.length; _a++) {
+                        var l = labels_1[_a];
+                        this.withLabels((_b = {},
+                            _b[operation] = l,
+                            _b
+                        ));
                     }
                     return this;
-                };
-                StatusViewImpl.prototype.withOperationLabels = function (operation, labels) {
-                    this._combined = undefined;
-                    this._labels[operation] = labels;
-                    return this;
+                    var _b;
                 };
                 StatusViewImpl.prototype.reset = function () {
                     this._combined = undefined;
@@ -902,17 +933,27 @@ System.register("ng2-rike/status-collector", ["@angular/core", "ng2-rike/event"]
                     configurable: true
                 });
                 StatusViewImpl.prototype.labelFor = function (status) {
-                    return labelOf(status, this._labels[status.start.operation.name]) || labelOf(status, this._labels["*"]);
+                    return this.operationLabel(status.start.operation.name, status) || this.operationLabel("*", status);
+                };
+                StatusViewImpl.prototype.operationLabel = function (operation, status) {
+                    for (var _i = 0, _a = this._labels; _i < _a.length; _i++) {
+                        var l = _a[_i];
+                        var label = labelOf(status, l[operation]);
+                        if (label) {
+                            return label;
+                        }
+                    }
+                    return undefined;
                 };
                 return StatusViewImpl;
             }());
         }
     }
 });
-System.register("ng2-rike/options", ["ng2-rike/protocol", "ng2-rike/status-collector"], function(exports_4, context_4) {
+System.register("ng2-rike/options", ["rxjs/util/isArray", "ng2-rike/protocol", "ng2-rike/status-collector"], function(exports_4, context_4) {
     "use strict";
     var __moduleName = context_4 && context_4.id;
-    var protocol_1, status_collector_1;
+    var isArray_2, protocol_1, status_collector_1;
     var RikeOptions, BaseRikeOptions, DEFAULT_RIKE_OPTIONS;
     /**
      * Constructs URL relative to base URL.
@@ -938,6 +979,9 @@ System.register("ng2-rike/options", ["ng2-rike/protocol", "ng2-rike/status-colle
     exports_4("relativeUrl", relativeUrl);
     return {
         setters:[
+            function (isArray_2_1) {
+                isArray_2 = isArray_2_1;
+            },
             function (protocol_1_1) {
                 protocol_1 = protocol_1_1;
             },
@@ -979,14 +1023,23 @@ System.register("ng2-rike/options", ["ng2-rike/protocol", "ng2-rike/status-colle
                 function BaseRikeOptions(opts) {
                     _super.call(this);
                     this._defaultProtocol = protocol_1.HTTP_PROTOCOL;
-                    this._defaultStatusLabels = status_collector_1.DEFAULT_STATUS_LABELS;
+                    this._defaultStatusLabels = [status_collector_1.DEFAULT_STATUS_LABELS];
                     if (opts) {
                         this._baseUrl = opts.baseUrl;
                         if (opts.defaultProtocol) {
                             this._defaultProtocol = opts.defaultProtocol;
                         }
-                        if (opts.defaultStatusLabels) {
-                            this._defaultStatusLabels = opts.defaultStatusLabels;
+                        var defaultStatusLabels = opts.defaultStatusLabels;
+                        if (defaultStatusLabels) {
+                            if (!isArray_2.isArray(defaultStatusLabels)) {
+                                this._defaultStatusLabels = [defaultStatusLabels];
+                            }
+                            else if (defaultStatusLabels.length) {
+                                this._defaultStatusLabels = defaultStatusLabels;
+                            }
+                            else {
+                                this._defaultStatusLabels = [status_collector_1.DEFAULT_STATUS_LABELS];
+                            }
                         }
                     }
                 }
@@ -1700,10 +1753,10 @@ System.register("ng2-rike/rike", ["@angular/core", "@angular/http", "rxjs/Rx", "
         }
     }
 });
-System.register("ng2-rike/status.component", ["@angular/core", "ng2-rike/status-collector"], function(exports_6, context_6) {
+System.register("ng2-rike/status.component", ["@angular/core", "ng2-rike/status-collector", "rxjs/util/isArray"], function(exports_6, context_6) {
     "use strict";
     var __moduleName = context_6 && context_6.id;
-    var core_3, status_collector_2;
+    var core_3, status_collector_2, isArray_3;
     var RikeStatusComponent;
     function defaultLabelText(label) {
         if (typeof label === "string") {
@@ -1721,8 +1774,8 @@ System.register("ng2-rike/status.component", ["@angular/core", "ng2-rike/status-
             return "rike-status rike-status-hidden";
         }
         var result = processingTypeClass(status);
-        for (var _i = 0, labels_1 = labels; _i < labels_1.length; _i++) {
-            var label = labels_1[_i];
+        for (var _i = 0, labels_2 = labels; _i < labels_2.length; _i++) {
+            var label = labels_2[_i];
             var defaultLabel = label;
             var cssClass = defaultLabel.cssClass;
             if (cssClass) {
@@ -1758,6 +1811,9 @@ System.register("ng2-rike/status.component", ["@angular/core", "ng2-rike/status-
             },
             function (status_collector_2_1) {
                 status_collector_2 = status_collector_2_1;
+            },
+            function (isArray_3_1) {
+                isArray_3 = isArray_3_1;
             }],
         execute: function() {
             RikeStatusComponent = (function () {
@@ -1845,8 +1901,8 @@ System.register("ng2-rike/status.component", ["@angular/core", "ng2-rike/status-
                             return undefined;
                         }
                         var text = "";
-                        for (var _i = 0, labels_2 = labels; _i < labels_2.length; _i++) {
-                            var label = labels_2[_i];
+                        for (var _i = 0, labels_3 = labels; _i < labels_3.length; _i++) {
+                            var label = labels_3[_i];
                             var t = this.rikeStatusLabelText(label);
                             if (text) {
                                 text += ", ";
@@ -1865,8 +1921,17 @@ System.register("ng2-rike/status.component", ["@angular/core", "ng2-rike/status-
                     this.releaseStatusView();
                 };
                 RikeStatusComponent.prototype.createStatusView = function () {
-                    var labels = this.rikeStatusLabels || status_collector_2.DEFAULT_STATUS_LABELS;
-                    return this.collector.view(labels);
+                    var labels = this.rikeStatusLabels;
+                    if (labels) {
+                        if (!isArray_3.isArray(labels)) {
+                            return this.collector.view(labels);
+                        }
+                        if (labels.length) {
+                            return (_a = this.collector).view.apply(_a, labels);
+                        }
+                    }
+                    return this.collector.view(status_collector_2.DEFAULT_STATUS_LABELS);
+                    var _a;
                 };
                 RikeStatusComponent.prototype.releaseStatusView = function () {
                     var statusView = this._statusView;

@@ -4,6 +4,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
+var isArray_1 = require("rxjs/util/isArray");
 var protocol_1 = require("./protocol");
 var status_collector_1 = require("./status-collector");
 /**
@@ -62,14 +63,23 @@ var BaseRikeOptions = (function (_super) {
     function BaseRikeOptions(opts) {
         _super.call(this);
         this._defaultProtocol = protocol_1.HTTP_PROTOCOL;
-        this._defaultStatusLabels = status_collector_1.DEFAULT_STATUS_LABELS;
+        this._defaultStatusLabels = [status_collector_1.DEFAULT_STATUS_LABELS];
         if (opts) {
             this._baseUrl = opts.baseUrl;
             if (opts.defaultProtocol) {
                 this._defaultProtocol = opts.defaultProtocol;
             }
-            if (opts.defaultStatusLabels) {
-                this._defaultStatusLabels = opts.defaultStatusLabels;
+            var defaultStatusLabels = opts.defaultStatusLabels;
+            if (defaultStatusLabels) {
+                if (!isArray_1.isArray(defaultStatusLabels)) {
+                    this._defaultStatusLabels = [defaultStatusLabels];
+                }
+                else if (defaultStatusLabels.length) {
+                    this._defaultStatusLabels = defaultStatusLabels;
+                }
+                else {
+                    this._defaultStatusLabels = [status_collector_1.DEFAULT_STATUS_LABELS];
+                }
             }
         }
     }

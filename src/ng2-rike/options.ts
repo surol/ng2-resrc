@@ -1,5 +1,6 @@
+import {isArray} from "rxjs/util/isArray";
 import {Protocol, HTTP_PROTOCOL} from "./protocol";
-import {StatusLabels, DEFAULT_STATUS_LABELS, DefaultStatusLabel} from "./status-collector";
+import {DEFAULT_STATUS_LABELS, DefaultStatusLabel, StatusLabelMap} from "./status-collector";
 
 /**
  * Constructs URL relative to base URL.
@@ -49,7 +50,7 @@ export interface RikeOptionsArgs {
      *
      * Default status labels are always of type {{DefaultStatusLabel}}.
      */
-    readonly defaultStatusLabels?: {[operation: string]: StatusLabels<DefaultStatusLabel>};
+    readonly defaultStatusLabels?: StatusLabelMap<DefaultStatusLabel> | StatusLabelMap<DefaultStatusLabel>[];
 
 }
 
@@ -67,7 +68,7 @@ export abstract class RikeOptions implements RikeOptionsArgs {
 
     abstract readonly defaultProtocol: Protocol<any, any>;
 
-    abstract defaultStatusLabels: {[operation: string]: StatusLabels<DefaultStatusLabel>};
+    abstract defaultStatusLabels: StatusLabelMap<DefaultStatusLabel> | StatusLabelMap<DefaultStatusLabel>[];
 
     /**
      * Constructs URL relative to `baseUrl`.
@@ -91,7 +92,7 @@ export class BaseRikeOptions extends RikeOptions {
 
     private _baseUrl?: string;
     private _defaultProtocol: Protocol<any, any> = HTTP_PROTOCOL;
-    private _defaultStatusLabels = DEFAULT_STATUS_LABELS;
+    private _defaultStatusLabels: StatusLabelMap<DefaultStatusLabel>[] = [DEFAULT_STATUS_LABELS];
 
     constructor(opts?: RikeOptionsArgs) {
         super();
@@ -100,8 +101,17 @@ export class BaseRikeOptions extends RikeOptions {
             if (opts.defaultProtocol) {
                 this._defaultProtocol = opts.defaultProtocol;
             }
-            if (opts.defaultStatusLabels) {
-                this._defaultStatusLabels = opts.defaultStatusLabels;
+
+            const defaultStatusLabels = opts.defaultStatusLabels;
+
+            if (defaultStatusLabels) {
+                if (!isArray(defaultStatusLabels)) {
+                    this._defaultStatusLabels = [defaultStatusLabels];
+                } else if (defaultStatusLabels.length) {
+                    this._defaultStatusLabels = defaultStatusLabels;
+                } else {
+                    this._defaultStatusLabels = [DEFAULT_STATUS_LABELS];
+                }
             }
         }
     }
@@ -114,7 +124,7 @@ export class BaseRikeOptions extends RikeOptions {
         return this._defaultProtocol;
     }
 
-    get defaultStatusLabels(): {[operation: string]: StatusLabels<DefaultStatusLabel>} {
+    get defaultStatusLabels(): StatusLabelMap<DefaultStatusLabel>[] {
         return this._defaultStatusLabels;
     }
 
