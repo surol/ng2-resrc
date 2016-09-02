@@ -1,6 +1,6 @@
 {
   "name": "ng2-rike",
-  "version": "0.1.1",
+  "version": "0.1.2-dev",
   "description": "REST-like API for Angular2",
   "keywords": ["angular2", "ng2", "http", "rest"],
   "license": "MIT",
