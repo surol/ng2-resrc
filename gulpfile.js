@@ -9,43 +9,10 @@ var sourcemaps = require('gulp-sourcemaps');
 var merge = require('merge2');
 var del = require('del');
 
-var SystemBuilder = require('systemjs-builder');
-
-gulp.task('bundle-angular', function(cb) {
-
-    var builder = new SystemBuilder('node_modules');
-
-    builder.loadConfig('systemjs.config.js')
-        .then(function() {
-            builder.bundle(
-                'rxjs'
-                + ' + @angular/common'
-                + ' + @angular/compiler'
-                + ' + @angular/core'
-                + ' + @angular/core/testing'
-                + ' + @angular/http'
-                + ' + @angular/http/testing'
-                + ' + @angular/platform-browser'
-                + ' + @angular/platform-browser/testing'
-                + ' + @angular/platform-browser-dynamic'
-                + ' + @angular/platform-browser-dynamic/testing',
-                'bundles/angular.js',
-                {
-                    minify: true,
-                    mangle: false,
-                    sourceMaps: true,
-                    sourceMapContents: true
-                }
-            ).then(
-                function() {cb()},
-                function(err) {cb(err)}
-            )});
-});
-
 var project = ts.createProject({
     "typescript": require("typescript"),
     "target": "ES5",
-    "module": "commonjs",
+    "module": "es2015",
     "moduleResolution": "node",
     "declaration": true,
     "sourceMap": true,
@@ -93,17 +60,31 @@ gulp.task('compile-all', function(cb) {
         'node_modules/.bin/tsc -p .',
         function(err, stdout, stderr) {
             console.log(stdout);
-            if (err) console.error(stderr);
+            if (err) {
+                console.error(stderr);
+            }
+            cb();
+        });
+});
+
+gulp.task('bundle', ['compile-api'], function(cb) {
+    exec(
+        'node_modules/.bin/rollup -c rollup.config.js',
+        function(err, stdout, stderr) {
+            console.log(stdout);
+            if (err) {
+                console.error(stderr);
+            }
             cb(err);
         });
 });
 
-gulp.task('compile', ['compile-all', 'compile-api']);
+gulp.task('compile', ['compile-all', 'bundle']);
 
 gulp.task('clean-bundle', ['clean-api'], function() {
     return del('bundles');
 });
 
-gulp.task('default', ['bundle-angular', 'compile']);
+gulp.task('default', ['compile']);
 
 gulp.task('clean', ['clean-bundle']);

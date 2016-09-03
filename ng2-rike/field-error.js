@@ -1,4 +1,3 @@
-"use strict";
 function isJsonResponse(httpResponse) {
     var contentType = httpResponse.headers.get("Content-Type");
     if (!contentType) {
@@ -21,7 +20,7 @@ function isJsonResponse(httpResponse) {
  *
  * @return {FieldErrorResponse} constructed error httpResponse.
  */
-function addFieldErrors(error) {
+export function addFieldErrors(error) {
     var response = error;
     if (response.fieldErrors) {
         // Field errors already present.
@@ -45,7 +44,6 @@ function addFieldErrors(error) {
     }
     return defaultFieldErrors(response);
 }
-exports.addFieldErrors = addFieldErrors;
 function defaultFieldErrors(response) {
     var httpResponse = response.response;
     var message = "ERROR " + httpResponse.status;

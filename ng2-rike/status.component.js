@@ -1,4 +1,3 @@
-"use strict";
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -8,10 +7,10 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-var core_1 = require("@angular/core");
-var status_collector_1 = require("./status-collector");
-var isArray_1 = require("rxjs/util/isArray");
-var RikeStatusComponent = (function () {
+import { Component, Input } from "@angular/core";
+import { StatusCollector, DEFAULT_STATUS_LABELS } from "./status-collector";
+import { isArray } from "rxjs/util/isArray";
+export var RikeStatusComponent = (function () {
     function RikeStatusComponent(_collector) {
         this._collector = _collector;
         this._ownStatusView = false;
@@ -118,14 +117,14 @@ var RikeStatusComponent = (function () {
     RikeStatusComponent.prototype.createStatusView = function () {
         var labels = this.rikeStatusLabels;
         if (labels) {
-            if (!isArray_1.isArray(labels)) {
+            if (!isArray(labels)) {
                 return this.collector.view(labels);
             }
             if (labels.length) {
                 return (_a = this.collector).view.apply(_a, labels);
             }
         }
-        return this.collector.view(status_collector_1.DEFAULT_STATUS_LABELS);
+        return this.collector.view(DEFAULT_STATUS_LABELS);
         var _a;
     };
     RikeStatusComponent.prototype.releaseStatusView = function () {
@@ -138,34 +137,33 @@ var RikeStatusComponent = (function () {
         }
     };
     __decorate([
-        core_1.Input(), 
+        Input(), 
         __metadata('design:type', Object)
     ], RikeStatusComponent.prototype, "rikeStatus", null);
     __decorate([
-        core_1.Input(), 
+        Input(), 
         __metadata('design:type', Object)
     ], RikeStatusComponent.prototype, "rikeStatusLabels", null);
     __decorate([
-        core_1.Input(), 
+        Input(), 
         __metadata('design:type', Function)
     ], RikeStatusComponent.prototype, "rikeStatusLabelText", null);
     __decorate([
-        core_1.Input(), 
+        Input(), 
         __metadata('design:type', Function)
     ], RikeStatusComponent.prototype, "rikeStatusLabelClass", null);
     RikeStatusComponent = __decorate([
-        core_1.Component({
+        Component({
             selector: '[rikeStatus],[rikeStatusLabels],[rikeStatusLabelText],[rikeStatusLabelClass]',
             template: "<span class=\"rike-status-icon\"></span> {{text}}",
             host: {
                 "[class]": "cssClass",
             }
         }), 
-        __metadata('design:paramtypes', [status_collector_1.StatusCollector])
+        __metadata('design:paramtypes', [StatusCollector])
     ], RikeStatusComponent);
     return RikeStatusComponent;
 }());
-exports.RikeStatusComponent = RikeStatusComponent;
 function defaultLabelText(label) {
     if (typeof label === "string") {
         return label;

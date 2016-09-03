@@ -3552,7 +3552,7 @@ System.register("ng2-rike/rike-operation.spec", ["@angular/http", "@angular/core
                             done();
                         }
                     }, function (err) { return done.fail(err); });
-                    op.load().subscribe();
+                    op.load().subscribe(function () { }, function () { });
                 });
                 it("exception", function (done) {
                     back.connections.subscribe(function () {

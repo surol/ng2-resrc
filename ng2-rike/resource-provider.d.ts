@@ -16,7 +16,7 @@ import { Type } from "@angular/core";
  */
 export declare function provideResource({provide, useClass, useValue, useExisting, useFactory, deps}: {
     provide?: any;
-    useClass?: Type;
+    useClass?: Type<any>;
     useValue?: any;
     useExisting?: any;
     useFactory?: Function;

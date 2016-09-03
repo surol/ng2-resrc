@@ -108,7 +108,7 @@ export declare abstract class RikeErrorEvent extends RikeEvent {
  * An object of this type is reported as an error.
  */
 export declare class RikeExceptionEvent extends RikeErrorEvent {
-    private _errorResponse?;
+    private _errorResponse;
     constructor(operation: RikeOperation<any, any>, error: any, _errorResponse?: ErrorResponse);
     readonly errorResponse: ErrorResponse | undefined;
 }
@@ -124,7 +124,7 @@ export declare class RikeErrorResponseEvent extends RikeErrorEvent {
  * An event emitted when operation on a REST-like resource is cancelled.
  */
 export declare class RikeCancelEvent extends RikeErrorEvent {
-    private _cancelledBy?;
+    private _cancelledBy;
     constructor(operation: RikeOperation<any, any>, _cancelledBy?: RikeOperationEvent);
     readonly error: RikeOperationEvent | undefined;
     readonly cancel: boolean;

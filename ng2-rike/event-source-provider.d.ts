@@ -12,7 +12,7 @@ import { Type } from "@angular/core";
  * @return new provider recipe.
  */
 export declare function provideEventSource({useClass, useValue, useExisting, useFactory, deps}: {
-    useClass?: Type;
+    useClass?: Type<any>;
     useValue?: any;
     useExisting?: any;
     useFactory?: Function;

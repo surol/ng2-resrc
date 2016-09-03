@@ -1,12 +1,11 @@
-"use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var isArray_1 = require("rxjs/util/isArray");
-var protocol_1 = require("./protocol");
-var status_collector_1 = require("./status-collector");
+import { isArray } from "rxjs/util/isArray";
+import { HTTP_PROTOCOL } from "./protocol";
+import { DEFAULT_STATUS_LABELS } from "./status-collector";
 /**
  * Constructs URL relative to base URL.
  *
@@ -16,7 +15,7 @@ var status_collector_1 = require("./status-collector");
  * @returns {string} If `baseUrl` is not specified, or empty string, or `url` is absolute, then returns unmodified `url`.
  * Otherwise concatenates `baseUrl` and `url` separating them by `/` sign.
  */
-function relativeUrl(baseUrl, url) {
+export function relativeUrl(baseUrl, url) {
     if (!baseUrl) {
         return url;
     }
@@ -28,7 +27,6 @@ function relativeUrl(baseUrl, url) {
     }
     return baseUrl + "/" + url;
 }
-exports.relativeUrl = relativeUrl;
 /**
  * Global Rike options.
  *
@@ -37,7 +35,7 @@ exports.relativeUrl = relativeUrl;
  * bootstrap(AppComponent, {provide: RikeOptions, new BaseRikeOptions({baseUrl: "/rike"})});
  * ```
  */
-var RikeOptions = (function () {
+export var RikeOptions = (function () {
     function RikeOptions() {
     }
     /**
@@ -52,18 +50,17 @@ var RikeOptions = (function () {
     };
     return RikeOptions;
 }());
-exports.RikeOptions = RikeOptions;
 /**
  * Basic [global resource options][RikeOptions] implementation.
  *
  * Can be used to override the global resource options.
  */
-var BaseRikeOptions = (function (_super) {
+export var BaseRikeOptions = (function (_super) {
     __extends(BaseRikeOptions, _super);
     function BaseRikeOptions(opts) {
         _super.call(this);
-        this._defaultProtocol = protocol_1.HTTP_PROTOCOL;
-        this._defaultStatusLabels = [status_collector_1.DEFAULT_STATUS_LABELS];
+        this._defaultProtocol = HTTP_PROTOCOL;
+        this._defaultStatusLabels = [DEFAULT_STATUS_LABELS];
         if (opts) {
             this._baseUrl = opts.baseUrl;
             if (opts.defaultProtocol) {
@@ -71,14 +68,14 @@ var BaseRikeOptions = (function (_super) {
             }
             var defaultStatusLabels = opts.defaultStatusLabels;
             if (defaultStatusLabels) {
-                if (!isArray_1.isArray(defaultStatusLabels)) {
+                if (!isArray(defaultStatusLabels)) {
                     this._defaultStatusLabels = [defaultStatusLabels];
                 }
                 else if (defaultStatusLabels.length) {
                     this._defaultStatusLabels = defaultStatusLabels;
                 }
                 else {
-                    this._defaultStatusLabels = [status_collector_1.DEFAULT_STATUS_LABELS];
+                    this._defaultStatusLabels = [DEFAULT_STATUS_LABELS];
                 }
             }
         }
@@ -106,12 +103,11 @@ var BaseRikeOptions = (function (_super) {
     });
     return BaseRikeOptions;
 }(RikeOptions));
-exports.BaseRikeOptions = BaseRikeOptions;
 /**
  * Default resource options.
  *
  * @type {RikeOptions}
  */
-exports.DEFAULT_RIKE_OPTIONS = new BaseRikeOptions();
+export var DEFAULT_RIKE_OPTIONS = new BaseRikeOptions();
 
 //# sourceMappingURL=options.js.map

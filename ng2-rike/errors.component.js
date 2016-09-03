@@ -1,4 +1,3 @@
-"use strict";
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -11,9 +10,9 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
-var core_1 = require("@angular/core");
-var error_collector_1 = require("./error-collector");
-var RikeErrorsComponent = (function () {
+import { Component, Input, Optional } from "@angular/core";
+import { ErrorCollector } from "./error-collector";
+export var RikeErrorsComponent = (function () {
     function RikeErrorsComponent(_collector) {
         this._collector = _collector;
         this._errors = [];
@@ -71,7 +70,7 @@ var RikeErrorsComponent = (function () {
     };
     //noinspection JSMethodCanBeStatic
     RikeErrorsComponent.prototype.createCollector = function () {
-        return new error_collector_1.ErrorCollector();
+        return new ErrorCollector();
     };
     RikeErrorsComponent.prototype.updateErrors = function (errors) {
         var list = [];
@@ -108,26 +107,25 @@ var RikeErrorsComponent = (function () {
         }
     };
     __decorate([
-        core_1.Input(), 
+        Input(), 
         __metadata('design:type', Object)
     ], RikeErrorsComponent.prototype, "rikeErrors", null);
     __decorate([
-        core_1.Input(), 
+        Input(), 
         __metadata('design:type', Object)
     ], RikeErrorsComponent.prototype, "rikeErrorsOf", null);
     RikeErrorsComponent = __decorate([
-        core_1.Component({
+        Component({
             selector: '[rikeErrors],[rikeErrorsOf]',
             template: "\n    <ul class=\"rike-error-list\" *ngIf=\"errors.length\">\n        <li class=\"rike-error\" *ngFor=\"let error of errors\">{{error.message}}</li>\n    </ul>\n    ",
             host: {
                 "[class.rike-errors]": "true"
             }
         }),
-        __param(0, core_1.Optional()), 
-        __metadata('design:paramtypes', [error_collector_1.ErrorCollector])
+        __param(0, Optional()), 
+        __metadata('design:paramtypes', [ErrorCollector])
     ], RikeErrorsComponent);
     return RikeErrorsComponent;
 }());
-exports.RikeErrorsComponent = RikeErrorsComponent;
 
 //# sourceMappingURL=errors.component.js.map

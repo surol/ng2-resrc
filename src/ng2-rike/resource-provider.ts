@@ -18,7 +18,7 @@ import {provideEventSource} from "./event-source-provider";
  */
 export function provideResource({provide, useClass, useValue, useExisting, useFactory, deps}: {
     provide?: any,
-    useClass?: Type;
+    useClass?: Type<any>;
     useValue?: any;
     useExisting?: any;
     useFactory?: Function;

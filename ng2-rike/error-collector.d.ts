@@ -35,7 +35,7 @@ export interface ErrorSubscription {
  * `subscribeOn` method.
  */
 export declare class ErrorCollector {
-    private _eventSources?;
+    private _eventSources;
     private readonly _emitters;
     private readonly _targetErrors;
     private _initialized;

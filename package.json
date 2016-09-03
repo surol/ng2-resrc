@@ -1,8 +1,13 @@
 {
   "name": "ng2-rike",
-  "version": "0.1.2-dev",
+  "version": "0.1.2",
   "description": "REST-like API for Angular2",
-  "keywords": ["angular2", "ng2", "http", "rest"],
+  "keywords": [
+    "angular2",
+    "ng2",
+    "http",
+    "rest"
+  ],
   "license": "MIT",
   "author": "Ruslan Lopatin<ruslan.lopatin@gmail.com>",
   "homepage": "https://github.com/surol/ng2-rike",
@@ -12,28 +17,29 @@
   },
   "typings": "./ng2-rike.d.ts",
   "dependencies": {
-    "@angular/common": "2.0.0-rc.5",
-    "@angular/compiler": "2.0.0-rc.5",
-    "@angular/core": "2.0.0-rc.5",
-    "@angular/http": "2.0.0-rc.5",
-    "@angular/platform-browser": "2.0.0-rc.5",
+    "@angular/common": "2.0.0-rc.6",
+    "@angular/compiler": "2.0.0-rc.6",
+    "@angular/core": "2.0.0-rc.6",
+    "@angular/http": "2.0.0-rc.6",
+    "@angular/platform-browser": "2.0.0-rc.6",
     "core-js": "^2.4.1",
     "reflect-metadata": "^0.1.8",
-    "rxjs": "5.0.0-beta.6",
-    "zone.js": "^0.6.12"
+    "rxjs": "5.0.0-beta.11",
+    "zone.js": "^0.6.17"
   },
   "devDependencies": {
-    "@angular/platform-browser-dynamic": "2.0.0-rc.5",
-    "@types/core-js": "^0.9.30",
-    "@types/jasmine": "^2.2.31",
+    "@angular/platform-browser-dynamic": "2.0.0-rc.6",
+    "@types/core-js": "^0.9.32",
+    "@types/jasmine": "^2.2.33",
     "del": "^2.2.2",
     "gulp": "^3.9.1",
     "gulp-filter": "^4.0.0",
     "gulp-sourcemaps": "^1.6.0",
     "gulp-typescript": "^2.13.6",
-    "jasmine-core": "^2.4.1",
+    "jasmine-core": "^2.5.0",
     "merge2": "^1.0.2",
-    "systemjs-builder": "0.15.26",
-    "typescript": "^1.9.0-dev"
+    "rollup": "^0.34.13",
+    "systemjs": "0.19.27",
+    "typescript": "^2.0.2"
   }
 }

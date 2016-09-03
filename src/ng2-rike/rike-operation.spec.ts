@@ -211,7 +211,7 @@ describe("RikeOperation event", () => {
             },
             (err: any) => done.fail(err));
 
-        op.load().subscribe();
+        op.load().subscribe(() => {}, () => {});
     });
 
     it("exception", done => {

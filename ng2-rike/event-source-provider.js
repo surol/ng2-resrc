@@ -1,7 +1,6 @@
-"use strict";
-var event_1 = require("./event");
-var status_collector_1 = require("./status-collector");
-var error_collector_1 = require("./error-collector");
+import { RikeEventSource } from "./event";
+import { StatusCollector } from "./status-collector";
+import { ErrorCollector } from "./error-collector";
 /**
  * Constructs provider recipe for {{RikeEventSource}}.
  *
@@ -13,13 +12,13 @@ var error_collector_1 = require("./error-collector");
  *
  * @return new provider recipe.
  */
-function provideEventSource(_a) {
+export function provideEventSource(_a) {
     var useClass = _a.useClass, useValue = _a.useValue, useExisting = _a.useExisting, useFactory = _a.useFactory, deps = _a.deps;
     return [
-        status_collector_1.StatusCollector,
-        error_collector_1.ErrorCollector,
+        StatusCollector,
+        ErrorCollector,
         {
-            provide: event_1.RikeEventSource,
+            provide: RikeEventSource,
             multi: true,
             useClass: useClass,
             useValue: useValue,
@@ -29,6 +28,5 @@ function provideEventSource(_a) {
         },
     ];
 }
-exports.provideEventSource = provideEventSource;
 
 //# sourceMappingURL=event-source-provider.js.map

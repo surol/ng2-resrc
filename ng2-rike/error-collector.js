@@ -1,4 +1,3 @@
-"use strict";
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -11,9 +10,9 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
-var core_1 = require("@angular/core");
-var field_error_1 = require("./field-error");
-var event_1 = require("./event");
+import { Injectable, EventEmitter, Optional, Inject } from "@angular/core";
+import { addFieldErrors } from "./field-error";
+import { RikeEventSource } from "./event";
 /**
  * An error collecting service.
  *
@@ -27,7 +26,7 @@ var event_1 = require("./event");
  * An instance of this class could be created on its own. Then it is necessary to subscribe it on Rike events with
  * `subscribeOn` method.
  */
-var ErrorCollector = (function () {
+export var ErrorCollector = (function () {
     function ErrorCollector(_eventSources) {
         this._eventSources = _eventSources;
         this._emitters = {};
@@ -87,7 +86,7 @@ var ErrorCollector = (function () {
     ErrorCollector.prototype.fieldErrors = function (error) {
         var errorResponse = error.errorResponse;
         if (errorResponse) {
-            return field_error_1.addFieldErrors(errorResponse).fieldErrors;
+            return addFieldErrors(errorResponse).fieldErrors;
         }
         return {
             "*": [
@@ -150,20 +149,19 @@ var ErrorCollector = (function () {
         }
     };
     ErrorCollector = __decorate([
-        core_1.Injectable(),
-        __param(0, core_1.Inject(event_1.RikeEventSource)),
-        __param(0, core_1.Optional()), 
+        Injectable(),
+        __param(0, Inject(RikeEventSource)),
+        __param(0, Optional()), 
         __metadata('design:paramtypes', [Array])
     ], ErrorCollector);
     return ErrorCollector;
 }());
-exports.ErrorCollector = ErrorCollector;
 var FieldEmitter = (function () {
     function FieldEmitter(_field, _emitters, _targetErrors) {
         this._field = _field;
         this._emitters = _emitters;
         this._targetErrors = _targetErrors;
-        this._emitter = new core_1.EventEmitter();
+        this._emitter = new EventEmitter();
         this._counter = 0;
     }
     FieldEmitter.prototype.subscribe = function (next, error, complete) {
@@ -191,7 +189,7 @@ var ErrorSubscr = (function () {
     function ErrorSubscr(_fieldEmitter, _subscription) {
         this._fieldEmitter = _fieldEmitter;
         this._subscription = _subscription;
-        this._refreshEmitter = new core_1.EventEmitter();
+        this._refreshEmitter = new EventEmitter();
     }
     ErrorSubscr.prototype.subscribe = function (next, error, complete) {
         this._refreshSubscription = this._refreshEmitter.subscribe(next, error, complete);

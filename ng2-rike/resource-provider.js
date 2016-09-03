@@ -1,6 +1,5 @@
-"use strict";
-var resource_1 = require("./resource");
-var event_source_provider_1 = require("./event-source-provider");
+import { Resource } from "./resource";
+import { provideEventSource } from "./event-source-provider";
 /**
  * Constructs provider recipe for {{Resource}}.
  *
@@ -15,9 +14,9 @@ var event_source_provider_1 = require("./event-source-provider");
  *
  * @return new provider recipe.
  */
-function provideResource(_a) {
+export function provideResource(_a) {
     var provide = _a.provide, useClass = _a.useClass, useValue = _a.useValue, useExisting = _a.useExisting, useFactory = _a.useFactory, deps = _a.deps;
-    var token = provide || resource_1.Resource;
+    var token = provide || Resource;
     return [
         {
             provide: token,
@@ -27,12 +26,11 @@ function provideResource(_a) {
             useFactory: useFactory,
             deps: deps,
         },
-        event_source_provider_1.provideEventSource({
+        provideEventSource({
             useFactory: function (resource) { return resource.rikeTarget; },
             deps: [token],
         })
     ];
 }
-exports.provideResource = provideResource;
 
 //# sourceMappingURL=resource-provider.js.map

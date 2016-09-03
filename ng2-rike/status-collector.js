@@ -1,4 +1,3 @@
-"use strict";
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -11,15 +10,15 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
-var core_1 = require("@angular/core");
-var isArray_1 = require("rxjs/util/isArray");
-var event_1 = require("./event");
+import { Injectable, Optional, Inject } from "@angular/core";
+import { isArray } from "rxjs/util/isArray";
+import { RikeEventSource } from "./event";
 /**
  * Default map of Rike operations status labels.
  *
  * Default status labels are strings.
  */
-exports.DEFAULT_STATUS_LABELS = {
+export var DEFAULT_STATUS_LABELS = {
     "*": {
         processing: {
             id: "processing",
@@ -101,7 +100,7 @@ exports.DEFAULT_STATUS_LABELS = {
  * It is possible to read statuses and string labels from the service itself. Alternatively a view can be created
  * to read labels of arbitrary type.
  */
-var StatusCollector = (function () {
+export var StatusCollector = (function () {
     function StatusCollector(eventSources) {
         this._views = {};
         this._targetStatuses = {};
@@ -210,7 +209,7 @@ var StatusCollector = (function () {
     StatusCollector.prototype.initDefaultView = function (event) {
         if (!this._defaultView) {
             var defaultStatusLabels = event.target.rike.options.defaultStatusLabels;
-            if (isArray_1.isArray(defaultStatusLabels)) {
+            if (isArray(defaultStatusLabels)) {
                 this._defaultView = this.addView.apply(this, ["default"].concat(defaultStatusLabels));
             }
             else {
@@ -243,14 +242,13 @@ var StatusCollector = (function () {
         }
     };
     StatusCollector = __decorate([
-        core_1.Injectable(),
-        __param(0, core_1.Inject(event_1.RikeEventSource)),
-        __param(0, core_1.Optional()), 
+        Injectable(),
+        __param(0, Inject(RikeEventSource)),
+        __param(0, Optional()), 
         __metadata('design:paramtypes', [Array])
     ], StatusCollector);
     return StatusCollector;
 }());
-exports.StatusCollector = StatusCollector;
 var StatusViewImpl = (function () {
     function StatusViewImpl(_views, _targetStatuses, _id) {
         this._views = _views;

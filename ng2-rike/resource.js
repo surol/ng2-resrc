@@ -1,13 +1,12 @@
-"use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var http_1 = require("@angular/http");
-var Rx_1 = require("rxjs/Rx");
-var protocol_1 = require("./protocol");
-var options_1 = require("./options");
+import { RequestOptions } from "@angular/http";
+import { Observable } from "rxjs/Rx";
+import { JSON_PROTOCOL, jsonProtocol } from "./protocol";
+import { relativeUrl } from "./options";
 /**
  * An interface of REST-like resources.
  *
@@ -16,16 +15,15 @@ var options_1 = require("./options");
  *
  * This class can be used as a token for resources. It can be registered as Angular service with {{provideResource}}.
  */
-var Resource = (function () {
+export var Resource = (function () {
     function Resource() {
     }
     return Resource;
 }());
-exports.Resource = Resource;
 /**
  * Abstract implementation of REST-like resource.
  */
-var RikeResource = (function () {
+export var RikeResource = (function () {
     function RikeResource(_rike) {
         this._rike = _rike;
     }
@@ -69,11 +67,10 @@ var RikeResource = (function () {
      * @return {RikeTarget<any, any>} new Rike target.
      */
     RikeResource.prototype.createRikeTarget = function () {
-        return this.rike.target(this, protocol_1.JSON_PROTOCOL);
+        return this.rike.target(this, JSON_PROTOCOL);
     };
     return RikeResource;
 }());
-exports.RikeResource = RikeResource;
 /**
  * Loadable resource.
  *
@@ -82,7 +79,7 @@ exports.RikeResource = RikeResource;
  *
  * @param <T> loaded data type.
  */
-var LoadableResource = (function (_super) {
+export var LoadableResource = (function (_super) {
     __extends(LoadableResource, _super);
     function LoadableResource(rike) {
         _super.call(this, rike);
@@ -118,9 +115,9 @@ var LoadableResource = (function (_super) {
         var _this = this;
         var data = this.data;
         if (data) {
-            return Rx_1.Observable.of(data);
+            return Observable.of(data);
         }
-        return new Rx_1.Observable(function (observer) {
+        return new Observable(function (observer) {
             _this.rikeTarget
                 .operation("load")
                 .get()
@@ -144,18 +141,17 @@ var LoadableResource = (function (_super) {
         this._data = undefined;
     };
     LoadableResource.prototype.createRikeTarget = function () {
-        return this.rike.target(this, protocol_1.jsonProtocol());
+        return this.rike.target(this, jsonProtocol());
     };
     return LoadableResource;
 }(RikeResource));
-exports.LoadableResource = LoadableResource;
 /**
  * CRUD (Create, Load, Update, Delete) resource.
  *
  * It is able to manipulate with server objects. By default it operates over JSON protocol.
  * Override `createRikeTarget()` method to change it.
  */
-var CRUDResource = (function (_super) {
+export var CRUDResource = (function (_super) {
     __extends(CRUDResource, _super);
     function CRUDResource(rike) {
         _super.call(this, rike);
@@ -220,7 +216,7 @@ var CRUDResource = (function (_super) {
         return this.rikeTarget.operation("delete", this.objectDeleteProtocol(object)).delete();
     };
     CRUDResource.prototype.createRikeTarget = function () {
-        return this.rike.target(this, protocol_1.jsonProtocol());
+        return this.rike.target(this, jsonProtocol());
     };
     /**
      * Constructs object creation protocol.
@@ -243,7 +239,7 @@ var CRUDResource = (function (_super) {
      */
     CRUDResource.prototype.objectReadProtocol = function (id) {
         var _this = this;
-        return this.rikeTarget.protocol.prior().prepareRequest(function (options) { return new http_1.RequestOptions(options).merge({
+        return this.rikeTarget.protocol.prior().prepareRequest(function (options) { return new RequestOptions(options).merge({
             url: _this.objectUrl(options.url, id)
         }); });
     };
@@ -261,7 +257,7 @@ var CRUDResource = (function (_super) {
         var _this = this;
         return this.rikeTarget.protocol
             .prior()
-            .updateRequest(function (object, options) { return new http_1.RequestOptions(options).merge({
+            .updateRequest(function (object, options) { return new RequestOptions(options).merge({
             url: _this.objectUrl(options.url, _this.objectId(object))
         }); })
             .instead()
@@ -281,7 +277,7 @@ var CRUDResource = (function (_super) {
         var _this = this;
         return this.rikeTarget.protocol
             .prior()
-            .updateRequest(function (object, options) { return new http_1.RequestOptions(options).merge({
+            .updateRequest(function (object, options) { return new RequestOptions(options).merge({
             url: _this.objectUrl(options.url, _this.objectId(object))
         }); })
             .instead()
@@ -299,10 +295,9 @@ var CRUDResource = (function (_super) {
      * @return {string} updated URL.
      */
     CRUDResource.prototype.objectUrl = function (baseUrl, id) {
-        return options_1.relativeUrl(baseUrl, encodeURIComponent(id.toString()));
+        return relativeUrl(baseUrl, encodeURIComponent(id.toString()));
     };
     return CRUDResource;
 }(RikeResource));
-exports.CRUDResource = CRUDResource;
 
 //# sourceMappingURL=resource.js.map

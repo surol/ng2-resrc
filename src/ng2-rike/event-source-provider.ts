@@ -15,7 +15,7 @@ import {ErrorCollector} from "./error-collector";
  * @return new provider recipe.
  */
 export function provideEventSource({useClass, useValue, useExisting, useFactory, deps}: {
-    useClass?: Type;
+    useClass?: Type<any>;
     useValue?: any;
     useExisting?: any;
     useFactory?: Function;

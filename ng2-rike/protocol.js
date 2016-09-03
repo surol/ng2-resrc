@@ -1,10 +1,9 @@
-"use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var http_1 = require("@angular/http");
+import { RequestOptions, Headers } from "@angular/http";
 /**
  * REST-like operations protocol.
  *
@@ -14,7 +13,7 @@ var http_1 = require("@angular/http");
  * `IN` is operation request type.
  * `OUT` is operation response type.
  */
-var Protocol = (function () {
+export var Protocol = (function () {
     function Protocol() {
     }
     //noinspection JSMethodCanBeStatic
@@ -73,7 +72,6 @@ var Protocol = (function () {
     };
     return Protocol;
 }());
-exports.Protocol = Protocol;
 var CustomProtocolAddon = (function () {
     function CustomProtocolAddon(_protocol, _prior) {
         this._protocol = _protocol;
@@ -157,13 +155,13 @@ var JsonProtocol = (function (_super) {
         _super.apply(this, arguments);
     }
     JsonProtocol.prototype.writeRequest = function (request, options) {
-        var opts = new http_1.RequestOptions(options).merge({ body: JSON.stringify(request) });
+        var opts = new RequestOptions(options).merge({ body: JSON.stringify(request) });
         var headers;
         if (opts.headers) {
             headers = opts.headers;
         }
         else {
-            opts.headers = headers = new http_1.Headers();
+            opts.headers = headers = new Headers();
         }
         headers.set("Content-Type", "application/json");
         return opts;
@@ -180,20 +178,20 @@ var JsonProtocol = (function (_super) {
  *
  * @type {Protocol<any>}
  */
-exports.JSON_PROTOCOL = new JsonProtocol();
+export var JSON_PROTOCOL = new JsonProtocol();
 /**
  * Returns JSON protocol.
  *
  * Sends and receives the data of the given type as JSON over HTTP.
  */
-exports.jsonProtocol = function () { return exports.JSON_PROTOCOL; };
+export var jsonProtocol = function () { return JSON_PROTOCOL; };
 var HttpProtocol = (function (_super) {
     __extends(HttpProtocol, _super);
     function HttpProtocol() {
         _super.apply(this, arguments);
     }
     HttpProtocol.prototype.writeRequest = function (request, options) {
-        return new http_1.RequestOptions(options).merge({ body: request });
+        return new RequestOptions(options).merge({ body: request });
     };
     HttpProtocol.prototype.readResponse = function (response) {
         return response;
@@ -207,6 +205,6 @@ var HttpProtocol = (function (_super) {
  *
  * @type {Protocol<any, Response>}
  */
-exports.HTTP_PROTOCOL = new HttpProtocol();
+export var HTTP_PROTOCOL = new HttpProtocol();
 
 //# sourceMappingURL=protocol.js.map
