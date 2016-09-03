@@ -2,12 +2,11 @@ Rike: REST-like API for Angular2
 ================================
 
 Rike enhances Angular `Http` service by supporting custom protocols and reporting request processing events.
-This allows to report request status and report errors in a generic way.
+This allows to report request status and errors in a generic way.
 
-Rike defines resources as injectable Angular services. An operations performed on these resources are reported
-as events.
+Rike defines resources as injectable Angular services. Operations performed on these resources are reported as events.
 
-See the API documentation for the detailed description.
+See the API documentation for more detailed description.
 
 Usage
 -----
