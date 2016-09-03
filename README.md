@@ -69,7 +69,7 @@ Operations are performed using _protocols_ (`Protocol`). Protocol can be configu
 (`RikeTarget.operation(name, protocol)`).
 
 The protocol defines input and output data types. A value of input type is passed to operation when performing
-`POST`, `PUT`, or `PATCH` HTTP requests. A value of output type is reported as operation result.
+`POST`, `PUT`, or `PATCH` HTTP request. A value of output type is reported as operation result.
 
 Rike contains a few predefined protocols:
 
@@ -293,7 +293,7 @@ class MyComponent implements OnInit {
 ```
 
 It is possible to register arbitrary number of resources in the same component (or at the application level).
-All of them will emit events to the same set of event consumers. E.g. `StatusCollector` and `ErrorsCollector`
+All of them will emit events to the same set of event consumers. E.g. `StatusCollector` and `ErrorCollector`
 would contain information combined from all registered resources.
 
 ### Resources Implementations
@@ -373,26 +373,25 @@ It utilizes `StatusCollector` service.
 It is bound to `[rikeStatus]` and other attributes. The meaning of attributes is following:
 
 - `[rikeStatus]` optionally accepts a `StatusView` instance, that can be constructed by `StatusCollector.view()` method.
-- `[rikeStatusLabels]` accepts a `StatusLabelMap` instance, that can be used to customize statuses.
-- `[rikeStatusLabelText]` function converts status label to text to display. Supports string labels and labels
-  of type `DefaultStatusLabel` which is used by default. Everything else is converted to string by default.
+- `[rikeStatusLabels]` accepts a `StatusLabelMap` instance(s) used to customize status indication.
+- `[rikeStatusLabelText]` function converts status label to text to display. By default supports string labels
+  and labels of type `DefaultStatusLabel`, and converts everything else to strings.
 - `[rikeStatusLabelClass]` function returns status label CSS class according to `StatusView` state.
-  By default supports classes provided by `DefaultStatusLabel.cssClass`, `DefaultStatusLabel.id`,
-  or uses default classes.
+  By default supports CSS classes provided by `DefaultStatusLabel.cssClass` or `DefaultStatusLabel.id`,
+  and uses predefined classes.
 
-By default CSS classes has a form like `rike-status rike-status-XXX`.
+By default CSS classes have a form like `rike-status rike-status-XXX`.
 
-Some default status classes:
+Some predefined status CSS classes are:
 
-- `rike-status-hidden` - indicates the status indicator should be hidden.
-  Used when there are no status labels known.
-  Some labels may wish to hide status component e.g. when operation completed successfully.
+- `rike-status-hidden` - used when there are no status labels known. Means that the status indicator should be hidden.
+  Some labels may wish to hide status indicator, e.g. when operation completed successfully.
 - `rike-status-processing` - indicates the operation is in process.
 - `rike-status-cancelled` - indicates the operation has been cancelled.
 - `rike-status-failed` - indicated the operation failure.
 - `rike-status-succeed` - indicates the operation success.
 
-Additional status classes can be appended for operations defined in the base resource implementations. For example:
+Additional status CSS classes can be appended for operations defined in the base resource implementations. For example:
 
 - `rike-status-loading` - for `load` operation (of `LoadableResource`).
 - `rike-status-reading` - for `read` operation (of `CRUDResource`).
@@ -424,14 +423,14 @@ The component is bound to `[rikeErrors]` and other attributes. The meaning of at
 - `[rikeErrors]` optionally accepts a field name. If not specified or `*` is used, then component displays generic
   errors, and errors for fields for which error consumers are not registered, i.e. no corresponding `[rikeErrors]`
   component. 
-- `[rikeErrorsOf]` a `ErrorCollector` instance to use instead of the injected one.
+- `[rikeErrorsOf]` a `ErrorCollector` instance to be used instead of the injected one.
 
 Note that you don't have to create a `[rikeErrors]` component for each of the input fields. Then the errors will be
 reported as generic ones. Also, if there is a `[rikeErrors]` component for particular field, the errors for this
 field won't be reported as generic ones.
 
-The correct way to display errors for e.g. form is to place one `<span rikeErrors></span>` component to report
-generic errors, and several `<span rikeErrors="field"></span>` components to report errors for each field.
+The correct way to display errors for e.g. form is to place one `<span rikeErrors></span>` component to report generic
+errors, and several `<span rikeErrors="field"></span>` components to report errors for each field.
 
 The generated HTML would look like this:
 ```html
