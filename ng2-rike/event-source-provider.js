@@ -28,5 +28,4 @@ export function provideEventSource(_a) {
         },
     ];
 }
-
 //# sourceMappingURL=event-source-provider.js.map

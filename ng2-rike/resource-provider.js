@@ -32,5 +32,4 @@ export function provideResource(_a) {
         })
     ];
 }
-
 //# sourceMappingURL=resource-provider.js.map

@@ -280,5 +280,4 @@ export var RikeCancelEvent = (function (_super) {
     });
     return RikeCancelEvent;
 }(RikeErrorEvent));
-
 //# sourceMappingURL=event.js.map

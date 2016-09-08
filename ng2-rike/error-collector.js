@@ -279,5 +279,4 @@ function appendErrorsTo(field, fieldErrors, errors) {
         fieldErrors[field] = errors;
     }
 }
-
 //# sourceMappingURL=error-collector.js.map

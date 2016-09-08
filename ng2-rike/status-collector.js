@@ -415,5 +415,4 @@ function combineLabels(combined, label) {
     combined.labels.push(lbl);
     return combined;
 }
-
 //# sourceMappingURL=status-collector.js.map

@@ -210,5 +210,4 @@ function processingTypeClass(status) {
     }
     return "rike-status rike-status-hidden";
 }
-
 //# sourceMappingURL=status.component.js.map

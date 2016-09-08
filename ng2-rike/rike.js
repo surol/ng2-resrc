@@ -665,5 +665,4 @@ var RikeOperationImpl = (function (_super) {
     };
     return RikeOperationImpl;
 }(RikeOperation));
-
 //# sourceMappingURL=rike.js.map

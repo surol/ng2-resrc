@@ -206,5 +206,4 @@ var HttpProtocol = (function (_super) {
  * @type {Protocol<any, Response>}
  */
 export var HTTP_PROTOCOL = new HttpProtocol();
-
 //# sourceMappingURL=protocol.js.map

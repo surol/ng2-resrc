@@ -107,5 +107,4 @@ function toFieldError(data) {
 function notEmptyError(item) {
     return !!item && (!!item.message || !!item.code);
 }
-
 //# sourceMappingURL=field-error.js.map
