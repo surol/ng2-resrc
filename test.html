@@ -21,22 +21,8 @@
     <script src="node_modules/zone.js/dist/fake-async-test.js"></script>
     <script src="node_modules/reflect-metadata/Reflect.js"></script>
 
-    <script src="node_modules/systemjs/dist/system.src.js"></script>
-    <script src="systemjs.config.js"></script>
-    <script src="bundles/ng2-rike.all.js"></script>
-
 </head>
 <body>
-    <script>
-        var load = window.onload;
-        window.onload = function() {};
-        Promise.all([
-            System.import('ng2-rike/options.spec'),
-            System.import('ng2-rike/protocol.spec'),
-            System.import('ng2-rike/rike.spec'),
-            System.import('ng2-rike/rike-target.spec'),
-            System.import('ng2-rike/rike-operation.spec')
-        ]).then(load.bind(window)).catch(console.error.bind(console));
-    </script>
+<script src="bundles/ng2-rike-spec.js"></script>
 </body>
 </html>

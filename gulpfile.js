@@ -2,89 +2,133 @@
 
 var gulp = require('gulp');
 var exec = require('child_process').exec;
-var path = require('path');
-var filter = require('gulp-filter');
-var ts = require('gulp-typescript');
-var sourcemaps = require('gulp-sourcemaps');
-var merge = require('merge2');
+var webpack = require('webpack');
+var webpackMerge = require('webpack-merge');
+var wp = require('gulp-webpack');
+var named = require('vinyl-named');
 var del = require('del');
+var watch = require('gulp-watch');
 
-var project = ts.createProject({
-    "typescript": require("typescript"),
-    "target": "ES5",
-    "module": "es2015",
-    "moduleResolution": "node",
-    "declaration": true,
-    "sourceMap": true,
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
-    "removeComments": false,
-    "noImplicitAny": true,
-    "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true,
-    "strictNullChecks": true,
-    "forceConsistentCasingInFileNames": true,
-    "outDir": ".",
-    "newLine": "LF",
-    "types": ["core-js"],
-    "sortOutput": true
-});
-
-gulp.task('compile-api', function() {
-
-    var result = gulp.src('src/**/*.ts')
-        .pipe(filter([
-            '**',
-            '!**/*.spec.ts'
-        ]))
-        .pipe(sourcemaps.init())
-        .pipe(ts(project));
-
-    return merge([
-        result.js.pipe(sourcemaps.write('.')).pipe(gulp.dest('.')),
-        result.dts.pipe(gulp.dest('.'))
-    ]);
-});
-
-gulp.task('clean-api', function () {
-    return del([
-        './ng2-rike',
-        './ng2-rike.d.ts',
-        './ng2-rike.js',
-        './ng2-rike.js.map'
-    ]);
-});
-
-gulp.task('compile-all', function(cb) {
+function compile(opts, cb) {
     exec(
-        'node_modules/.bin/tsc -p .',
-        function(err, stdout, stderr) {
+        'node_modules/.bin/tsc ' + opts,
+        function (err, stdout, stderr) {
             console.log(stdout);
             if (err) {
                 console.error(stderr);
             }
             cb();
         });
+}
+
+gulp.task('compile', function(cb) {
+    compile("-p .", cb);
 });
 
-gulp.task('bundle', ['compile-api'], function(cb) {
+gulp.task('watch-compile', function(cb) {
+    compile('-p . --watch', cb);
+});
+
+gulp.task('clean-compiled', function () {
+    return del([
+        './ng2-rike/**/*.{d.ts,js,js.map}',
+        './ng2-rike.{d.ts,js,js.map}'
+    ]);
+});
+
+
+function bundleUmdTask(config, cb) {
     exec(
-        'node_modules/.bin/rollup -c rollup.config.js',
-        function(err, stdout, stderr) {
+        'node_modules/.bin/rollup -c ' + config,
+        function (err, stdout, stderr) {
             console.log(stdout);
             if (err) {
                 console.error(stderr);
             }
             cb(err);
         });
+}
+
+gulp.task('bundle-umd', ['compile'], function(cb) {
+    bundleUmdTask('rollup.config.js', cb);
 });
 
-gulp.task('compile', ['compile-all', 'bundle']);
+gulp.task('bundle-umd-only', function(cb) {
+    bundleUmdTask('rollup.config.js', cb);
+});
 
-gulp.task('clean-bundle', ['clean-api'], function() {
+gulp.task('watch-bundle-umd', function() {
+    return watch(['ng2-rike.js', 'ng2-rike/**/*.js'], function() {
+        bundleUmdTask('rollup.config.js', () => {});
+    });
+});
+
+gulp.task('bundle-spec-umd', ['compile'], function(cb) {
+    bundleUmdTask('rollup-spec.config.js', cb);
+});
+
+gulp.task('bundle-spec-umd-only', function(cb) {
+    bundleUmdTask('rollup-spec.config.js', cb);
+});
+
+gulp.task('watch-bundle-spec-umd', function() {
+    return watch(['ng2-rike.{js,spec.js}', 'ng2-rike/**/*.js'], function() {
+        bundleUmdTask('rollup-spec.config.js', () => {});
+    });
+});
+
+var wpCommon = {
+    resolve: {
+        extensions: ['', '.js'],
+        alias: {
+            'ng2-rike': './bundles/ng2-rike-spec.umd.js'
+        }
+    },
+    devtool: 'source-map',
+    plugins: [
+        new webpack.optimize.UglifyJsPlugin({ // https://github.com/angular/angular/issues/10618,
+            compress: {
+                warnings: false
+            },
+            mangle: {
+                keep_fnames: true
+            }
+        }),
+    ],
+    output: {
+        filename: 'ng2-rike-spec.js'
+    }
+};
+
+function bundleTask(config) {
+    gulp.src('bundle-spec.js').pipe(named())
+        .pipe(wp(webpackMerge(wpCommon, config), webpack))
+        .pipe(gulp.dest('bundles/'));
+}
+
+gulp.task('bundle-spec', ['bundle-spec-umd'], function() {
+    return bundleTask();
+});
+
+gulp.task('bundle-spec-only', ['bundle-spec-umd-only'], function() {
+    return bundleTask();
+});
+
+gulp.task('watch-bundle-spec', function () {
+    return bundleTask(webpackMerge({watch: true}));
+});
+
+gulp.task('clean-bundles', function() {
     return del('bundles');
 });
 
-gulp.task('default', ['compile']);
 
-gulp.task('clean', ['clean-bundle']);
+gulp.task('watch', ['watch-compile', 'watch-bundle-umd', 'watch-bundle-spec-umd', 'watch-bundle-spec']);
+
+// Use if IDE (IntelliJ IDEA) compiles TypeScript by itself.
+gulp.task('watch-ide', ['watch-compile', 'watch-bundle-umd', 'watch-bundle-spec-umd', 'watch-bundle-spec']);
+
+
+gulp.task('default', ['bundle-umd', 'bundle-spec']);
+
+gulp.task('clean', ['clean-compiled', 'clean-bundles']);

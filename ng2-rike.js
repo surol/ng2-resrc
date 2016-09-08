@@ -52,5 +52,4 @@ export var RikeModule = (function () {
     ], RikeModule);
     return RikeModule;
 }());
-
 //# sourceMappingURL=ng2-rike.js.map

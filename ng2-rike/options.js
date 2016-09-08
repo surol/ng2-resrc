@@ -109,5 +109,4 @@ export var BaseRikeOptions = (function (_super) {
  * @type {RikeOptions}
  */
 export var DEFAULT_RIKE_OPTIONS = new BaseRikeOptions();
-
 //# sourceMappingURL=options.js.map

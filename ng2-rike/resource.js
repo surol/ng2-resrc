@@ -299,5 +299,4 @@ export var CRUDResource = (function (_super) {
     };
     return CRUDResource;
 }(RikeResource));
-
 //# sourceMappingURL=resource.js.map
