@@ -11,7 +11,8 @@ import {FieldErrors, FieldError} from "./field-error";
     </ul>
     `,
     host: {
-        "[class.rike-errors]": "true"
+        "[class.rike-errors]": "true",
+        "[class.rike-no-errors]": "!errors.length"
     }
 })
 export class RikeErrorsComponent implements OnInit, OnDestroy {

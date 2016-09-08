@@ -2399,7 +2399,8 @@ var RikeErrorsComponent = (function () {
             selector: '[rikeErrors],[rikeErrorsOf]',
             template: "\n    <ul class=\"rike-error-list\" *ngIf=\"errors.length\">\n        <li class=\"rike-error\" *ngFor=\"let error of errors\">{{error.message}}</li>\n    </ul>\n    ",
             host: {
-                "[class.rike-errors]": "true"
+                "[class.rike-errors]": "true",
+                "[class.rike-no-errors]": "!errors.length"
             }
         }),
         __param$2(0, _angular_core.Optional()), 

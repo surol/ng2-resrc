@@ -2,7 +2,8 @@
 
 ## Features
 
-* *configuration:* Simplified configuration with `RikeModule.configure({})`.
+* *`RikeModule`:* Simplified configuration with `RikeModule.configure({})`.
+* *`[rikeErrors]`:* `rike-no-errors` CSS class is applied when no errors to report.
 * *structure:* Move TypeScript files out of `src` directory to top level.
 * *npm package:* Add `module` and `main` entries to `package.json` to help tooling, e.g. WebPack.
 * *npm package:* Use peer dependencies.

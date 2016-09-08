@@ -437,3 +437,8 @@ The generated HTML would look like this:
     </ul>
 </any-tag>
 ```
+
+When there is no error to report the HTML looks like this:
+```html
+<any-tag class="rike-errors rike-no-errors"></any-tag>
+```
