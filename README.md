@@ -190,22 +190,17 @@ Configuration
 -------------
 
 `Rike` service defaults could be configured by binding to `RikeOptions` class when configuring injector.
-A value of type `BaseRikeOptions` can be used for that.
-
+Or simply by using `RikeModule.configure()` static method:
 ```typescript
 import {NgModule} from "@angular/core";
 import {RikeModule, RikeOptions, BaseRikeOptions} from "ng2-rike";
 
 @NgModule({
-    imports: [RikeModule],
-    providers: [
-        {
-            provide: RikeOptions,
-            useValue: new BaseRikeOptions({
-                baseUrl: "/application/base",
-                defaultProtocol: CUSTOM_PROTOCOL
-            })
-        }    
+    imports: [
+        RikeModule.configure({
+            baseUrl: "/application/base",
+            defaultProtocol: CUSTOM_PROTOCOL,
+        })
     ]
 })
 export class MyModule {

@@ -1,6 +1,7 @@
 import {NgModule} from "@angular/core";
 import {HttpModule} from "@angular/http";
 import {CommonModule} from "@angular/common";
+import {RikeOptions, BaseRikeOptions, RikeOptionsArgs} from "./ng2-rike/options";
 import {Rike} from "./ng2-rike/rike";
 import {RikeStatusComponent} from "./ng2-rike/status.component";
 import {RikeErrorsComponent} from "./ng2-rike/errors.component";
@@ -23,7 +24,10 @@ export * from "./ng2-rike/status.component";
  * REST-like services module.
  */
 @NgModule({
-    imports: [CommonModule, HttpModule],
+    imports: [
+        CommonModule,
+        HttpModule,
+    ],
     providers: [
         Rike,
         provideEventSource({useExisting: Rike}),
@@ -38,4 +42,38 @@ export * from "./ng2-rike/status.component";
     ],
 })
 export class RikeModule {
+
+    /**
+     * Configures Rike.
+     *
+     * Can be used in `@NgModule` as following:
+     * ```typescript
+     * @NgModule({
+     *   imports: [
+     *     RikeModule.configure({
+     *       baseUrl: '/application/base',
+     *       defaultProtocol: CUSTOM_PROTOCOL,
+     *     })
+     *   ]
+     * })
+     * export class MyModule {
+     * }
+     * ```
+     *
+     * @param options default Rike options.
+     *
+     * @return a value that can be inserted into `imports` section of `NgModule`
+     */
+    static configure(options?: RikeOptionsArgs): any {
+        return {
+            ngModule: RikeModule,
+            providers: [
+                {
+                    provide: RikeOptions,
+                    useValue: new BaseRikeOptions(options),
+                }
+            ]
+        }
+    }
+
 }

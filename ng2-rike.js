@@ -10,6 +10,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 import { NgModule } from "@angular/core";
 import { HttpModule } from "@angular/http";
 import { CommonModule } from "@angular/common";
+import { RikeOptions, BaseRikeOptions } from "./ng2-rike/options";
 import { Rike } from "./ng2-rike/rike";
 import { RikeStatusComponent } from "./ng2-rike/status.component";
 import { RikeErrorsComponent } from "./ng2-rike/errors.component";
@@ -32,9 +33,44 @@ export * from "./ng2-rike/status.component";
 export var RikeModule = (function () {
     function RikeModule() {
     }
+    /**
+     * Configures Rike.
+     *
+     * Can be used in `@NgModule` as following:
+     * ```typescript
+     * @NgModule({
+     *   imports: [
+     *     RikeModule.configure({
+     *       baseUrl: '/application/base',
+     *       defaultProtocol: CUSTOM_PROTOCOL,
+     *     })
+     *   ]
+     * })
+     * export class MyModule {
+     * }
+     * ```
+     *
+     * @param options default Rike options.
+     *
+     * @return a value that can be inserted into `imports` section of `NgModule`
+     */
+    RikeModule.configure = function (options) {
+        return {
+            ngModule: RikeModule,
+            providers: [
+                {
+                    provide: RikeOptions,
+                    useValue: new BaseRikeOptions(options),
+                }
+            ]
+        };
+    };
     RikeModule = __decorate([
         NgModule({
-            imports: [CommonModule, HttpModule],
+            imports: [
+                CommonModule,
+                HttpModule,
+            ],
             providers: [
                 Rike,
                 provideEventSource({ useExisting: Rike }),
