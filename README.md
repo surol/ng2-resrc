@@ -108,7 +108,8 @@ The following methods could be used to customize protocol:
       and operation protocol based on default target one.
     - `prior().input(convert)` - convert request from arbitrary type to the type of original protocol input with the
        given function.
-    - `then().output(convert)` - convert response of original protocol output type to another type.
+    - `then().output(convert)` - convert response of original protocol output type to another type with the given
+      function.
 
 ### Handling Errors
 
