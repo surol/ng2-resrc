@@ -1,3 +1,4 @@
+import { RequestOptionsArgs } from "@angular/http";
 import { Observable } from "rxjs/Rx";
 import { Protocol } from "./protocol";
 import { RikeTarget, Rike } from "./rike";
@@ -156,6 +157,19 @@ export declare abstract class CRUDResource<T> extends RikeResource {
      */
     protected objectReadProtocol(id: any): Protocol<any, T>;
     /**
+     * Updates object read request options.
+     *
+     * By default returns the result of `objectOptions()` method call.
+     *
+     * This method is used by `objectReadProtocol()` method.
+     *
+     * @param options original request options.
+     * @param id an identifier of object to read.
+     *
+     * @return {RequestOptionsArgs} updated request options.
+     */
+    protected objectReadOptions(options: RequestOptionsArgs, id: any): RequestOptionsArgs;
+    /**
      * Constructs object update protocol.
      *
      * This protocol detects object identifier with `objectId()` method and updates request URL with `objectUrl()`
@@ -166,6 +180,20 @@ export declare abstract class CRUDResource<T> extends RikeResource {
      * @return {Protocol<T, T>} update protocol.
      */
     protected objectUpdateProtocol(object: T): Protocol<T, T>;
+    /**
+     * Updates the given object update request options.
+     *
+     * By default returns original options.
+     *
+     * This method is used by `objectUpdateProtocol()` method and can be overridden e.g. to call an
+     * `objectOptions()` method.
+     *
+     * @param options original request options.
+     * @param object object to update.
+     *
+     * @return {RequestOptionsArgs} updated request options.
+     */
+    protected objectUpdateOptions(options: RequestOptionsArgs, object: T): RequestOptionsArgs;
     /**
      * Constructs object deletion protocol.
      *
@@ -178,6 +206,19 @@ export declare abstract class CRUDResource<T> extends RikeResource {
      */
     protected objectDeleteProtocol(object: T): Protocol<T, any>;
     /**
+     * Updates object delete request options.
+     *
+     * By default returns the result of `objectOptions()` method call.
+     *
+     * This method is used by `objectDeleteProtocol()` method.
+     *
+     * @param options original request options.
+     * @param object an object to delete.
+     *
+     * @return {RequestOptionsArgs} updated request options.
+     */
+    protected objectDeleteOptions(options: RequestOptionsArgs, object: T): RequestOptionsArgs;
+    /**
      * Detects object identifier.
      *
      * @param object target object.
@@ -186,14 +227,14 @@ export declare abstract class CRUDResource<T> extends RikeResource {
      */
     protected abstract objectId(object: T): any;
     /**
-     * Updates base URL with object URL.
+     * Updates request options for object with the given identifier.
      *
-     * By default append object identifier as URL-encoded string to the base URL.
+     * By default appends object identifier as URL-encoded string to the base URL.
      *
-     * @param baseUrl base URL to update.
+     * @param options original request options.
      * @param id object identifier.
      *
-     * @return {string} updated URL.
+     * @return {RequestOptionsArgs} updated request options.
      */
-    protected objectUrl(baseUrl: string | undefined, id: any): string;
+    protected objectOptions(options: RequestOptionsArgs, id: any): RequestOptionsArgs;
 }

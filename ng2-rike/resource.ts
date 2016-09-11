@@ -1,4 +1,4 @@
-import {RequestOptions} from "@angular/http";
+import {RequestOptions, RequestOptionsArgs} from "@angular/http";
 import {Observable, Observer} from "rxjs/Rx";
 import {Protocol, JSON_PROTOCOL, jsonProtocol} from "./protocol";
 import {relativeUrl} from "./options";
@@ -252,10 +252,24 @@ export abstract class CRUDResource<T> extends RikeResource {
      * @return {Protocol<T, T>} read protocol.
      */
     protected objectReadProtocol(id: any): Protocol<any, T> {
-        return this.rikeTarget.protocol.prior().prepareRequest(
-            options => new RequestOptions(options).merge({
-                url: this.objectUrl(options.url, id)
-            }));
+        return this.rikeTarget.protocol.prior()
+            .prepareRequest(options => this.objectReadOptions(options, id));
+    }
+
+    /**
+     * Updates object read request options.
+     *
+     * By default returns the result of `objectOptions()` method call.
+     *
+     * This method is used by `objectReadProtocol()` method.
+     *
+     * @param options original request options.
+     * @param id an identifier of object to read.
+     *
+     * @return {RequestOptionsArgs} updated request options.
+     */
+    protected objectReadOptions(options: RequestOptionsArgs, id: any): RequestOptionsArgs {
+        return this.objectOptions(options, id);
     }
 
     /**
@@ -271,11 +285,27 @@ export abstract class CRUDResource<T> extends RikeResource {
     protected objectUpdateProtocol(object: T): Protocol<T, T> {
         return this.rikeTarget.protocol
             .prior()
-            .updateRequest((object, options) => new RequestOptions(options).merge({
-                url: this.objectUrl(options.url, this.objectId(object))
-            }))
+            .updateRequest((object, options) => this.objectUpdateOptions(options, object))
             .instead()
             .readResponse(response => object);
+    }
+
+    //noinspection JSMethodCanBeStatic,JSUnusedLocalSymbols
+    /**
+     * Updates the given object update request options.
+     *
+     * By default returns original options.
+     *
+     * This method is used by `objectUpdateProtocol()` method and can be overridden e.g. to call an
+     * `objectOptions()` method.
+     *
+     * @param options original request options.
+     * @param object object to update.
+     *
+     * @return {RequestOptionsArgs} updated request options.
+     */
+    protected objectUpdateOptions(options: RequestOptionsArgs, object: T): RequestOptionsArgs {
+        return options;
     }
 
     /**
@@ -291,11 +321,25 @@ export abstract class CRUDResource<T> extends RikeResource {
     protected objectDeleteProtocol(object: T): Protocol<T, any> {
         return this.rikeTarget.protocol
             .prior()
-            .updateRequest((object, options) => new RequestOptions(options).merge({
-                url: this.objectUrl(options.url, this.objectId(object))
-            }))
+            .updateRequest((object, options) => this.objectDeleteOptions(options, object))
             .instead()
             .readResponse(response => object)
+    }
+
+    /**
+     * Updates object delete request options.
+     *
+     * By default returns the result of `objectOptions()` method call.
+     *
+     * This method is used by `objectDeleteProtocol()` method.
+     *
+     * @param options original request options.
+     * @param object an object to delete.
+     *
+     * @return {RequestOptionsArgs} updated request options.
+     */
+    protected objectDeleteOptions(options: RequestOptionsArgs, object: T): RequestOptionsArgs {
+        return this.objectOptions(options, this.objectId(object));
     }
 
     /**
@@ -309,17 +353,19 @@ export abstract class CRUDResource<T> extends RikeResource {
 
     //noinspection JSMethodCanBeStatic
     /**
-     * Updates base URL with object URL.
+     * Updates request options for object with the given identifier.
      *
-     * By default append object identifier as URL-encoded string to the base URL.
+     * By default appends object identifier as URL-encoded string to the base URL.
      *
-     * @param baseUrl base URL to update.
+     * @param options original request options.
      * @param id object identifier.
      *
-     * @return {string} updated URL.
+     * @return {RequestOptionsArgs} updated request options.
      */
-    protected objectUrl(baseUrl: string | undefined, id: any): string {
-        return relativeUrl(baseUrl, encodeURIComponent(id.toString()));
+    protected objectOptions(options: RequestOptionsArgs, id: any): RequestOptionsArgs {
+        return new RequestOptions(options).merge({
+            url: relativeUrl(options.url, encodeURIComponent(id.toString()))
+        });
     }
 
 }
