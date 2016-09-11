@@ -3,6 +3,7 @@
 ### Features
 
 * *`Protocol`:* More protocol modification methods.
+* *`CRUDResource`:* More customizations.
 
 # 0.1.3 (2016-09-08)
 
