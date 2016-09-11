@@ -1,4 +1,5 @@
 import { Response, RequestOptionsArgs } from "@angular/http";
+import { ProtocolAddon } from "./protocol";
 /**
  * Error response.
  *
@@ -77,15 +78,15 @@ export declare abstract class Protocol<IN, OUT> {
     /**
      * Creates protocol addon able to prepend protocol actions with specified functions.
      *
-     * @return {ProtocolAddon<IN, OUT>} protocol addon.
+     * @return {ProtocolPre<IN, OUT>} protocol addon.
      */
-    prior(): ProtocolAddon<IN, OUT>;
+    prior(): ProtocolPre<IN, OUT>;
     /**
      * Creates protocol addon able to append specified functions to protocol actions.
      *
-     * @return {ProtocolAddon<IN, OUT>} protocol addon.
+     * @return {ProtocolPost<IN, OUT>} protocol addon.
      */
-    then(): ProtocolAddon<IN, OUT>;
+    then(): ProtocolPost<IN, OUT>;
     /**
      * Creates protocol modifier able to replace protocol actions with specified functions.
      *
@@ -124,12 +125,45 @@ export interface ProtocolAddon<IN, OUT> {
      */
     handleError(handle: (error: ErrorResponse) => ErrorResponse): Protocol<IN, OUT>;
     /**
-     * Constructs new protocol based on original onw, which prepares requests and handles errors with corresponding
+     * Constructs new protocol based on original one, which prepares requests and handles errors with corresponding
      * `protocol` methods in addition to original ones.
      *
-     * @param protocol {Protocol<IN, OUT>} new protocol.
+     * @param protocol a protocol to apply.
+     *
+     * @return protocol {Protocol<IN, OUT>} new protocol.
      */
     apply(protocol: Protocol<any, any>): Protocol<IN, OUT>;
+}
+/**
+ * Protocol addon used to construct a new protocol based on original one by adding specified actions prior to original
+ * ones.
+ */
+export interface ProtocolPre<IN, OUT> extends ProtocolAddon<IN, OUT> {
+    /**
+     * Constructs new protocol based on original one, which builds requests for target protocol based on requests
+     * of another type.
+     *
+     * @param <I> new operation request type.
+     * @param convert a request converter function.
+     *
+     * @return protocol {Protocol<I, OUT>} new protocol.
+     */
+    input<I>(convert: (request: I) => IN): Protocol<I, OUT>;
+}
+/**
+ * Protocol addon used to construct a new protocol based on original one by adding specified actions after the original
+ * ones.
+ */
+export interface ProtocolPost<IN, OUT> extends ProtocolAddon<IN, OUT> {
+    /**
+     * Constructs new protocol based on original one, which converts original responses to responses of another type.
+     *
+     * @param <O> new operation response type.
+     * @param convert a response converter function.
+     *
+     * @return protocol {Protocol<IN, O>} new protocol.
+     */
+    output<O>(convert: (response: OUT, httpResponse: Response) => O): Protocol<IN, O>;
 }
 /**
  * Protocol modifier. It is able to construct new protocol based on original one by replacing protocol actions with
