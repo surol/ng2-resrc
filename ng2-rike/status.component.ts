@@ -1,5 +1,5 @@
 import {Component, Input, OnDestroy} from "@angular/core";
-import {StatusLabels, StatusCollector, StatusView, DEFAULT_STATUS_LABELS, StatusLabelMap} from "./status-collector";
+import {StatusCollector, StatusView, DEFAULT_STATUS_LABELS, StatusLabelMap} from "./status-collector";
 import {isArray} from "rxjs/util/isArray";
 
 @Component({
