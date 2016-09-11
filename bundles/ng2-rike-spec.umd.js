@@ -54,18 +54,18 @@ var Protocol = (function () {
     /**
      * Creates protocol addon able to prepend protocol actions with specified functions.
      *
-     * @return {ProtocolAddon<IN, OUT>} protocol addon.
+     * @return {ProtocolPre<IN, OUT>} protocol addon.
      */
     Protocol.prototype.prior = function () {
-        return new CustomProtocolAddon(this, true);
+        return new CustomProtocolPre(this);
     };
     /**
      * Creates protocol addon able to append specified functions to protocol actions.
      *
-     * @return {ProtocolAddon<IN, OUT>} protocol addon.
+     * @return {ProtocolPost<IN, OUT>} protocol addon.
      */
     Protocol.prototype.then = function () {
-        return new CustomProtocolAddon(this, false);
+        return new CustomProtocolPost(this);
     };
     /**
      * Creates protocol modifier able to replace protocol actions with specified functions.
@@ -109,6 +109,28 @@ var CustomProtocolAddon = (function () {
     };
     return CustomProtocolAddon;
 }());
+var CustomProtocolPre = (function (_super) {
+    __extends$1(CustomProtocolPre, _super);
+    function CustomProtocolPre(protocol) {
+        _super.call(this, protocol, true);
+    }
+    CustomProtocolPre.prototype.input = function (convert) {
+        var _this = this;
+        return new CustomProtocol(function (options) { return _this._protocol.prepareRequest(options); }, function (request, options) { return _this._protocol.writeRequest(convert(request), options); }, function (response) { return _this._protocol.readResponse(response); }, function (error) { return _this._protocol.handleError(error); });
+    };
+    return CustomProtocolPre;
+}(CustomProtocolAddon));
+var CustomProtocolPost = (function (_super) {
+    __extends$1(CustomProtocolPost, _super);
+    function CustomProtocolPost(protocol) {
+        _super.call(this, protocol, false);
+    }
+    CustomProtocolPost.prototype.output = function (convert) {
+        var _this = this;
+        return new CustomProtocol(function (options) { return _this._protocol.prepareRequest(options); }, function (request, options) { return _this._protocol.writeRequest(request, options); }, function (httpResponse) { return convert(_this._protocol.readResponse(httpResponse), httpResponse); }, function (error) { return _this._protocol.handleError(_this._protocol.handleError(error)); });
+    };
+    return CustomProtocolPost;
+}(CustomProtocolAddon));
 var CustomProtocolMod = (function () {
     function CustomProtocolMod(_protocol) {
         this._protocol = _protocol;
@@ -2661,9 +2683,23 @@ var CRUDResource = (function (_super) {
      */
     CRUDResource.prototype.objectReadProtocol = function (id) {
         var _this = this;
-        return this.rikeTarget.protocol.prior().prepareRequest(function (options) { return new _angular_http.RequestOptions(options).merge({
-            url: _this.objectUrl(options.url, id)
-        }); });
+        return this.rikeTarget.protocol.prior()
+            .prepareRequest(function (options) { return _this.objectReadOptions(options, id); });
+    };
+    /**
+     * Updates object read request options.
+     *
+     * By default returns the result of `objectOptions()` method call.
+     *
+     * This method is used by `objectReadProtocol()` method.
+     *
+     * @param options original request options.
+     * @param id an identifier of object to read.
+     *
+     * @return {RequestOptionsArgs} updated request options.
+     */
+    CRUDResource.prototype.objectReadOptions = function (options, id) {
+        return this.objectOptions(options, id);
     };
     /**
      * Constructs object update protocol.
@@ -2679,11 +2715,26 @@ var CRUDResource = (function (_super) {
         var _this = this;
         return this.rikeTarget.protocol
             .prior()
-            .updateRequest(function (object, options) { return new _angular_http.RequestOptions(options).merge({
-            url: _this.objectUrl(options.url, _this.objectId(object))
-        }); })
+            .updateRequest(function (object, options) { return _this.objectUpdateOptions(options, object); })
             .instead()
             .readResponse(function (response) { return object; });
+    };
+    //noinspection JSMethodCanBeStatic,JSUnusedLocalSymbols
+    /**
+     * Updates the given object update request options.
+     *
+     * By default returns original options.
+     *
+     * This method is used by `objectUpdateProtocol()` method and can be overridden e.g. to call an
+     * `objectOptions()` method.
+     *
+     * @param options original request options.
+     * @param object object to update.
+     *
+     * @return {RequestOptionsArgs} updated request options.
+     */
+    CRUDResource.prototype.objectUpdateOptions = function (options, object) {
+        return options;
     };
     /**
      * Constructs object deletion protocol.
@@ -2699,25 +2750,40 @@ var CRUDResource = (function (_super) {
         var _this = this;
         return this.rikeTarget.protocol
             .prior()
-            .updateRequest(function (object, options) { return new _angular_http.RequestOptions(options).merge({
-            url: _this.objectUrl(options.url, _this.objectId(object))
-        }); })
+            .updateRequest(function (object, options) { return _this.objectDeleteOptions(options, object); })
             .instead()
             .readResponse(function (response) { return object; });
     };
+    /**
+     * Updates object delete request options.
+     *
+     * By default returns the result of `objectOptions()` method call.
+     *
+     * This method is used by `objectDeleteProtocol()` method.
+     *
+     * @param options original request options.
+     * @param object an object to delete.
+     *
+     * @return {RequestOptionsArgs} updated request options.
+     */
+    CRUDResource.prototype.objectDeleteOptions = function (options, object) {
+        return this.objectOptions(options, this.objectId(object));
+    };
     //noinspection JSMethodCanBeStatic
     /**
-     * Updates base URL with object URL.
+     * Updates request options for object with the given identifier.
      *
-     * By default append object identifier as URL-encoded string to the base URL.
+     * By default appends object identifier as URL-encoded string to the base URL.
      *
-     * @param baseUrl base URL to update.
+     * @param options original request options.
      * @param id object identifier.
      *
-     * @return {string} updated URL.
+     * @return {RequestOptionsArgs} updated request options.
      */
-    CRUDResource.prototype.objectUrl = function (baseUrl, id) {
-        return relativeUrl(baseUrl, encodeURIComponent(id.toString()));
+    CRUDResource.prototype.objectOptions = function (options, id) {
+        return new _angular_http.RequestOptions(options).merge({
+            url: relativeUrl(options.url, encodeURIComponent(id.toString()))
+        });
     };
     return CRUDResource;
 }(RikeResource));

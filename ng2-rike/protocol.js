@@ -49,18 +49,18 @@ export var Protocol = (function () {
     /**
      * Creates protocol addon able to prepend protocol actions with specified functions.
      *
-     * @return {ProtocolAddon<IN, OUT>} protocol addon.
+     * @return {ProtocolPre<IN, OUT>} protocol addon.
      */
     Protocol.prototype.prior = function () {
-        return new CustomProtocolAddon(this, true);
+        return new CustomProtocolPre(this);
     };
     /**
      * Creates protocol addon able to append specified functions to protocol actions.
      *
-     * @return {ProtocolAddon<IN, OUT>} protocol addon.
+     * @return {ProtocolPost<IN, OUT>} protocol addon.
      */
     Protocol.prototype.then = function () {
-        return new CustomProtocolAddon(this, false);
+        return new CustomProtocolPost(this);
     };
     /**
      * Creates protocol modifier able to replace protocol actions with specified functions.
@@ -104,6 +104,28 @@ var CustomProtocolAddon = (function () {
     };
     return CustomProtocolAddon;
 }());
+var CustomProtocolPre = (function (_super) {
+    __extends(CustomProtocolPre, _super);
+    function CustomProtocolPre(protocol) {
+        _super.call(this, protocol, true);
+    }
+    CustomProtocolPre.prototype.input = function (convert) {
+        var _this = this;
+        return new CustomProtocol(function (options) { return _this._protocol.prepareRequest(options); }, function (request, options) { return _this._protocol.writeRequest(convert(request), options); }, function (response) { return _this._protocol.readResponse(response); }, function (error) { return _this._protocol.handleError(error); });
+    };
+    return CustomProtocolPre;
+}(CustomProtocolAddon));
+var CustomProtocolPost = (function (_super) {
+    __extends(CustomProtocolPost, _super);
+    function CustomProtocolPost(protocol) {
+        _super.call(this, protocol, false);
+    }
+    CustomProtocolPost.prototype.output = function (convert) {
+        var _this = this;
+        return new CustomProtocol(function (options) { return _this._protocol.prepareRequest(options); }, function (request, options) { return _this._protocol.writeRequest(request, options); }, function (httpResponse) { return convert(_this._protocol.readResponse(httpResponse), httpResponse); }, function (error) { return _this._protocol.handleError(_this._protocol.handleError(error)); });
+    };
+    return CustomProtocolPost;
+}(CustomProtocolAddon));
 var CustomProtocolMod = (function () {
     function CustomProtocolMod(_protocol) {
         this._protocol = _protocol;

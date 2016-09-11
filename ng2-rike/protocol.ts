@@ -1,4 +1,5 @@
 import {Response, RequestOptionsArgs, RequestOptions, Headers} from "@angular/http";
+import {ProtocolAddon} from "./protocol";
 
 /**
  * Error response.
@@ -93,19 +94,19 @@ export abstract class Protocol<IN, OUT> {
     /**
      * Creates protocol addon able to prepend protocol actions with specified functions.
      *
-     * @return {ProtocolAddon<IN, OUT>} protocol addon.
+     * @return {ProtocolPre<IN, OUT>} protocol addon.
      */
-    prior(): ProtocolAddon<IN, OUT> {
-        return new CustomProtocolAddon<IN, OUT>(this, true);
+    prior(): ProtocolPre<IN, OUT> {
+        return new CustomProtocolPre<IN, OUT>(this);
     }
 
     /**
      * Creates protocol addon able to append specified functions to protocol actions.
      *
-     * @return {ProtocolAddon<IN, OUT>} protocol addon.
+     * @return {ProtocolPost<IN, OUT>} protocol addon.
      */
-    then(): ProtocolAddon<IN, OUT> {
-        return new CustomProtocolAddon<IN, OUT>(this, false);
+    then(): ProtocolPost<IN, OUT> {
+        return new CustomProtocolPost<IN, OUT>(this);
     }
 
     /**
@@ -154,21 +155,60 @@ export interface ProtocolAddon<IN, OUT> {
     handleError(handle: (error: ErrorResponse) => ErrorResponse): Protocol<IN, OUT>;
 
     /**
-     * Constructs new protocol based on original onw, which prepares requests and handles errors with corresponding
+     * Constructs new protocol based on original one, which prepares requests and handles errors with corresponding
      * `protocol` methods in addition to original ones.
      *
-     * @param protocol {Protocol<IN, OUT>} new protocol.
+     * @param protocol a protocol to apply.
+     *
+     * @return protocol {Protocol<IN, OUT>} new protocol.
      */
     apply(protocol: Protocol<any, any>): Protocol<IN, OUT>;
 
 }
 
+/**
+ * Protocol addon used to construct a new protocol based on original one by adding specified actions prior to original
+ * ones.
+ */
+export interface ProtocolPre<IN, OUT> extends ProtocolAddon<IN, OUT> {
+
+    /**
+     * Constructs new protocol based on original one, which builds requests for target protocol based on requests
+     * of another type.
+     *
+     * @param <I> new operation request type.
+     * @param convert a request converter function.
+     *
+     * @return protocol {Protocol<I, OUT>} new protocol.
+     */
+    input<I>(convert: (request: I) => IN): Protocol<I, OUT>;
+
+}
+
+/**
+ * Protocol addon used to construct a new protocol based on original one by adding specified actions after the original
+ * ones.
+ */
+export interface ProtocolPost<IN, OUT> extends ProtocolAddon<IN, OUT> {
+
+    /**
+     * Constructs new protocol based on original one, which converts original responses to responses of another type.
+     *
+     * @param <O> new operation response type.
+     * @param convert a response converter function.
+     *
+     * @return protocol {Protocol<IN, O>} new protocol.
+     */
+    output<O>(convert: (response: OUT, httpResponse: Response) => O): Protocol<IN, O>;
+
+}
+
 class CustomProtocolAddon<IN, OUT> implements ProtocolAddon<IN, OUT> {
 
-    constructor(private _protocol: Protocol<IN, OUT>, private _prior: boolean) {
+    constructor(protected _protocol: Protocol<IN, OUT>, private _prior: boolean) {
     }
 
-    prepareRequest(prepare: (options: RequestOptionsArgs)=>RequestOptionsArgs): Protocol<IN, OUT> {
+    prepareRequest(prepare: (options: RequestOptionsArgs) => RequestOptionsArgs): Protocol<IN, OUT> {
         return new CustomProtocol<IN, OUT>(
             this._prior
                 ? options => this._protocol.prepareRequest(prepare(options))
@@ -212,6 +252,38 @@ class CustomProtocolAddon<IN, OUT> implements ProtocolAddon<IN, OUT> {
             (request, options) => this._protocol.writeRequest(request, options),
             response => this._protocol.readResponse(response),
             error => protocol.handleError(this._protocol.handleError(error)));
+    }
+
+}
+
+class CustomProtocolPre<IN, OUT> extends CustomProtocolAddon<IN, OUT> implements ProtocolPre<IN, OUT> {
+
+    constructor(protocol: Protocol<IN, OUT>) {
+        super(protocol, true);
+    }
+
+    input<I>(convert: (request: I) => IN): Protocol<I, OUT> {
+        return new CustomProtocol<I, OUT>(
+            options => this._protocol.prepareRequest(options),
+            (request, options) => this._protocol.writeRequest(convert(request), options),
+            response => this._protocol.readResponse(response),
+            error => this._protocol.handleError(error));
+    }
+
+}
+
+class CustomProtocolPost<IN, OUT> extends CustomProtocolAddon<IN, OUT> implements ProtocolPost<IN, OUT> {
+
+    constructor(protocol: Protocol<IN, OUT>) {
+        super(protocol, false);
+    }
+
+    output<O>(convert: (response: OUT, httpResponse: Response) => O): Protocol<IN, O> {
+        return new CustomProtocol<IN, O>(
+            options => this._protocol.prepareRequest(options),
+            (request, options) => this._protocol.writeRequest(request, options),
+            httpResponse => convert(this._protocol.readResponse(httpResponse), httpResponse),
+            error => this._protocol.handleError(this._protocol.handleError(error)));
     }
 
 }

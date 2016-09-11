@@ -1,6 +1,13 @@
+# 0.1.4 (2016-09-11)
+
+### Features
+
+* *`Protocol`:* More protocol modification methods.
+* *`CRUDResource`:* More customizations.
+
 # 0.1.3 (2016-09-08)
 
-## Features
+### Features
 
 * *`RikeModule`:* Simplified configuration with `RikeModule.configure({})`.
 * *`[rikeErrors]`:* `rike-no-errors` CSS class is applied when no errors to report.

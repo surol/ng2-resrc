@@ -104,8 +104,11 @@ The following methods could be used to customize protocol:
     - `updateRequest(update)` - update HTTP request options with the given function.
     - `handleError(handle)` - handle error with the given function.
     - `apply(protocol)` - do all of the above by the given protocol.
-    This is used when constructing default target protocols based on default one,
-    and operation protocol based on default target one. 
+      This is used when constructing default target protocols based on default one,
+      and operation protocol based on default target one.
+    - `prior().input(convert)` - convert request from arbitrary type to the type of original protocol input with the
+       given function.
+    - `then().output(convert)` - convert response of original protocol output type to another type.
 
 ### Handling Errors
 
