@@ -2112,7 +2112,7 @@ var ErrorCollector = (function () {
         }
         return {
             "*": [
-                { message: error.error.toString() }
+                { message: errorEventMessage(error) }
             ]
         };
     };
@@ -2148,7 +2148,7 @@ var ErrorCollector = (function () {
         this.notify("*"); // Always notify about common errors
     };
     ErrorCollector.prototype.handleError = function (error) {
-        this.targetErrors(error.target).add("*", { message: error.error.toString() });
+        this.targetErrors(error.target).add("*", { message: errorEventMessage(error) });
         this.notify("*");
     };
     ErrorCollector.prototype.targetErrors = function (target) {
@@ -2178,6 +2178,15 @@ var ErrorCollector = (function () {
     ], ErrorCollector);
     return ErrorCollector;
 }());
+function errorEventMessage(error) {
+    if (error.cancel) {
+        if (!error.cancelledBy) {
+            return "Cancelled";
+        }
+        return "Cancelled by `" + error.cancelledBy.operation.name + "` operation";
+    }
+    return error.error.toString();
+}
 var FieldEmitter = (function () {
     function FieldEmitter(_field, _emitters, _targetErrors) {
         this._field = _field;
