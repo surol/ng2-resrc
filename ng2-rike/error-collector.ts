@@ -121,7 +121,7 @@ export class ErrorCollector {
 
         return {
             "*": [
-                {message: error.error.toString()} as FieldError
+                {message: errorEventMessage(error)} as FieldError
             ]
         };
     }
@@ -165,7 +165,7 @@ export class ErrorCollector {
     }
 
     private handleError(error: RikeErrorEvent) {
-        this.targetErrors(error.target).add("*", {message: error.error.toString()});
+        this.targetErrors(error.target).add("*", {message: errorEventMessage(error)});
         this.notify("*");
     }
 
@@ -199,6 +199,16 @@ export class ErrorCollector {
         }
     }
 
+}
+
+function errorEventMessage(error: RikeErrorEvent): string {
+    if (error.cancel) {
+        if (!error.cancelledBy) {
+            return "Cancelled";
+        }
+        return "Cancelled by `" + error.cancelledBy.operation.name + "` operation";
+    }
+    return error.error.toString();
 }
 
 class FieldEmitter {

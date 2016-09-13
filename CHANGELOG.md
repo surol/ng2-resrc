@@ -1,3 +1,9 @@
+# 0.1.5 (2016-09-13)
+
+### Bugs
+
+* *`ErrorCollector`:* Display readable message when operation cancelled.
+
 # 0.1.4 (2016-09-11)
 
 ### Features
