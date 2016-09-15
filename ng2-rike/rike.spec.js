@@ -1,56 +1,65 @@
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-import { NgModule } from "@angular/core";
-import { Http, ConnectionBackend, Response, ResponseOptions, RequestOptions, RequestMethod } from "@angular/http";
-import { inject, TestBed } from "@angular/core/testing";
+import { Http, ConnectionBackend, Response, ResponseOptions, RequestOptions, RequestMethod, BaseRequestOptions } from "@angular/http";
+import { inject, TestBed, fakeAsync, tick } from "@angular/core/testing";
 import { MockBackend } from "@angular/http/testing";
 import { platformBrowserDynamicTesting, BrowserDynamicTestingModule } from "@angular/platform-browser-dynamic/testing";
-import { RikeModule } from "../ng2-rike";
 import { Rike, requestMethod } from "./rike";
 import { RikeOptions, BaseRikeOptions } from "./options";
 import { HTTP_PROTOCOL, jsonProtocol } from "./protocol";
-var initialized = false;
-export function addRikeProviders() {
-    if (initialized) {
-        return;
+var testingSetupComplete = false;
+export function setupTesting() {
+    if (!testingSetupComplete) {
+        testingSetupComplete = true;
+        TestBed.initTestEnvironment(BrowserDynamicTestingModule, platformBrowserDynamicTesting());
     }
-    initialized = true;
-    TestBed.initTestEnvironment(RikeTestModule, platformBrowserDynamicTesting());
 }
-export var RikeTestModule = (function () {
-    function RikeTestModule() {
-    }
-    RikeTestModule = __decorate([
-        NgModule({
-            imports: [BrowserDynamicTestingModule, RikeModule],
-            providers: [
-                MockBackend,
-                {
-                    provide: ConnectionBackend,
-                    useExisting: MockBackend
-                },
-                Http,
-                {
-                    provide: RikeOptions,
-                    useValue: new BaseRikeOptions({ baseUrl: "/test-root" })
-                },
-            ]
-        }), 
-        __metadata('design:paramtypes', [])
-    ], RikeTestModule);
-    return RikeTestModule;
-}());
+export function configureHttpTesting() {
+    setupTesting();
+    TestBed.configureTestingModule({
+        providers: [
+            {
+                provide: RequestOptions,
+                useValue: new BaseRequestOptions(),
+            },
+            MockBackend,
+            {
+                provide: ConnectionBackend,
+                useExisting: MockBackend
+            },
+            Http,
+            {
+                provide: RikeOptions,
+                useValue: new BaseRikeOptions({ baseUrl: "/test-root" })
+            },
+        ]
+    });
+}
+export function configureRikeTesting() {
+    configureHttpTesting();
+    TestBed.configureTestingModule({
+        providers: [
+            Rike,
+        ]
+    });
+}
+export function nextFrom(op) {
+    var result = undefined;
+    op.subscribe(function (res) { return result = res; });
+    tick();
+    return result;
+}
+export function nextErrorFrom(op) {
+    var error = undefined;
+    op.subscribe(function (response) {
+        console.log(response);
+        fail("Response received: " + response);
+    }, function (err) { return error = err; });
+    tick();
+    return error;
+}
 describe("Rike", function () {
     var rike;
     var back;
-    beforeEach(function () { return addRikeProviders(); });
+    beforeEach(function () { return configureRikeTesting(); });
     beforeEach(inject([MockBackend, Rike], function (_be, _rike) {
         back = _be;
         rike = _rike;
@@ -59,7 +68,7 @@ describe("Rike", function () {
         expect(rike.options.baseUrl).toBe("/test-root");
     });
     function loadRequestTest(method, read) {
-        return function (done) {
+        return fakeAsync(function () {
             back.connections.subscribe(function (connection) {
                 expect(connection.request.method).toBe(method);
                 expect(connection.request.url).toBe("/test-root/request-url");
@@ -67,21 +76,16 @@ describe("Rike", function () {
                     body: "response1",
                 })));
             });
-            var succeed = false;
-            read(rike).call(rike, "request-url").subscribe(function (response) {
-                expect(response.text()).toBe("response1");
-                succeed = true;
-            }, function (err) { return done.fail(err); }, function () {
-                expect(succeed).toBeTruthy("Response not received");
-                done();
-            });
-        };
+            var response = nextFrom(read(rike).call(rike, "request-url"));
+            expect(response).toBeDefined("Response not received");
+            expect(response && response.text()).toBe("response1", "Wrong response");
+        });
     }
     it("processes GET request", loadRequestTest(RequestMethod.Get, function (rike) { return rike.get; }));
     it("processes DELETE request", loadRequestTest(RequestMethod.Delete, function (rike) { return rike.delete; }));
     it("processes HEAD request", loadRequestTest(RequestMethod.Head, function (rike) { return rike.head; }));
     function sendRequestTest(method, read) {
-        return function (done) {
+        return fakeAsync(function () {
             back.connections.subscribe(function (connection) {
                 expect(connection.request.method).toBe(method);
                 expect(connection.request.url).toBe("/test-root/send-request-url");
@@ -90,11 +94,10 @@ describe("Rike", function () {
                     body: "response1",
                 })));
             });
-            read(rike).call(rike, "send-request-url", "request2").subscribe(function (response) {
-                expect(response.text()).toBe("response1");
-                done();
-            });
-        };
+            var response = nextFrom(read(rike).call(rike, "send-request-url", "request2"));
+            expect(response).toBeDefined("Response not received");
+            expect(response && response.text()).toBe("response1", "Wrong response");
+        });
     }
     it("processes POST request", sendRequestTest(RequestMethod.Post, function (rike) { return rike.post; }));
     it("processes PUT request", sendRequestTest(RequestMethod.Put, function (rike) { return rike.put; }));

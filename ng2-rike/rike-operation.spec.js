@@ -1,20 +1,20 @@
 import { Response, RequestMethod, ResponseOptions } from "@angular/http";
-import { inject } from "@angular/core/testing";
+import { inject, fakeAsync } from "@angular/core/testing";
 import { MockBackend } from "@angular/http/testing";
 import { Rike } from "./rike";
-import { addRikeProviders } from "./rike.spec";
+import { configureRikeTesting, nextFrom } from "./rike.spec";
 describe("RikeOperation", function () {
     var rike;
     var back;
     var target;
-    beforeEach(function () { return addRikeProviders(); });
+    beforeEach(function () { return configureRikeTesting(); });
     beforeEach(inject([MockBackend, Rike], function (_be, _rike) {
         back = _be;
         rike = _rike;
         target = rike.target("target").withBaseUrl("target-url");
     }));
     function loadRequestTest(method, read) {
-        return function (done) {
+        return fakeAsync(function () {
             back.connections.subscribe(function (connection) {
                 expect(connection.request.method).toBe(method);
                 expect(connection.request.url).toBe("/test-root/target-url/request-url");
@@ -23,17 +23,16 @@ describe("RikeOperation", function () {
                 })));
             });
             var op = target.operation("operation1");
-            read(op).call(op, "request-url").subscribe(function (response) {
-                expect(response.text()).toBe("response1");
-                done();
-            });
-        };
+            var response = nextFrom(read(op).call(op, "request-url"));
+            expect(response).toBeDefined("No response");
+            expect(response && response.text()).toBe("response1", "Wrong response");
+        });
     }
     it("processes GET request", loadRequestTest(RequestMethod.Get, function (op) { return op.get; }));
     it("processes DELETE request", loadRequestTest(RequestMethod.Delete, function (op) { return op.delete; }));
     it("processes HEAD request", loadRequestTest(RequestMethod.Head, function (op) { return op.head; }));
     function sendRequestTest(method, read) {
-        return function (done) {
+        return fakeAsync(function () {
             back.connections.subscribe(function (connection) {
                 expect(connection.request.method).toBe(method);
                 expect(connection.request.url).toBe("/test-root/target-url/send-request-url");
@@ -43,15 +42,10 @@ describe("RikeOperation", function () {
                 })));
             });
             var op = target.operation("operation1");
-            var succeed = false;
-            read(op).call(op, "request2", "send-request-url").subscribe(function (response) {
-                expect(response.text()).toBe("response1");
-                succeed = true;
-            }, function (err) { return done.fail(err); }, function () {
-                expect(succeed).toBeTruthy("No response received");
-                done();
-            });
-        };
+            var response = nextFrom(read(op).call(op, "request2", "send-request-url"));
+            expect(response).toBeDefined("Wrong response");
+            expect(response && response.text()).toBe("response1", "Wrong response");
+        });
     }
     it("processes POST request", sendRequestTest(RequestMethod.Post, function (op) { return op.post; }));
     it("processes PUT request", sendRequestTest(RequestMethod.Put, function (op) { return op.put; }));
@@ -92,7 +86,7 @@ describe("RikeOperation event", function () {
     var rike;
     var back;
     var target;
-    beforeEach(function () { return addRikeProviders(); });
+    beforeEach(function () { return configureRikeTesting(); });
     beforeEach(inject([MockBackend, Rike], function (_be, _rike) {
         back = _be;
         rike = _rike;

@@ -1,14 +1,14 @@
 import { inject } from "@angular/core/testing";
 import { Response, RequestOptions, ResponseOptions } from "@angular/http";
 import { MockBackend } from "@angular/http/testing";
-import { addRikeProviders, expectJsonProtocol } from "./rike.spec";
+import { expectJsonProtocol, configureRikeTesting } from "./rike.spec";
 import { Rike } from "./rike";
 import { jsonProtocol } from "./protocol";
 describe("RikeTarget", function () {
     var rike;
     var back;
     var target;
-    beforeEach(function () { return addRikeProviders(); });
+    beforeEach(function () { return configureRikeTesting(); });
     beforeEach(inject([MockBackend, Rike], function (_be, _rike) {
         back = _be;
         rike = _rike;

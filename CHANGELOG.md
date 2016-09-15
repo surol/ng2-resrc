@@ -1,3 +1,10 @@
+# 0.2.0 (2016-09-15)
+
+### Peer Dependencies
+
+* Angular 2 release.
+* Peer dependencies are also dev dependencies now.
+
 # 0.1.5 (2016-09-13)
 
 ### Bugs
@@ -31,7 +38,7 @@
 
 ### Peer Dependencies
 
-* Angular2 rc6
+* Angular2 rc6.
 
 # 0.1.1 (2016-09-02)
 
