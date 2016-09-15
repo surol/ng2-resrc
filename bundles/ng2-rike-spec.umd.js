@@ -3006,50 +3006,52 @@ describe("JSON protocol", function () {
     });
 });
 
-var __decorate$6 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata$6 = (undefined && undefined.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-var initialized = false;
-function addRikeProviders() {
-    if (initialized) {
-        return;
+var testingSetupComplete = false;
+function setupTesting() {
+    if (!testingSetupComplete) {
+        testingSetupComplete = true;
+        _angular_core_testing.TestBed.initTestEnvironment(_angular_platformBrowserDynamic_testing.BrowserDynamicTestingModule, _angular_platformBrowserDynamic_testing.platformBrowserDynamicTesting());
     }
-    initialized = true;
-    _angular_core_testing.TestBed.initTestEnvironment(RikeTestModule, _angular_platformBrowserDynamic_testing.platformBrowserDynamicTesting());
 }
-var RikeTestModule = (function () {
-    function RikeTestModule() {
-    }
-    RikeTestModule = __decorate$6([
-        _angular_core.NgModule({
-            imports: [_angular_platformBrowserDynamic_testing.BrowserDynamicTestingModule, RikeModule],
-            providers: [
-                _angular_http_testing.MockBackend,
-                {
-                    provide: _angular_http.ConnectionBackend,
-                    useExisting: _angular_http_testing.MockBackend
-                },
-                _angular_http.Http,
-                {
-                    provide: RikeOptions,
-                    useValue: new BaseRikeOptions({ baseUrl: "/test-root" })
-                },
-            ]
-        }), 
-        __metadata$6('design:paramtypes', [])
-    ], RikeTestModule);
-    return RikeTestModule;
-}());
+function configureHttpTesting() {
+    setupTesting();
+    _angular_core_testing.TestBed.configureTestingModule({
+        providers: [
+            {
+                provide: _angular_http.RequestOptions,
+                useValue: new _angular_http.BaseRequestOptions(),
+            },
+            _angular_http_testing.MockBackend,
+            {
+                provide: _angular_http.ConnectionBackend,
+                useExisting: _angular_http_testing.MockBackend
+            },
+            _angular_http.Http,
+            {
+                provide: RikeOptions,
+                useValue: new BaseRikeOptions({ baseUrl: "/test-root" })
+            },
+        ]
+    });
+}
+function configureRikeTesting() {
+    configureHttpTesting();
+    _angular_core_testing.TestBed.configureTestingModule({
+        providers: [
+            Rike,
+        ]
+    });
+}
+function nextFrom(op) {
+    var result = undefined;
+    op.subscribe(function (res) { return result = res; });
+    _angular_core_testing.tick();
+    return result;
+}
 describe("Rike", function () {
     var rike;
     var back;
-    beforeEach(function () { return addRikeProviders(); });
+    beforeEach(function () { return configureRikeTesting(); });
     beforeEach(_angular_core_testing.inject([_angular_http_testing.MockBackend, Rike], function (_be, _rike) {
         back = _be;
         rike = _rike;
@@ -3058,7 +3060,7 @@ describe("Rike", function () {
         expect(rike.options.baseUrl).toBe("/test-root");
     });
     function loadRequestTest(method, read) {
-        return function (done) {
+        return _angular_core_testing.fakeAsync(function () {
             back.connections.subscribe(function (connection) {
                 expect(connection.request.method).toBe(method);
                 expect(connection.request.url).toBe("/test-root/request-url");
@@ -3066,21 +3068,16 @@ describe("Rike", function () {
                     body: "response1",
                 })));
             });
-            var succeed = false;
-            read(rike).call(rike, "request-url").subscribe(function (response) {
-                expect(response.text()).toBe("response1");
-                succeed = true;
-            }, function (err) { return done.fail(err); }, function () {
-                expect(succeed).toBeTruthy("Response not received");
-                done();
-            });
-        };
+            var response = nextFrom(read(rike).call(rike, "request-url"));
+            expect(response).toBeDefined("Response not received");
+            expect(response && response.text()).toBe("response1", "Wrong response");
+        });
     }
     it("processes GET request", loadRequestTest(_angular_http.RequestMethod.Get, function (rike) { return rike.get; }));
     it("processes DELETE request", loadRequestTest(_angular_http.RequestMethod.Delete, function (rike) { return rike.delete; }));
     it("processes HEAD request", loadRequestTest(_angular_http.RequestMethod.Head, function (rike) { return rike.head; }));
     function sendRequestTest(method, read) {
-        return function (done) {
+        return _angular_core_testing.fakeAsync(function () {
             back.connections.subscribe(function (connection) {
                 expect(connection.request.method).toBe(method);
                 expect(connection.request.url).toBe("/test-root/send-request-url");
@@ -3089,11 +3086,10 @@ describe("Rike", function () {
                     body: "response1",
                 })));
             });
-            read(rike).call(rike, "send-request-url", "request2").subscribe(function (response) {
-                expect(response.text()).toBe("response1");
-                done();
-            });
-        };
+            var response = nextFrom(read(rike).call(rike, "send-request-url", "request2"));
+            expect(response).toBeDefined("Response not received");
+            expect(response && response.text()).toBe("response1", "Wrong response");
+        });
     }
     it("processes POST request", sendRequestTest(_angular_http.RequestMethod.Post, function (rike) { return rike.post; }));
     it("processes PUT request", sendRequestTest(_angular_http.RequestMethod.Put, function (rike) { return rike.put; }));
@@ -3170,14 +3166,14 @@ describe("RikeOperation", function () {
     var rike;
     var back;
     var target;
-    beforeEach(function () { return addRikeProviders(); });
+    beforeEach(function () { return configureRikeTesting(); });
     beforeEach(_angular_core_testing.inject([_angular_http_testing.MockBackend, Rike], function (_be, _rike) {
         back = _be;
         rike = _rike;
         target = rike.target("target").withBaseUrl("target-url");
     }));
     function loadRequestTest(method, read) {
-        return function (done) {
+        return _angular_core_testing.fakeAsync(function () {
             back.connections.subscribe(function (connection) {
                 expect(connection.request.method).toBe(method);
                 expect(connection.request.url).toBe("/test-root/target-url/request-url");
@@ -3186,17 +3182,16 @@ describe("RikeOperation", function () {
                 })));
             });
             var op = target.operation("operation1");
-            read(op).call(op, "request-url").subscribe(function (response) {
-                expect(response.text()).toBe("response1");
-                done();
-            });
-        };
+            var response = nextFrom(read(op).call(op, "request-url"));
+            expect(response).toBeDefined("No response");
+            expect(response && response.text()).toBe("response1", "Wrong response");
+        });
     }
     it("processes GET request", loadRequestTest(_angular_http.RequestMethod.Get, function (op) { return op.get; }));
     it("processes DELETE request", loadRequestTest(_angular_http.RequestMethod.Delete, function (op) { return op.delete; }));
     it("processes HEAD request", loadRequestTest(_angular_http.RequestMethod.Head, function (op) { return op.head; }));
     function sendRequestTest(method, read) {
-        return function (done) {
+        return _angular_core_testing.fakeAsync(function () {
             back.connections.subscribe(function (connection) {
                 expect(connection.request.method).toBe(method);
                 expect(connection.request.url).toBe("/test-root/target-url/send-request-url");
@@ -3206,15 +3201,10 @@ describe("RikeOperation", function () {
                 })));
             });
             var op = target.operation("operation1");
-            var succeed = false;
-            read(op).call(op, "request2", "send-request-url").subscribe(function (response) {
-                expect(response.text()).toBe("response1");
-                succeed = true;
-            }, function (err) { return done.fail(err); }, function () {
-                expect(succeed).toBeTruthy("No response received");
-                done();
-            });
-        };
+            var response = nextFrom(read(op).call(op, "request2", "send-request-url"));
+            expect(response).toBeDefined("Wrong response");
+            expect(response && response.text()).toBe("response1", "Wrong response");
+        });
     }
     it("processes POST request", sendRequestTest(_angular_http.RequestMethod.Post, function (op) { return op.post; }));
     it("processes PUT request", sendRequestTest(_angular_http.RequestMethod.Put, function (op) { return op.put; }));
@@ -3255,7 +3245,7 @@ describe("RikeOperation event", function () {
     var rike;
     var back;
     var target;
-    beforeEach(function () { return addRikeProviders(); });
+    beforeEach(function () { return configureRikeTesting(); });
     beforeEach(_angular_core_testing.inject([_angular_http_testing.MockBackend, Rike], function (_be, _rike) {
         back = _be;
         rike = _rike;
@@ -3346,7 +3336,7 @@ describe("RikeTarget", function () {
     var rike;
     var back;
     var target;
-    beforeEach(function () { return addRikeProviders(); });
+    beforeEach(function () { return configureRikeTesting(); });
     beforeEach(_angular_core_testing.inject([_angular_http_testing.MockBackend, Rike], function (_be, _rike) {
         back = _be;
         rike = _rike;

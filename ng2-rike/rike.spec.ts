@@ -1,5 +1,4 @@
 import {Observable} from "rxjs/Rx";
-import {NgModule} from "@angular/core";
 import {
     Http,
     ConnectionBackend,
@@ -7,42 +6,81 @@ import {
     ResponseOptions,
     RequestOptionsArgs,
     RequestOptions,
-    RequestMethod
+    RequestMethod,
+    BaseRequestOptions
 } from "@angular/http";
-import {inject, TestBed} from "@angular/core/testing";
+import {inject, TestBed, fakeAsync, tick} from "@angular/core/testing";
 import {MockBackend, MockConnection} from "@angular/http/testing";
 import {platformBrowserDynamicTesting, BrowserDynamicTestingModule} from "@angular/platform-browser-dynamic/testing";
-import {RikeModule} from "../ng2-rike";
 import {Rike, requestMethod} from "./rike";
 import {RikeOptions, BaseRikeOptions} from "./options";
 import {HTTP_PROTOCOL, jsonProtocol, Protocol, ErrorResponse} from "./protocol";
 
-var initialized = false;
+var testingSetupComplete = false;
 
-export function addRikeProviders() {
-    if (initialized) {
-        return;
+export function setupTesting() {
+    if (!testingSetupComplete) {
+        testingSetupComplete = true;
+        TestBed.initTestEnvironment(BrowserDynamicTestingModule, platformBrowserDynamicTesting());
     }
-    initialized = true;
-    TestBed.initTestEnvironment(RikeTestModule, platformBrowserDynamicTesting());
 }
 
-@NgModule({
-    imports: [BrowserDynamicTestingModule, RikeModule],
-    providers: [
-        MockBackend,
-        {
-            provide: ConnectionBackend,
-            useExisting: MockBackend
+export function configureHttpTesting() {
+    setupTesting();
+    TestBed.configureTestingModule({
+        providers: [
+            {
+                provide: RequestOptions,
+                useValue: new BaseRequestOptions(),
+            },
+            MockBackend,
+            {
+                provide: ConnectionBackend,
+                useExisting: MockBackend
+            },
+            Http,
+            {
+                provide: RikeOptions,
+                useValue: new BaseRikeOptions({baseUrl: "/test-root"})
+            },
+        ]
+    });
+}
+
+export function configureRikeTesting() {
+    configureHttpTesting();
+    TestBed.configureTestingModule({
+        providers: [
+            Rike,
+        ]
+    });
+}
+
+export function nextFrom<T>(op: Observable<T>): T | undefined {
+
+    let result: T | undefined = undefined;
+
+    op.subscribe(res => result = res);
+
+    tick();
+
+    return result;
+}
+
+export function nextErrorFrom<T>(op: Observable<any>): T | undefined {
+
+    let error: T | undefined = undefined;
+
+    op.subscribe(
+        response => {
+            console.log(response);
+            fail("Response received: " + response);
         },
-        Http,
-        {
-            provide: RikeOptions,
-            useValue: new BaseRikeOptions({baseUrl: "/test-root"})
-        },
-    ]
-})
-export class RikeTestModule {
+        err => error = err);
+
+    tick();
+
+    return error;
 }
 
 describe("Rike", () => {
@@ -50,7 +88,7 @@ describe("Rike", () => {
     let rike: Rike;
     let back: MockBackend;
 
-    beforeEach(() => addRikeProviders());
+    beforeEach(() => configureRikeTesting());
 
     beforeEach(inject([MockBackend, Rike], (_be: MockBackend, _rike: Rike) => {
         back = _be;
@@ -63,8 +101,8 @@ describe("Rike", () => {
 
     function loadRequestTest(
         method: RequestMethod,
-        read: (rike: Rike) => ((url: string) => Observable<Response>)): (done: DoneFn) => void {
-        return done => {
+        read: (rike: Rike) => ((url: string) => Observable<Response>)): () => void {
+        return fakeAsync(() => {
             back.connections.subscribe((connection: MockConnection) => {
                 expect(connection.request.method).toBe(method);
                 expect(connection.request.url).toBe("/test-root/request-url");
@@ -73,19 +111,11 @@ describe("Rike", () => {
                 })));
             });
 
-            let succeed = false;
+            const response = nextFrom<Response>(read(rike).call(rike, "request-url"));
 
-            read(rike).call(rike, "request-url").subscribe(
-                (response: Response) => {
-                    expect(response.text()).toBe("response1");
-                    succeed = true;
-                },
-                (err: any) => done.fail(err),
-                () => {
-                    expect(succeed).toBeTruthy("Response not received");
-                    done();
-                });
-        }
+            expect(response).toBeDefined("Response not received");
+            expect(response && response.text()).toBe("response1", "Wrong response");
+        });
     }
 
     it("processes GET request", loadRequestTest(RequestMethod.Get, rike => rike.get));
@@ -94,8 +124,8 @@ describe("Rike", () => {
 
     function sendRequestTest(
         method: RequestMethod,
-        read: (rike: Rike) => ((url: string, body: any) => Observable<Response>)): (done: DoneFn) => void {
-        return done => {
+        read: (rike: Rike) => ((url: string, body: any) => Observable<Response>)): () => void {
+        return fakeAsync(() => {
             back.connections.subscribe((connection: MockConnection) => {
                 expect(connection.request.method).toBe(method);
                 expect(connection.request.url).toBe("/test-root/send-request-url");
@@ -104,11 +134,12 @@ describe("Rike", () => {
                     body: "response1",
                 })));
             });
-            read(rike).call(rike, "send-request-url", "request2").subscribe((response: Response) => {
-                expect(response.text()).toBe("response1");
-                done();
-            });
-        }
+
+            const response = nextFrom<Response>(read(rike).call(rike, "send-request-url", "request2"));
+
+            expect(response).toBeDefined("Response not received");
+            expect(response && response.text()).toBe("response1", "Wrong response");
+        });
     }
 
     it("processes POST request", sendRequestTest(RequestMethod.Post, rike => rike.post));

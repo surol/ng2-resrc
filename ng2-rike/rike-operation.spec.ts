@@ -1,9 +1,9 @@
 import {Response, RequestMethod, ResponseOptions} from "@angular/http";
-import {inject} from "@angular/core/testing";
+import {inject, fakeAsync} from "@angular/core/testing";
 import {MockBackend, MockConnection} from "@angular/http/testing";
 import {Observable} from "rxjs/Rx";
 import {Rike, RikeTarget, RikeOperation} from "./rike";
-import {addRikeProviders} from "./rike.spec";
+import {configureRikeTesting, nextFrom} from "./rike.spec";
 import {RikeEvent, RikeErrorEvent} from "./event";
 
 describe("RikeOperation", () => {
@@ -12,7 +12,7 @@ describe("RikeOperation", () => {
     let back: MockBackend;
     let target: RikeTarget<any, Response>;
 
-    beforeEach(() => addRikeProviders());
+    beforeEach(() => configureRikeTesting());
 
     beforeEach(inject([MockBackend, Rike], (_be: MockBackend, _rike: Rike) => {
         back = _be;
@@ -22,8 +22,8 @@ describe("RikeOperation", () => {
 
     function loadRequestTest(
         method: RequestMethod,
-        read: (op: RikeOperation<any, any>) => ((url: string) => Observable<Response>)): (done: DoneFn) => void {
-        return done => {
+        read: (op: RikeOperation<any, any>) => ((url: string) => Observable<Response>)): () => void {
+        return fakeAsync(() => {
             back.connections.subscribe((connection: MockConnection) => {
                 expect(connection.request.method).toBe(method);
                 expect(connection.request.url).toBe("/test-root/target-url/request-url");
@@ -33,12 +33,11 @@ describe("RikeOperation", () => {
             });
 
             const op = target.operation("operation1");
+            const response = nextFrom<Response>(read(op).call(op, "request-url"));
 
-            read(op).call(op, "request-url").subscribe((response: Response) => {
-                expect(response.text()).toBe("response1");
-                done();
-            });
-        }
+            expect(response).toBeDefined("No response");
+            expect(response && response.text()).toBe("response1", "Wrong response");
+        });
     }
 
     it("processes GET request", loadRequestTest(RequestMethod.Get, op => op.get));
@@ -48,8 +47,8 @@ describe("RikeOperation", () => {
     function sendRequestTest(
         method: RequestMethod,
         read: (op: RikeOperation<any, any>) =>
-            ((body: any, url: string) => Observable<Response>)): (done: DoneFn) => void {
-        return done => {
+            ((body: any, url: string) => Observable<Response>)): () => void {
+        return fakeAsync(() => {
             back.connections.subscribe((connection: MockConnection) => {
                 expect(connection.request.method).toBe(method);
                 expect(connection.request.url).toBe("/test-root/target-url/send-request-url");
@@ -60,19 +59,11 @@ describe("RikeOperation", () => {
             });
 
             const op = target.operation("operation1");
-            let succeed = false;
+            const response = nextFrom<Response>(read(op).call(op, "request2", "send-request-url"));
 
-            read(op).call(op, "request2", "send-request-url", ).subscribe(
-                (response: Response) => {
-                    expect(response.text()).toBe("response1");
-                    succeed = true;
-                },
-                (err: any) => done.fail(err),
-                () => {
-                    expect(succeed).toBeTruthy("No response received");
-                    done();
-                });
-        }
+            expect(response).toBeDefined("Wrong response");
+            expect(response && response.text()).toBe("response1", "Wrong response");
+        });
     }
 
     it("processes POST request", sendRequestTest(RequestMethod.Post, op => op.post));
@@ -124,7 +115,7 @@ describe("RikeOperation event", () => {
     let back: MockBackend;
     let target: RikeTarget<any, Response>;
 
-    beforeEach(() => addRikeProviders());
+    beforeEach(() => configureRikeTesting());
 
     beforeEach(inject([MockBackend, Rike], (_be: MockBackend, _rike: Rike) => {
         back = _be;
