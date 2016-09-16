@@ -1970,7 +1970,7 @@ function defaultFieldErrors(response) {
 }
 function toFieldErrors(data) {
     if (data == null) {
-        return;
+        return undefined;
     }
     if (Array.isArray(data)) {
         var fieldErrors = data.map(toFieldError).filter(notEmptyError);

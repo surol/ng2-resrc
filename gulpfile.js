@@ -58,7 +58,7 @@ gulp.task('bundle-umd-only', function(cb) {
 });
 
 gulp.task('watch-bundle-umd', function() {
-    return watch(['ng2-rike.js', 'ng2-rike/**/*.js'], function() {
+    return watch(['ng2-rike.js', 'ng2-rike/**/*.js', 'rollup.config.js'], function() {
         bundleUmdTask('rollup.config.js', () => {});
     });
 });
@@ -72,7 +72,7 @@ gulp.task('bundle-spec-umd-only', function(cb) {
 });
 
 gulp.task('watch-bundle-spec-umd', function() {
-    return watch(['ng2-rike.{js,spec.js}', 'ng2-rike/**/*.js'], function() {
+    return watch(['ng2-rike.{js,spec.js}', 'ng2-rike/**/*.js', 'rollup-spec.config.js'], function() {
         bundleUmdTask('rollup-spec.config.js', () => {});
     });
 });
@@ -126,7 +126,7 @@ gulp.task('clean-bundles', function() {
 gulp.task('watch', ['watch-compile', 'watch-bundle-umd', 'watch-bundle-spec-umd', 'watch-bundle-spec']);
 
 // Use if IDE (IntelliJ IDEA) compiles TypeScript by itself.
-gulp.task('watch-ide', ['watch-compile', 'watch-bundle-umd', 'watch-bundle-spec-umd', 'watch-bundle-spec']);
+gulp.task('watch-ide', ['watch-bundle-umd', 'watch-bundle-spec-umd', 'watch-bundle-spec']);
 
 
 gulp.task('default', ['bundle-umd', 'bundle-spec']);
