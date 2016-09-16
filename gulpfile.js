@@ -58,7 +58,14 @@ gulp.task('bundle-umd-only', function(cb) {
 });
 
 gulp.task('watch-bundle-umd', function() {
-    return watch(['ng2-rike.js', 'ng2-rike/**/*.js', 'rollup.config.js'], function() {
+    return watch(
+        [
+            'ng2-rike.js',
+            '!ng2-rike.spec.js',
+            'ng2-rike/**/*.js',
+            '!ng2-rike/**/*.spec.js',
+            'rollup.config.js'
+        ], function() {
         bundleUmdTask('rollup.config.js', () => {});
     });
 });
@@ -72,7 +79,7 @@ gulp.task('bundle-spec-umd-only', function(cb) {
 });
 
 gulp.task('watch-bundle-spec-umd', function() {
-    return watch(['ng2-rike.{js,spec.js}', 'ng2-rike/**/*.js', 'rollup-spec.config.js'], function() {
+    return watch(['ng2-rike.js', 'ng2-rike/**/*.js', 'rollup-spec.config.js'], function() {
         bundleUmdTask('rollup-spec.config.js', () => {});
     });
 });
