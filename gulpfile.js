@@ -57,7 +57,7 @@ gulp.task('bundle-umd-only', function(cb) {
     bundleUmdTask('rollup.config.js', cb);
 });
 
-gulp.task('watch-bundle-umd', function() {
+gulp.task('watch-bundle-umd', ['bundle-umd-only'], function() {
     return watch(
         [
             'ng2-rike.js',
@@ -74,7 +74,7 @@ gulp.task('bundle-spec-umd', ['compile'], function(cb) {
     bundleUmdTask('rollup-spec.config.js', cb);
 });
 
-gulp.task('bundle-spec-umd-only', function(cb) {
+gulp.task('bundle-spec-umd-only', ['bundle-spec-umd-only'], function(cb) {
     bundleUmdTask('rollup-spec.config.js', cb);
 });
 
