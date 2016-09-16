@@ -24,7 +24,6 @@ function compile(opts, cb) {
 gulp.task('compile', function(cb) {
     compile("-p .", cb);
 });
-
 gulp.task('watch-compile', function(cb) {
     compile('-p . --watch', cb);
 });
@@ -52,11 +51,9 @@ function bundleUmdTask(config, cb) {
 gulp.task('bundle-umd', ['compile'], function(cb) {
     bundleUmdTask('rollup.config.js', cb);
 });
-
 gulp.task('bundle-umd-only', function(cb) {
     bundleUmdTask('rollup.config.js', cb);
 });
-
 gulp.task('watch-bundle-umd', ['bundle-umd-only'], function() {
     return watch(
         [
@@ -73,12 +70,10 @@ gulp.task('watch-bundle-umd', ['bundle-umd-only'], function() {
 gulp.task('bundle-spec-umd', ['compile'], function(cb) {
     bundleUmdTask('rollup-spec.config.js', cb);
 });
-
-gulp.task('bundle-spec-umd-only', ['bundle-spec-umd-only'], function(cb) {
+gulp.task('bundle-spec-umd-only', function(cb) {
     bundleUmdTask('rollup-spec.config.js', cb);
 });
-
-gulp.task('watch-bundle-spec-umd', function() {
+gulp.task('watch-bundle-spec-umd', ['bundle-spec-umd-only'], function() {
     return watch(['ng2-rike.js', 'ng2-rike/**/*.js', 'rollup-spec.config.js'], function() {
         bundleUmdTask('rollup-spec.config.js', () => {});
     });
@@ -116,11 +111,9 @@ function bundleTask(config) {
 gulp.task('bundle-spec', ['bundle-spec-umd'], function() {
     return bundleTask();
 });
-
 gulp.task('bundle-spec-only', ['bundle-spec-umd-only'], function() {
     return bundleTask();
 });
-
 gulp.task('watch-bundle-spec', function () {
     return bundleTask(webpackMerge({watch: true}));
 });
