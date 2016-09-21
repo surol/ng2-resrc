@@ -3,6 +3,7 @@
 ### Bug Fixes
 
 * *`provideResource`:* Permit multiple anonymous (without `provide` key) resources at the same level.
+* Fix reporting of operation cancellation.
 
 # 0.2.0 (2016-09-15)
 
