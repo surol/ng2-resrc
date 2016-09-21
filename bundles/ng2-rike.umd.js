@@ -2810,23 +2810,17 @@ var CRUDResource = (function (_super) {
     return CRUDResource;
 }(RikeResource));
 
+var resourceIdSeq = 0;
 /**
  * Constructs provider recipe for {{Resource}}.
  *
  * Also registers the resource as source of Rike operation events.
  *
- * @param provide provider token. If not specified the `Resource` will be used.
- * @param useClass
- * @param useValue
- * @param useExisting
- * @param useFactory
- * @param deps
- *
  * @return new provider recipe.
  */
 function provideResource(_a) {
     var provide = _a.provide, useClass = _a.useClass, useValue = _a.useValue, useExisting = _a.useExisting, useFactory = _a.useFactory, deps = _a.deps;
-    var token = provide || Resource;
+    var token = provide || new _angular_core.OpaqueToken("resource" + ++resourceIdSeq);
     return [
         {
             provide: token,
