@@ -1,18 +1,13 @@
-import {Type} from "@angular/core";
+import {Type, OpaqueToken} from "@angular/core";
 import {Resource} from "./resource";
 import {provideEventSource} from "./event-source-provider";
+
+var resourceIdSeq = 0;
 
 /**
  * Constructs provider recipe for {{Resource}}.
  *
  * Also registers the resource as source of Rike operation events.
- *
- * @param provide provider token. If not specified the `Resource` will be used.
- * @param useClass
- * @param useValue
- * @param useExisting
- * @param useFactory
- * @param deps
  *
  * @return new provider recipe.
  */
@@ -26,7 +21,7 @@ export function provideResource({provide, useClass, useValue, useExisting, useFa
     multi?: boolean;
 }): any {
 
-    const token = provide || Resource;
+    const token = provide || new OpaqueToken("resource" + ++resourceIdSeq);
 
     return [
         {

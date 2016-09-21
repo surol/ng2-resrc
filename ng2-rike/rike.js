@@ -383,9 +383,10 @@ var RikeTargetImpl = (function (_super) {
                 try {
                     var cancel = new RikeCancelEvent(this._operation.operation, cause);
                     this._observer.error(cancel);
-                    this._rikeEvents.error(cancel);
+                    this._rikeEvents.emit(cancel);
                 }
                 catch (e) {
+                    console.error("Failed to cancel Rike operation", e);
                     this._rikeEvents.error(new RikeExceptionEvent(this._operation.operation, e));
                     throw e;
                 }

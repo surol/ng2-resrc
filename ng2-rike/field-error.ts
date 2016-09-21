@@ -118,7 +118,7 @@ function defaultFieldErrors(response: FieldErrorResponse): FieldErrorResponse {
 
 function toFieldErrors(data: any): FieldErrors | undefined {
     if (data == null) {
-        return;
+        return undefined;
     }
     if (Array.isArray(data)) {
 
