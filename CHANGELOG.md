@@ -1,3 +1,9 @@
+# 0.2.2 (2016-09-25)
+
+### Peer Dependencies
+
+* Depend on Angular 2.0.0. or higher.
+
 # O.2.1 (2016-09-21)
 
 ### Bug Fixes
