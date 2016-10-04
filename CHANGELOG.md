@@ -1,3 +1,9 @@
+# 0.2.3
+
+### Bug Fixes
+
+* Never send errors via Rike events emitter. Emit events instead.
+
 # 0.2.2 (2016-09-25)
 
 ### Peer Dependencies

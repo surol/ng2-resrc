@@ -1422,11 +1422,6 @@ var RikeTargetImpl = (function (_super) {
                     this._observer.error(cancel);
                     this._rikeEvents.emit(cancel);
                 }
-                catch (e) {
-                    console.error("Failed to cancel Rike operation", e);
-                    this._rikeEvents.error(new RikeExceptionEvent(this._operation.operation, e));
-                    throw e;
-                }
                 finally {
                     this._operation = undefined;
                     try {
@@ -1472,18 +1467,9 @@ var RikeTargetImpl = (function (_super) {
                 }
             };
             _this._subscr = response.subscribe(function (httpResponse) {
-                try {
-                    var response_1 = operation.protocol.readResponse(httpResponse);
-                    responseObserver.next(response_1);
-                    _this._rikeEvents.emit(new RikeSuccessEvent(operation, response_1));
-                }
-                catch (e) {
-                    console.error("Failed to handle Rike response", e);
-                    _this._rikeEvents.error(new RikeExceptionEvent(operation, e, {
-                        response: httpResponse,
-                        error: e
-                    }));
-                }
+                var response = operation.protocol.readResponse(httpResponse);
+                responseObserver.next(response);
+                _this._rikeEvents.emit(new RikeSuccessEvent(operation, response));
             }, function (error) {
                 console.error("[" + _this.target + "] " + operation.name + " failed", error);
                 var errorResponse = toErrorResponse(error);
@@ -1492,21 +1478,12 @@ var RikeTargetImpl = (function (_super) {
                     responseObserver.error(errorResponse);
                     _this._rikeEvents.emit(new RikeErrorResponseEvent(operation, errorResponse));
                 }
-                catch (e) {
-                    console.error("Failed to handle Rike error", e);
-                    errorResponse.error = e;
-                    _this._rikeEvents.error(new RikeExceptionEvent(operation, e, errorResponse));
-                }
                 finally {
                     cleanup();
                 }
             }, function () {
                 try {
                     responseObserver.complete();
-                }
-                catch (e) {
-                    console.error("Failed to complete Rike response", e);
-                    _this._rikeEvents.error(new RikeExceptionEvent(operation, e));
                 }
                 finally {
                     cleanup();
@@ -1583,7 +1560,7 @@ var RikeOperationImpl = (function (_super) {
             return this.wrapResponse(this.internals.request(this.requestUrl(options), options));
         }
         catch (e) {
-            this.target.rikeEvents.error(new RikeExceptionEvent(this, e));
+            this.target.rikeEvents.emit(new RikeExceptionEvent(this, e));
             throw e;
         }
     };
@@ -1594,7 +1571,7 @@ var RikeOperationImpl = (function (_super) {
             return this.wrapResponse(this.internals.request(this.requestUrl(options), options));
         }
         catch (e) {
-            this.target.rikeEvents.error(new RikeExceptionEvent(this, e));
+            this.target.rikeEvents.emit(new RikeExceptionEvent(this, e));
             throw e;
         }
     };
@@ -1605,7 +1582,7 @@ var RikeOperationImpl = (function (_super) {
             return this.wrapResponse(this.internals.get(this.requestUrl(options), options));
         }
         catch (e) {
-            this.target.rikeEvents.error(new RikeExceptionEvent(this, e));
+            this.target.rikeEvents.emit(new RikeExceptionEvent(this, e));
             throw e;
         }
     };
@@ -1616,7 +1593,7 @@ var RikeOperationImpl = (function (_super) {
             return this.wrapResponse(this.internals.post(this.requestUrl(options), options.body, options));
         }
         catch (e) {
-            this.target.rikeEvents.error(new RikeExceptionEvent(this, e));
+            this.target.rikeEvents.emit(new RikeExceptionEvent(this, e));
             throw e;
         }
     };
@@ -1627,7 +1604,7 @@ var RikeOperationImpl = (function (_super) {
             return this.wrapResponse(this.internals.put(this.requestUrl(options), options.body, options));
         }
         catch (e) {
-            this.target.rikeEvents.error(new RikeExceptionEvent(this, e));
+            this.target.rikeEvents.emit(new RikeExceptionEvent(this, e));
             throw e;
         }
     };
@@ -1639,7 +1616,7 @@ var RikeOperationImpl = (function (_super) {
             return this.wrapResponse(this.internals.delete(this.requestUrl(options), options));
         }
         catch (e) {
-            this.target.rikeEvents.error(new RikeExceptionEvent(this, e));
+            this.target.rikeEvents.emit(new RikeExceptionEvent(this, e));
             throw e;
         }
     };
@@ -1650,7 +1627,7 @@ var RikeOperationImpl = (function (_super) {
             return this.wrapResponse(this.internals.patch(this.requestUrl(options), options.body, options));
         }
         catch (e) {
-            this.target.rikeEvents.error(new RikeExceptionEvent(this, e));
+            this.target.rikeEvents.emit(new RikeExceptionEvent(this, e));
             throw e;
         }
     };
@@ -1661,7 +1638,7 @@ var RikeOperationImpl = (function (_super) {
             return this.wrapResponse(this.internals.head(this.requestUrl(options), options));
         }
         catch (e) {
-            this.target.rikeEvents.error(new RikeExceptionEvent(this, e));
+            this.target.rikeEvents.emit(new RikeExceptionEvent(this, e));
             throw e;
         }
     };
