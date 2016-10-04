@@ -1,9 +1,9 @@
 import {Response, RequestMethod, ResponseOptions} from "@angular/http";
-import {inject, fakeAsync} from "@angular/core/testing";
+import {inject, fakeAsync, tick} from "@angular/core/testing";
 import {MockBackend, MockConnection} from "@angular/http/testing";
 import {Observable} from "rxjs/Rx";
 import {Rike, RikeTarget, RikeOperation} from "./rike";
-import {configureRikeTesting, nextFrom} from "./rike.spec";
+import {configureRikeTesting, nextFrom, recordTo} from "./rike.spec";
 import {RikeEvent, RikeErrorEvent} from "./event";
 
 describe("RikeOperation", () => {
@@ -205,30 +205,29 @@ describe("RikeOperation event", () => {
         op.load().subscribe(() => {}, () => {});
     });
 
-    it("exception", done => {
+    it("exception", fakeAsync(() => {
         back.connections.subscribe(() => {
             throw new Error("error1");
         });
 
         const op = target.operation("operation");
-        let events = 0;
-
-        target.rikeEvents.subscribe(
-            (ev: RikeEvent) => {
-                events++;
-                expect(ev.operation).toBe(op);
-                expect(ev.target).toBe(target);
-            },
-            (ev: RikeErrorEvent) => {
-                expect(events).toBe(1, "Start event not received yet");
-                expect(ev.complete).toBeTruthy();
-
-                const error = ev.error as Error;
-
-                expect(error.message).toBe("error1");
-                done();
-            });
+        const events = recordTo<RikeEvent>(target.rikeEvents, []);
 
         expect(() => op.load().subscribe()).toThrowError("error1");
-    });
+        tick();
+        expect(events.length).toBe(2);
+
+        const e1 = events[0];
+
+        expect(e1.operation).toBe(op);
+        expect(e1.target).toBe(target);
+
+        const e2 = events[1] as RikeErrorEvent;
+
+        expect(e2.complete).toBeTruthy();
+
+        const error = e2.error as Error;
+
+        expect(error.message).toBe("error1");
+    }));
 });

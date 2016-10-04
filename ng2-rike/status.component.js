@@ -154,7 +154,7 @@ export var RikeStatusComponent = (function () {
     ], RikeStatusComponent.prototype, "rikeStatusLabelClass", null);
     RikeStatusComponent = __decorate([
         Component({
-            selector: '[rikeStatus],[rikeStatusLabels],[rikeStatusLabelText],[rikeStatusLabelClass]',
+            selector: 'rike-status,[rikeStatus],[rikeStatusLabels],[rikeStatusLabelText],[rikeStatusLabelClass]',
             template: "<span class=\"rike-status-icon\"></span> {{text}}",
             host: {
                 "[class]": "cssClass",

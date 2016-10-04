@@ -3,7 +3,7 @@ import {StatusCollector, StatusView, DEFAULT_STATUS_LABELS, StatusLabelMap} from
 import {isArray} from "rxjs/util/isArray";
 
 @Component({
-    selector: '[rikeStatus],[rikeStatusLabels],[rikeStatusLabelText],[rikeStatusLabelClass]',
+    selector: 'rike-status,[rikeStatus],[rikeStatusLabels],[rikeStatusLabelText],[rikeStatusLabelClass]',
     template: `<span class="rike-status-icon"></span> {{text}}`,
     host: {
         "[class]": "cssClass",

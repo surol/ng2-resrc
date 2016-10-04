@@ -67,20 +67,9 @@ export function nextFrom<T>(op: Observable<T>): T | undefined {
     return result;
 }
 
-export function nextErrorFrom<T>(op: Observable<any>): T | undefined {
-
-    let error: T | undefined = undefined;
-
-    op.subscribe(
-        response => {
-            console.log(response);
-            fail("Response received: " + response);
-        },
-        err => error = err);
-
-    tick();
-
-    return error;
+export function recordTo<T>(op: Observable<T>, target: T[]): T[] {
+    op.subscribe(res => target.push(res));
+    return target;
 }
 
 describe("Rike", () => {

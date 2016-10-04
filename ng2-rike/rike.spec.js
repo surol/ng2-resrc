@@ -47,14 +47,9 @@ export function nextFrom(op) {
     tick();
     return result;
 }
-export function nextErrorFrom(op) {
-    var error = undefined;
-    op.subscribe(function (response) {
-        console.log(response);
-        fail("Response received: " + response);
-    }, function (err) { return error = err; });
-    tick();
-    return error;
+export function recordTo(op, target) {
+    op.subscribe(function (res) { return target.push(res); });
+    return target;
 }
 describe("Rike", function () {
     var rike;
