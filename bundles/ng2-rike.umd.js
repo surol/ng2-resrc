@@ -1834,7 +1834,7 @@ var RikeStatusComponent = (function () {
     ], RikeStatusComponent.prototype, "rikeStatusLabelClass", null);
     RikeStatusComponent = __decorate$3([
         _angular_core.Component({
-            selector: '[rikeStatus],[rikeStatusLabels],[rikeStatusLabelText],[rikeStatusLabelClass]',
+            selector: 'rike-status,[rikeStatus],[rikeStatusLabels],[rikeStatusLabelText],[rikeStatusLabelClass]',
             template: "<span class=\"rike-status-icon\"></span> {{text}}",
             host: {
                 "[class]": "cssClass",
@@ -2405,7 +2405,7 @@ var RikeErrorsComponent = (function () {
     ], RikeErrorsComponent.prototype, "rikeErrorsOf", null);
     RikeErrorsComponent = __decorate$4([
         _angular_core.Component({
-            selector: '[rikeErrors],[rikeErrorsOf]',
+            selector: 'rike-errors,[rikeErrors],[rikeErrorsOf]',
             template: "\n    <ul class=\"rike-error-list\" *ngIf=\"errors.length\">\n        <li class=\"rike-error\" *ngFor=\"let error of errors\">{{error.message}}</li>\n    </ul>\n    ",
             host: {
                 "[class.rike-errors]": "true",

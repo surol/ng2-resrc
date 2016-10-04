@@ -3,7 +3,7 @@ import {ErrorCollector, ErrorSubscription} from "./error-collector";
 import {FieldErrors, FieldError} from "./field-error";
 
 @Component({
-    selector: '[rikeErrors],[rikeErrorsOf]',
+    selector: 'rike-errors,[rikeErrors],[rikeErrorsOf]',
     template:
     `
     <ul class="rike-error-list" *ngIf="errors.length">

@@ -369,7 +369,7 @@ The `RikeStatusComponent` is an indicator of operation statuses combined from al
 
 It utilizes `StatusCollector` service.
  
-It is bound to `[rikeStatus]` and other attributes. The meaning of attributes is following:
+It is bound to `rike-status` element, `[rikeStatus]` and other attributes. The meaning of attributes is following:
 
 - `[rikeStatus]` optionally accepts a `StatusView` instance, that can be constructed by `StatusCollector.view()` method.
 - `[rikeStatusLabels]` accepts a `StatusLabelMap` instance(s) used to customize status indication.
@@ -417,7 +417,8 @@ The `RikeErrorsComponent` is a list of all operation errors combined from all re
 It utilizes `ErrorCollector` service and uses `FieldErrorResponse` to detect field errors. Even if `addFieldErrors()`
 function is not used in operation protocol, this component applies it to error response. 
 
-The component is bound to `[rikeErrors]` and other attributes. The meaning of attributes is following:
+The component is bound to `rike-errors` element, `[rikeErrors]` and other attributes. The meaning of attributes is
+following:
 
 - `[rikeErrors]` optionally accepts a field name. If not specified or `*` is used, then component displays generic
   errors, and errors for fields for which error consumers are not registered, i.e. no corresponding `[rikeErrors]`

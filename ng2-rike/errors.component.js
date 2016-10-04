@@ -116,7 +116,7 @@ export var RikeErrorsComponent = (function () {
     ], RikeErrorsComponent.prototype, "rikeErrorsOf", null);
     RikeErrorsComponent = __decorate([
         Component({
-            selector: '[rikeErrors],[rikeErrorsOf]',
+            selector: 'rike-errors,[rikeErrors],[rikeErrorsOf]',
             template: "\n    <ul class=\"rike-error-list\" *ngIf=\"errors.length\">\n        <li class=\"rike-error\" *ngFor=\"let error of errors\">{{error.message}}</li>\n    </ul>\n    ",
             host: {
                 "[class.rike-errors]": "true",
