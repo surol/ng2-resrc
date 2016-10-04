@@ -410,6 +410,7 @@ Status labels can be customized on a per-operation basis, or globally. For this 
 can be used, and provided either globally (`RikeOptions.defaultStatusLabels`), or via component attribute
 (`[rikeStatusLabels]`). See the API documentation for the details.
 
+
 ### `RikeErrorsComponent`
 
 The `RikeErrorsComponent` is a list of all operation errors combined from all registered resources.
@@ -447,3 +448,36 @@ When there is no error to report the HTML looks like this:
 ```html
 <any-tag class="rike-errors rike-no-errors"></any-tag>
 ```
+
+
+### `RikeDisabledDirective`
+
+This directive disables a control it is applied to while Rike operation is in process. Additionally sets `rike-disabled`
+CSS class to host element when Rike operation is in process.
+
+This directive could be useful e.g. to disable submit button while submitting a form with Rike.
+
+It utilizes `StatusCollector` service.
+
+The directive is bound to `[rikeDisabled]` and other attributes. The meaning of attributes is following:
+
+- `[rikeDisabled]` optionally accepts a boolean value. The component will be disabled when this value is true or when
+  Rike operation is in process.
+- `[rikeDisabledBy]` accepts a `StatusCollector` instance to detect the Rike operation is in process. When omitted
+  the injected `StatusCollector` instance will be used.
+
+
+### `RikeReadonlyDirective`
+
+This directive makes a control read-only while Rike operation is in process. Just like `RikeDisabledDirective`. But it
+sets `readonly` attribute instead of `disabled` one. Additionally sets `rike-readonly` CSS class to host element when
+Rike operation is in process.
+
+This directive could be useful e.g. to make form inputs read-only while submitting a form with Rike.
+
+The directive is bound to `[rikeReadonly]` and other attributes. The meaning of attributes is following:
+ 
+- `[rikeReadonly]` optionally accepts a boolean value. The component will be made read-only when this value is true
+  or when Rike operation is in process.
+- `[rikeReadonlyBy]` accepts a `StatusCollector` instance to detect the Rike operation is in process. When omitted
+  the injected `StatusCollector` instance will be used.

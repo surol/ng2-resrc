@@ -2,6 +2,8 @@
 
 ### Features
 
+* Add `RikeDisabledDirective` to disable controls while Rike operation is in process.
+* Add `RokeReadonlyDirective` to mark input controls red only while Rike operation is in process.
 * `RikeErrorsComponent` additionally bound to `rike-errors` element.
 * `RikeStatusComponent` additionally bound to `rike-status` element.
 

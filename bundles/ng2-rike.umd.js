@@ -2446,6 +2446,138 @@ function provideEventSource(_a) {
     ];
 }
 
+var __decorate$6 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata$6 = (undefined && undefined.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+var __param$4 = (undefined && undefined.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
+var RikeDisabledDirective = (function () {
+    function RikeDisabledDirective(_rikeDisabledBy) {
+        this._rikeDisabledBy = _rikeDisabledBy;
+        this._disabledByDefault = false;
+    }
+    Object.defineProperty(RikeDisabledDirective.prototype, "disabled", {
+        get: function () {
+            return this.rikeDisabledBy.processing || this._disabledByDefault;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(RikeDisabledDirective.prototype, "rikeDisabled", {
+        set: function (disabled) {
+            this._disabledByDefault = !!disabled;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(RikeDisabledDirective.prototype, "rikeDisabledBy", {
+        get: function () {
+            return this._rikeDisabledBy;
+        },
+        set: function (collector) {
+            this._rikeDisabledBy = collector;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    __decorate$6([
+        _angular_core.HostBinding("disabled"),
+        _angular_core.HostBinding("class.rike-disabled"), 
+        __metadata$6('design:type', Boolean)
+    ], RikeDisabledDirective.prototype, "disabled", null);
+    __decorate$6([
+        _angular_core.Input(), 
+        __metadata$6('design:type', Object), 
+        __metadata$6('design:paramtypes', [Object])
+    ], RikeDisabledDirective.prototype, "rikeDisabled", null);
+    __decorate$6([
+        _angular_core.Input(), 
+        __metadata$6('design:type', StatusCollector)
+    ], RikeDisabledDirective.prototype, "rikeDisabledBy", null);
+    RikeDisabledDirective = __decorate$6([
+        _angular_core.Directive({
+            selector: '[rikeDisabled],[rikeDisabledBy]',
+            exportAs: 'rikeDisabled',
+        }),
+        __param$4(0, _angular_core.Optional()), 
+        __metadata$6('design:paramtypes', [StatusCollector])
+    ], RikeDisabledDirective);
+    return RikeDisabledDirective;
+}());
+
+var __decorate$7 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata$7 = (undefined && undefined.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+var __param$5 = (undefined && undefined.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
+var RikeReadonlyDirective = (function () {
+    function RikeReadonlyDirective(_rikeReadonlyBy) {
+        this._rikeReadonlyBy = _rikeReadonlyBy;
+        this._readonlyByDefault = false;
+    }
+    Object.defineProperty(RikeReadonlyDirective.prototype, "readonly", {
+        get: function () {
+            return this.rikeReadonlyBy.processing || this._readonlyByDefault;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(RikeReadonlyDirective.prototype, "rikeReadonly", {
+        set: function (disabled) {
+            this._readonlyByDefault = !!disabled;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(RikeReadonlyDirective.prototype, "rikeReadonlyBy", {
+        get: function () {
+            return this._rikeReadonlyBy;
+        },
+        set: function (collector) {
+            this._rikeReadonlyBy = collector;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    __decorate$7([
+        _angular_core.HostBinding("readonly"),
+        _angular_core.HostBinding("class.rike-readonly"), 
+        __metadata$7('design:type', Boolean)
+    ], RikeReadonlyDirective.prototype, "readonly", null);
+    __decorate$7([
+        _angular_core.Input(), 
+        __metadata$7('design:type', Object), 
+        __metadata$7('design:paramtypes', [Object])
+    ], RikeReadonlyDirective.prototype, "rikeReadonly", null);
+    __decorate$7([
+        _angular_core.Input(), 
+        __metadata$7('design:type', StatusCollector)
+    ], RikeReadonlyDirective.prototype, "rikeReadonlyBy", null);
+    RikeReadonlyDirective = __decorate$7([
+        _angular_core.Directive({
+            selector: '[rikeReadonly],[rikeReadonlyBy]',
+            exportAs: 'rikeReadonly',
+        }),
+        __param$5(0, _angular_core.Optional()), 
+        __metadata$7('design:paramtypes', [StatusCollector])
+    ], RikeReadonlyDirective);
+    return RikeReadonlyDirective;
+}());
+
 var __extends$4 = (undefined && undefined.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -2875,10 +3007,14 @@ var RikeModule = (function () {
             declarations: [
                 RikeStatusComponent,
                 RikeErrorsComponent,
+                RikeDisabledDirective,
+                RikeReadonlyDirective,
             ],
             exports: [
                 RikeStatusComponent,
                 RikeErrorsComponent,
+                RikeDisabledDirective,
+                RikeReadonlyDirective,
             ],
         }), 
         __metadata('design:paramtypes', [])
@@ -2887,6 +3023,7 @@ var RikeModule = (function () {
 }());
 
 exports.RikeModule = RikeModule;
+exports.RikeDisabledDirective = RikeDisabledDirective;
 exports.ErrorCollector = ErrorCollector;
 exports.RikeErrorsComponent = RikeErrorsComponent;
 exports.RikeEventSource = RikeEventSource;
@@ -2907,6 +3044,7 @@ exports.Protocol = Protocol;
 exports.JSON_PROTOCOL = JSON_PROTOCOL;
 exports.jsonProtocol = jsonProtocol;
 exports.HTTP_PROTOCOL = HTTP_PROTOCOL;
+exports.RikeReadonlyDirective = RikeReadonlyDirective;
 exports.Resource = Resource;
 exports.RikeResource = RikeResource;
 exports.LoadableResource = LoadableResource;
