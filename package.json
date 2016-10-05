@@ -1,6 +1,6 @@
 {
   "name": "ng2-rike",
-  "version": "0.2.3-dev",
+  "version": "0.2.3",
   "description": "REST-like API for Angular2",
   "keywords": [
     "angular2",
