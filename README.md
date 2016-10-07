@@ -57,9 +57,9 @@ class MyComponent implements OnInit {
 }
 ```
 
-The `Rike` service can be injected to any component or service. It contains methods for creating targets (`RikeTarget`).
-`RikeTarget` has methods for creating operations (`RikeOperation`). `RikeOperation` contains a set of methods
-for performing HTTP requests (`GET`, `POST`, `PUT`, etc.)
+The `Rike` service can be injected into any component or service. It contains methods for creating targets
+(`RikeTarget`). `RikeTarget` has methods for creating operations (`RikeOperation`). `RikeOperation` contains a set of
+methods for performing HTTP requests (`GET`, `POST`, `PUT`, etc.)
 
 Protocols
 ---------
@@ -257,8 +257,8 @@ target will be reported to event consumers.
 
 An examples of such consumers are `StatusCollector` and `ErrorCollector` - an injectable Angular services automatically
 registered by `provideResource` function, as well as at application level. These services are used by `rikeStatus`
-and `rikeErrors` component to report status and errors of all available resources. These services could be injected
-to your component or service as well, and used directly. 
+and `rikeErrors` components to report status and errors of all available resources. These services could be injected
+into your component or service as well, and used directly. 
 
 ```typescript
 import {Component, OnInit} from "@angular/core";
@@ -292,8 +292,9 @@ class MyComponent implements OnInit {
 ```
 
 It is possible to register arbitrary number of resources in the same component (or at the application level).
-All of them will emit events to the same set of event consumers. E.g. `StatusCollector` and `ErrorCollector`
-would contain information combined from all registered resources.
+All of them will emit events to event consumers registered at the same level.
+E.g. `StatusCollector` and `ErrorCollector` would contain information combined from all resources provided for the
+same component.
 
 ### Resources Implementations
 
@@ -336,7 +337,7 @@ export class ItemDescriptionsService extends LoadableResource<ItemDescription[]>
     </dl>
     `,
     providers: [
-        provideResource,
+        provideResource({provide: ItemDescriptionsService, useClass: ItemDescriptionsService}),
     ]
 })
 export class ItemPricesComponent implements OnInit {
@@ -384,13 +385,14 @@ By default CSS classes have a form like `rike-status rike-status-XXX`.
 Some predefined status CSS classes are:
 
 - `rike-status-hidden` - used when there are no status labels known. Means that the status indicator should be hidden.
-  Some labels may wish to hide status indicator, e.g. when operation completed successfully.
+  Some labels may wish to hide status indicator. E.g. when operation completed successfully.
 - `rike-status-processing` - indicates the operation is in process.
 - `rike-status-cancelled` - indicates the operation has been cancelled.
 - `rike-status-failed` - indicated the operation failure.
 - `rike-status-succeed` - indicates the operation success.
 
-Additional status CSS classes can be appended for operations defined in the base resource implementations. For example:
+Additional status CSS classes could be appended for operations defined in the base resource implementations.
+For example:
 
 - `rike-status-loading` - for `load` operation (of `LoadableResource`).
 - `rike-status-reading` - for `read` operation (of `CRUDResource`).
@@ -421,7 +423,7 @@ function is not used in operation protocol, this component applies it to error r
 The component is bound to `rike-errors` element, `[rikeErrors]` and other attributes. The meaning of attributes is
 following:
 
-- `[rikeErrors]` optionally accepts a field name. If not specified or `*` is used, then component displays generic
+- `[rikeErrors]` optionally accepts a field name. If not specified or `*` is used, the component displays generic
   errors, and errors for fields for which error consumers are not registered, i.e. no corresponding `[rikeErrors]`
   component. 
 - `[rikeErrorsOf]` a `ErrorCollector` instance to be used instead of the injected one.
@@ -444,7 +446,7 @@ The generated HTML would look like this:
 </any-tag>
 ```
 
-When there is no error to report the HTML looks like this:
+When there are no errors to report the HTML would look like this:
 ```html
 <any-tag class="rike-errors rike-no-errors"></any-tag>
 ```
@@ -452,8 +454,8 @@ When there is no error to report the HTML looks like this:
 
 ### `RikeDisabledDirective`
 
-This directive disables a control it is applied to while Rike operation is in process. Additionally sets `rike-disabled`
-CSS class to host element when Rike operation is in process.
+This directive disables a control it is applied to while Rike operation is in progress. Additionally sets
+`rike-disabled` CSS class to host element when Rike operation is in progress.
 
 This directive could be useful e.g. to disable submit button while submitting a form with Rike.
 
@@ -462,22 +464,22 @@ It utilizes `StatusCollector` service.
 The directive is bound to `[rikeDisabled]` and other attributes. The meaning of attributes is following:
 
 - `[rikeDisabled]` optionally accepts a boolean value. The component will be disabled when this value is true or when
-  Rike operation is in process.
-- `[rikeDisabledBy]` accepts a `StatusCollector` instance to detect the Rike operation is in process. When omitted
+  Rike operation is in progress.
+- `[rikeDisabledBy]` accepts a `StatusCollector` instance to detect if the Rike operation is in progress. When omitted
   the injected `StatusCollector` instance will be used.
 
 
 ### `RikeReadonlyDirective`
 
-This directive makes a control read-only while Rike operation is in process. Just like `RikeDisabledDirective`. But it
+This directive makes a control read-only while Rike operation is in progress. Just like `RikeDisabledDirective`. But it
 sets `readonly` attribute instead of `disabled` one. Additionally sets `rike-readonly` CSS class to host element when
-Rike operation is in process.
+Rike operation is in progress.
 
 This directive could be useful e.g. to make form inputs read-only while submitting a form with Rike.
 
 The directive is bound to `[rikeReadonly]` and other attributes. The meaning of attributes is following:
  
 - `[rikeReadonly]` optionally accepts a boolean value. The component will be made read-only when this value is true
-  or when Rike operation is in process.
-- `[rikeReadonlyBy]` accepts a `StatusCollector` instance to detect the Rike operation is in process. When omitted
+  or when Rike operation is in progress.
+- `[rikeReadonlyBy]` accepts a `StatusCollector` instance to detect if the Rike operation is in progress. When omitted
   the injected `StatusCollector` instance will be used.
