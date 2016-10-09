@@ -1,3 +1,10 @@
+# 0.2.4
+
+### Testing
+
+* Add Karma config
+* Add Travis-CI config
+
 # 0.2.3 (2016-10-04)
 
 ### Features

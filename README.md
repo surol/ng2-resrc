@@ -1,12 +1,20 @@
 Rike: REST-like API for Angular2
 ================================
 
+[![NPM][npm-image]][npm-url]
+[![Build status][ci-image]][ci-url]
+
 Rike enhances Angular `Http` service by supporting custom protocols and reporting request processing events.
 This allows to report request status and errors in a generic way.
 
 Rike defines resources as injectable Angular services. Operations performed on these resources are reported as events.
 
 See the API documentation for more detailed description.
+
+[npm-image]: https://img.shields.io/npm/v/ng2-rike.svg
+[npm-url]: https://www.npmjs.com/package/ng2-rike
+[ci-image]: https://travis-ci.org/surol/ng2-rike.svg?branch=master
+[ci-url]: https://travis-ci.org/surol/ng2-rike
 
 Usage
 -----
