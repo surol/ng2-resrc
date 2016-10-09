@@ -626,7 +626,6 @@ class RikeTargetImpl<IN, OUT> extends RikeTarget<IN, OUT> {
                     this._rikeEvents.emit(new RikeSuccessEvent(operation, response));
                 },
                 error => {
-                    console.error("[" + this.target + "] " + operation.name + " failed", error);
 
                     let errorResponse = toErrorResponse(error);
 

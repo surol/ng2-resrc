@@ -1471,7 +1471,6 @@ var RikeTargetImpl = (function (_super) {
                 responseObserver.next(response);
                 _this._rikeEvents.emit(new RikeSuccessEvent(operation, response));
             }, function (error) {
-                console.error("[" + _this.target + "] " + operation.name + " failed", error);
                 var errorResponse = toErrorResponse(error);
                 try {
                     errorResponse = operation.protocol.handleError(errorResponse);
