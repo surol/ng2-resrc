@@ -2,5 +2,4 @@
 node_modules
 *.iml
 *.log
-/bundles/ng2-rike.all.*
-/systemjs.config.js
+/bundles/ng2-rike-spec.*
