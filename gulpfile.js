@@ -4,10 +4,9 @@ var gulp = require('gulp');
 var exec = require('child_process').exec;
 var webpack = require('webpack');
 var webpackMerge = require('webpack-merge');
-var wp = require('gulp-webpack');
+var wp = require('webpack-stream');
 var named = require('vinyl-named');
 var del = require('del');
-var watch = require('gulp-watch');
 
 function compile(opts, cb) {
     exec(
@@ -55,16 +54,15 @@ gulp.task('bundle-umd-only', function(cb) {
     bundleUmdTask('rollup.config.js', cb);
 });
 gulp.task('watch-bundle-umd', ['bundle-umd-only'], function() {
-    return watch(
+    gulp.watch(
         [
             'ng2-rike.js',
             '!ng2-rike.spec.js',
             'ng2-rike/**/*.js',
             '!ng2-rike/**/*.spec.js',
             'rollup.config.js'
-        ], function() {
-        bundleUmdTask('rollup.config.js', () => {});
-    });
+        ],
+        ['bundle-umd-only']);
 });
 
 gulp.task('bundle-spec-umd', ['compile'], function(cb) {
@@ -74,9 +72,13 @@ gulp.task('bundle-spec-umd-only', function(cb) {
     bundleUmdTask('rollup-spec.config.js', cb);
 });
 gulp.task('watch-bundle-spec-umd', ['bundle-spec-umd-only'], function() {
-    return watch(['ng2-rike.js', 'ng2-rike/**/*.js', 'rollup-spec.config.js'], function() {
-        bundleUmdTask('rollup-spec.config.js', () => {});
-    });
+    gulp.watch(
+        [
+            'ng2-rike.js',
+            'ng2-rike/**/*.js',
+            'rollup-spec.config.js'
+        ],
+        ['bundle-spec-umd-only'])
 });
 
 var wpCommon = {
