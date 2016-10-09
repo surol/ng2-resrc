@@ -35,7 +35,7 @@ gulp.task('clean-compiled', function () {
 });
 
 
-function bundleUmdTask(config, cb) {
+function bundleUmd(config, cb) {
     exec(
         'node_modules/.bin/rollup -c ' + config,
         function (err, stdout, stderr) {
@@ -48,10 +48,10 @@ function bundleUmdTask(config, cb) {
 }
 
 gulp.task('bundle-umd', ['compile'], function(cb) {
-    bundleUmdTask('rollup.config.js', cb);
+    bundleUmd('rollup.config.js', cb);
 });
 gulp.task('bundle-umd-only', function(cb) {
-    bundleUmdTask('rollup.config.js', cb);
+    bundleUmd('rollup.config.js', cb);
 });
 gulp.task('watch-bundle-umd', ['bundle-umd-only'], function() {
     gulp.watch(
@@ -66,10 +66,10 @@ gulp.task('watch-bundle-umd', ['bundle-umd-only'], function() {
 });
 
 gulp.task('bundle-spec-umd', ['compile'], function(cb) {
-    bundleUmdTask('rollup-spec.config.js', cb);
+    bundleUmd('rollup-spec.config.js', cb);
 });
 gulp.task('bundle-spec-umd-only', function(cb) {
-    bundleUmdTask('rollup-spec.config.js', cb);
+    bundleUmd('rollup-spec.config.js', cb);
 });
 gulp.task('watch-bundle-spec-umd', ['bundle-spec-umd-only'], function() {
     gulp.watch(
@@ -104,20 +104,20 @@ var wpCommon = {
     }
 };
 
-function bundleTask(config) {
+function bundleWP(config) {
     gulp.src('bundle-spec.js').pipe(named())
         .pipe(wp(webpackMerge(wpCommon, config), webpack))
         .pipe(gulp.dest('bundles/'));
 }
 
 gulp.task('bundle-spec', ['bundle-spec-umd'], function() {
-    return bundleTask();
+    return bundleWP();
 });
 gulp.task('bundle-spec-only', ['bundle-spec-umd-only'], function() {
-    return bundleTask();
+    return bundleWP();
 });
 gulp.task('watch-bundle-spec', function () {
-    return bundleTask(webpackMerge({watch: true}));
+    return bundleWP(webpackMerge({watch: true}));
 });
 
 gulp.task('clean-bundles', function() {
@@ -132,5 +132,26 @@ gulp.task('watch-ide', ['watch-bundle-umd', 'watch-bundle-spec-umd', 'watch-bund
 
 
 gulp.task('default', ['bundle-umd', 'bundle-spec']);
+
+function runTest(opts, cb) {
+    exec(
+        'node_modules/.bin/karma start karma.conf.js ' + opts,
+        (err, stdout, stderr) => {
+            console.log(stdout);
+            if (err) {
+                console.error(stderr);
+            }
+            cb(err);
+        });
+}
+
+gulp.task('test', function(cb) {
+    runTest('', cb);
+});
+
+gulp.task('test-once', function(cb) {
+    runTest('--single-run', cb);
+});
+
 
 gulp.task('clean', ['clean-compiled', 'clean-bundles']);
