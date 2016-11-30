@@ -1,6 +1,6 @@
 {
   "name": "ng2-rike",
-  "version": "0.2.4-dev",
+  "version": "0.2.5-dev",
   "description": "REST-like API for Angular2",
   "keywords": [
     "angular2",
@@ -46,7 +46,6 @@
     "@angular/platform-browser-dynamic": "^2.0.0",
     "@types/core-js": "^0.9.32",
     "@types/jasmine": "^2.2.33",
-    "core-js": "^2.4.1",
     "del": "^2.2.2",
     "gulp": "^3.9.1",
     "jasmine-core": "^2.5.1",
@@ -58,6 +57,7 @@
     "reflect-metadata": "^0.1.8",
     "rollup": "^0.34.13",
     "rxjs": "5.0.0-beta.12",
+    "source-map-loader": "^0.1.5",
     "typescript": "^2.0.2",
     "vinyl-named": "^1.1.0",
     "webpack": "^1.13.2",

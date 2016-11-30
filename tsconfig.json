@@ -13,9 +13,21 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "strictNullChecks": true,
+    "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "newLine": "LF",
-    "types": ["core-js", "jasmine"]
+    "lib": [
+      "dom",
+      "es5",
+      "es2015.promise",
+      "es2015.collection"
+    ],
+    "types": [
+      "jasmine"
+    ]
   },
-  "include": ["ng2-rike.ts", "ng2-rike/**/*.ts"]
+  "include": [
+    "ng2-rike.ts",
+    "ng2-rike/**/*.ts"
+  ]
 }

@@ -7,6 +7,7 @@ export default {
         'rxjs/Observable': 'Rx',
         'rxjs/Subject': 'Rx'
     },
+    sourceMap: true,
     plugins: [
 //    nodeResolve({ jsnext: true, main: true }),
     ]

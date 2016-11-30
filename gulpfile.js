@@ -89,6 +89,14 @@ var wpCommon = {
         }
     },
     devtool: 'source-map',
+    module: {
+        preLoaders: [
+            {
+                test: /\.js$/,
+                loader: "source-map-loader"
+            },
+        ]
+    },
     plugins: [
         new webpack.optimize.UglifyJsPlugin({ // https://github.com/angular/angular/issues/10618,
             compress: {
