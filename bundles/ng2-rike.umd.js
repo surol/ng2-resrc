@@ -3060,3 +3060,4 @@ exports.RikeStatusComponent = RikeStatusComponent;
 Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
+//# sourceMappingURL=ng2-rike.umd.js.map

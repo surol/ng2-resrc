@@ -1,4 +1,3 @@
-/// <reference types="core-js" />
 import { Type } from "@angular/core";
 /**
  * Constructs provider recipe for {{RikeEventSource}}.

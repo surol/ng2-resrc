@@ -2,4 +2,6 @@
 node_modules
 *.iml
 *.log
+*.ts
+!*.d.ts
 /bundles/ng2-rike-spec.*
