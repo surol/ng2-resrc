@@ -342,7 +342,7 @@ class CustomProtocolMod<IN, OUT> implements ProtocolMod<IN, OUT> {
             prepare,
             (request, options) => this._protocol.writeRequest(request, options),
             response => this._protocol.readResponse(response),
-            this._protocol.handleError);
+            error => this._protocol.handleError(error));
     }
 
     writeRequest<I>(write: (request: I, options: RequestOptionsArgs) => RequestOptionsArgs): Protocol<I, OUT> {
@@ -350,7 +350,7 @@ class CustomProtocolMod<IN, OUT> implements ProtocolMod<IN, OUT> {
             options => this._protocol.prepareRequest(options),
             write,
             response => this._protocol.readResponse(response),
-            this._protocol.handleError);
+            error => this._protocol.handleError(error));
     }
 
     readResponse<O>(read: (response: Response) => O): Protocol<IN, O> {
@@ -358,7 +358,7 @@ class CustomProtocolMod<IN, OUT> implements ProtocolMod<IN, OUT> {
             options => this._protocol.prepareRequest(options),
             (request, options) => this._protocol.writeRequest(request, options),
             read,
-            this._protocol.handleError);
+            error => this._protocol.handleError(error));
     }
 
     handleError(handle: (error: ErrorResponse) => ErrorResponse): Protocol<IN, OUT> {

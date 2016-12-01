@@ -137,15 +137,15 @@ var CustomProtocolMod = (function () {
     }
     CustomProtocolMod.prototype.prepareRequest = function (prepare) {
         var _this = this;
-        return new CustomProtocol(prepare, function (request, options) { return _this._protocol.writeRequest(request, options); }, function (response) { return _this._protocol.readResponse(response); }, this._protocol.handleError);
+        return new CustomProtocol(prepare, function (request, options) { return _this._protocol.writeRequest(request, options); }, function (response) { return _this._protocol.readResponse(response); }, function (error) { return _this._protocol.handleError(error); });
     };
     CustomProtocolMod.prototype.writeRequest = function (write) {
         var _this = this;
-        return new CustomProtocol(function (options) { return _this._protocol.prepareRequest(options); }, write, function (response) { return _this._protocol.readResponse(response); }, this._protocol.handleError);
+        return new CustomProtocol(function (options) { return _this._protocol.prepareRequest(options); }, write, function (response) { return _this._protocol.readResponse(response); }, function (error) { return _this._protocol.handleError(error); });
     };
     CustomProtocolMod.prototype.readResponse = function (read) {
         var _this = this;
-        return new CustomProtocol(function (options) { return _this._protocol.prepareRequest(options); }, function (request, options) { return _this._protocol.writeRequest(request, options); }, read, this._protocol.handleError);
+        return new CustomProtocol(function (options) { return _this._protocol.prepareRequest(options); }, function (request, options) { return _this._protocol.writeRequest(request, options); }, read, function (error) { return _this._protocol.handleError(error); });
     };
     CustomProtocolMod.prototype.handleError = function (handle) {
         var _this = this;
