@@ -1,3 +1,10 @@
+# 0.2.6 (2016-12-01)
+
+### Bugs
+
+* Fix infinite recursion in custom protocol while handling error.
+
+
 # 0.2.5 (2016-11-30)
 
 ### Packaging
