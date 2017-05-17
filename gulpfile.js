@@ -2,6 +2,7 @@
 
 var gulp = require('gulp');
 var exec = require('child_process').exec;
+var path = require('path');
 var webpack = require('webpack');
 var webpackMerge = require('webpack-merge');
 var wp = require('webpack-stream');
@@ -10,7 +11,7 @@ var del = require('del');
 
 function compile(opts, cb) {
     exec(
-        'node_modules/.bin/tsc ' + opts,
+        'node_modules/.bin/ngc ' + opts,
         function (err, stdout, stderr) {
             console.log(stdout);
             if (err) {
@@ -29,8 +30,9 @@ gulp.task('watch-compile', function(cb) {
 
 gulp.task('clean-compiled', function () {
     return del([
-        './ng2-rike/**/*.{d.ts,js,js.map}',
-        './ng2-rike.{d.ts,js,js.map}'
+        './compiled',
+        './ng2-rike/**/*.{d.ts,js,js.map,metadata.json}',
+        './ng2-rike.{d.ts,js,js.map,metadata.json}'
     ]);
 });
 
@@ -83,21 +85,33 @@ gulp.task('watch-bundle-spec-umd', ['bundle-spec-umd-only'], function() {
 
 var wpCommon = {
     resolve: {
-        extensions: ['', '.js'],
+        extensions: ['.js'],
         alias: {
             'ng2-rike': './bundles/ng2-rike-spec.umd.js'
         }
     },
     devtool: 'source-map',
     module: {
-        preLoaders: [
+        rules: [
             {
+                enforce: "pre",
                 test: /\.js$/,
-                loader: "source-map-loader"
+                loader: "source-map-loader",
+                exclude: [
+                    // Workaround for
+                    // WARNING in ./~/@angular/compiler/@angular/compiler.es5.js
+                    // Cannot find source file 'compiler.es5.ts': Error: Can't resolve
+                    // './compiler.es5.ts' in '../node_modules\@angular\compiler\@angular'
+                    path.join(__dirname, 'node_modules', '@angular/compiler')
+                ],
             },
         ]
     },
     plugins: [
+        new webpack.ContextReplacementPlugin(
+            /angular(\\|\/)core(\\|\/)@angular/,
+            path.resolve(__dirname, '../src')
+        ),
         new webpack.optimize.UglifyJsPlugin({ // https://github.com/angular/angular/issues/10618,
             compress: {
                 warnings: false

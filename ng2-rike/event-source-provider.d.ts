@@ -1,4 +1,4 @@
-import { Type } from "@angular/core";
+import { Provider, Type } from "@angular/core";
 /**
  * Constructs provider recipe for {{RikeEventSource}}.
  *
@@ -17,4 +17,4 @@ export declare function provideEventSource({useClass, useValue, useExisting, use
     useFactory?: Function;
     deps?: Object[];
     multi?: boolean;
-}): any[];
+}): Provider;

@@ -364,7 +364,7 @@ export abstract class CRUDResource<T> extends RikeResource {
      */
     protected objectOptions(options: RequestOptionsArgs, id: any): RequestOptionsArgs {
         return new RequestOptions(options).merge({
-            url: relativeUrl(options.url, encodeURIComponent(id.toString()))
+            url: relativeUrl(options.url || undefined, encodeURIComponent(id.toString()))
         });
     }
 

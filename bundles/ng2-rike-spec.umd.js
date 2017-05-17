@@ -1,14 +1,19 @@
 (function (global, factory) {
-    typeof exports === 'object' && typeof module !== 'undefined' ? factory(require('@angular/core'), require('@angular/http'), require('@angular/common'), require('rxjs/util/isArray'), require('rxjs/Rx'), require('@angular/core/testing'), require('@angular/http/testing'), require('@angular/platform-browser-dynamic/testing')) :
-    typeof define === 'function' && define.amd ? define(['@angular/core', '@angular/http', '@angular/common', 'rxjs/util/isArray', 'rxjs/Rx', '@angular/core/testing', '@angular/http/testing', '@angular/platform-browser-dynamic/testing'], factory) :
-    (factory(global._angular_core,global._angular_http,global._angular_common,global.rxjs_util_isArray,global.rxjs_Rx,global._angular_core_testing,global._angular_http_testing,global._angular_platformBrowserDynamic_testing));
-}(this, (function (_angular_core,_angular_http,_angular_common,rxjs_util_isArray,rxjs_Rx,_angular_core_testing,_angular_http_testing,_angular_platformBrowserDynamic_testing) { 'use strict';
+	typeof exports === 'object' && typeof module !== 'undefined' ? factory(require('@angular/core'), require('@angular/http'), require('@angular/common'), require('rxjs/util/isArray'), require('rxjs/Rx'), require('@angular/core/testing'), require('@angular/platform-browser-dynamic/testing'), require('@angular/http/testing')) :
+	typeof define === 'function' && define.amd ? define(['@angular/core', '@angular/http', '@angular/common', 'rxjs/util/isArray', 'rxjs/Rx', '@angular/core/testing', '@angular/platform-browser-dynamic/testing', '@angular/http/testing'], factory) :
+	(factory(global._angular_core,global._angular_http,global._angular_common,global.rxjs_util_isArray,global.rxjs_Rx,global._angular_core_testing,global._angular_platformBrowserDynamic_testing,global._angular_http_testing));
+}(this, (function (_angular_core,_angular_http,_angular_common,rxjs_util_isArray,rxjs_Rx,_angular_core_testing,_angular_platformBrowserDynamic_testing,_angular_http_testing) { 'use strict';
 
-var __extends$1 = (undefined && undefined.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends$1 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 /**
  * REST-like operations protocol.
  *
@@ -112,7 +117,7 @@ var CustomProtocolAddon = (function () {
 var CustomProtocolPre = (function (_super) {
     __extends$1(CustomProtocolPre, _super);
     function CustomProtocolPre(protocol) {
-        _super.call(this, protocol, true);
+        return _super.call(this, protocol, true) || this;
     }
     CustomProtocolPre.prototype.input = function (convert) {
         var _this = this;
@@ -123,7 +128,7 @@ var CustomProtocolPre = (function (_super) {
 var CustomProtocolPost = (function (_super) {
     __extends$1(CustomProtocolPost, _super);
     function CustomProtocolPost(protocol) {
-        _super.call(this, protocol, false);
+        return _super.call(this, protocol, false) || this;
     }
     CustomProtocolPost.prototype.output = function (convert) {
         var _this = this;
@@ -156,11 +161,12 @@ var CustomProtocolMod = (function () {
 var CustomProtocol = (function (_super) {
     __extends$1(CustomProtocol, _super);
     function CustomProtocol(_prepareRequest, _writeRequest, _readResponse, _handleError) {
-        _super.call(this);
-        this._prepareRequest = _prepareRequest;
-        this._writeRequest = _writeRequest;
-        this._readResponse = _readResponse;
-        this._handleError = _handleError;
+        var _this = _super.call(this) || this;
+        _this._prepareRequest = _prepareRequest;
+        _this._writeRequest = _writeRequest;
+        _this._readResponse = _readResponse;
+        _this._handleError = _handleError;
+        return _this;
     }
     CustomProtocol.prototype.prepareRequest = function (options) {
         return this._prepareRequest(options);
@@ -179,7 +185,7 @@ var CustomProtocol = (function (_super) {
 var JsonProtocol = (function (_super) {
     __extends$1(JsonProtocol, _super);
     function JsonProtocol() {
-        _super.apply(this, arguments);
+        return _super !== null && _super.apply(this, arguments) || this;
     }
     JsonProtocol.prototype.writeRequest = function (request, options) {
         var opts = new _angular_http.RequestOptions(options).merge({ body: JSON.stringify(request) });
@@ -215,7 +221,7 @@ var jsonProtocol = function () { return JSON_PROTOCOL; };
 var HttpProtocol = (function (_super) {
     __extends$1(HttpProtocol, _super);
     function HttpProtocol() {
-        _super.apply(this, arguments);
+        return _super !== null && _super.apply(this, arguments) || this;
     }
     HttpProtocol.prototype.writeRequest = function (request, options) {
         return new _angular_http.RequestOptions(options).merge({ body: request });
@@ -234,11 +240,16 @@ var HttpProtocol = (function (_super) {
  */
 var HTTP_PROTOCOL = new HttpProtocol();
 
-var __extends$2 = (undefined && undefined.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends$2 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 /**
  * REST-like resource access event emitter.
  *
@@ -289,8 +300,9 @@ var RikeEvent = (function () {
 var RikeOperationEvent = (function (_super) {
     __extends$2(RikeOperationEvent, _super);
     function RikeOperationEvent(_operation) {
-        _super.call(this);
-        this._operation = _operation;
+        var _this = _super.call(this) || this;
+        _this._operation = _operation;
+        return _this;
     }
     Object.defineProperty(RikeOperationEvent.prototype, "operation", {
         get: function () {
@@ -342,9 +354,10 @@ var RikeOperationEvent = (function (_super) {
 var RikeSuccessEvent = (function (_super) {
     __extends$2(RikeSuccessEvent, _super);
     function RikeSuccessEvent(_operation, _result) {
-        _super.call(this);
-        this._operation = _operation;
-        this._result = _result;
+        var _this = _super.call(this) || this;
+        _this._operation = _operation;
+        _this._result = _result;
+        return _this;
     }
     Object.defineProperty(RikeSuccessEvent.prototype, "operation", {
         get: function () {
@@ -398,9 +411,10 @@ var RikeSuccessEvent = (function (_super) {
 var RikeErrorEvent = (function (_super) {
     __extends$2(RikeErrorEvent, _super);
     function RikeErrorEvent(_operation, _error) {
-        _super.call(this);
-        this._operation = _operation;
-        this._error = _error;
+        var _this = _super.call(this) || this;
+        _this._operation = _operation;
+        _this._error = _error;
+        return _this;
     }
     Object.defineProperty(RikeErrorEvent.prototype, "operation", {
         get: function () {
@@ -454,8 +468,9 @@ var RikeErrorEvent = (function (_super) {
 var RikeExceptionEvent = (function (_super) {
     __extends$2(RikeExceptionEvent, _super);
     function RikeExceptionEvent(operation, error, _errorResponse) {
-        _super.call(this, operation, error);
-        this._errorResponse = _errorResponse;
+        var _this = _super.call(this, operation, error) || this;
+        _this._errorResponse = _errorResponse;
+        return _this;
     }
     Object.defineProperty(RikeExceptionEvent.prototype, "errorResponse", {
         get: function () {
@@ -472,8 +487,9 @@ var RikeExceptionEvent = (function (_super) {
 var RikeErrorResponseEvent = (function (_super) {
     __extends$2(RikeErrorResponseEvent, _super);
     function RikeErrorResponseEvent(operation, _errorResponse) {
-        _super.call(this, operation, _errorResponse.error || _errorResponse);
-        this._errorResponse = _errorResponse;
+        var _this = _super.call(this, operation, _errorResponse.error || _errorResponse) || this;
+        _this._errorResponse = _errorResponse;
+        return _this;
     }
     Object.defineProperty(RikeErrorResponseEvent.prototype, "errorResponse", {
         get: function () {
@@ -490,8 +506,9 @@ var RikeErrorResponseEvent = (function (_super) {
 var RikeCancelEvent = (function (_super) {
     __extends$2(RikeCancelEvent, _super);
     function RikeCancelEvent(operation, _cancelledBy) {
-        _super.call(this, operation, _cancelledBy || "cancel");
-        this._cancelledBy = _cancelledBy;
+        var _this = _super.call(this, operation, _cancelledBy || "cancel") || this;
+        _this._cancelledBy = _cancelledBy;
+        return _this;
     }
     Object.defineProperty(RikeCancelEvent.prototype, "error", {
         get: function () {
@@ -517,18 +534,6 @@ var RikeCancelEvent = (function (_super) {
     return RikeCancelEvent;
 }(RikeErrorEvent));
 
-var __decorate$1 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata$1 = (undefined && undefined.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-var __param = (undefined && undefined.__param) || function (paramIndex, decorator) {
-    return function (target, key) { decorator(target, key, paramIndex); }
-};
 /**
  * Default map of Rike operations status labels.
  *
@@ -703,7 +708,7 @@ var StatusCollector = (function () {
     StatusCollector.prototype.view = function () {
         var labels = [];
         for (var _i = 0; _i < arguments.length; _i++) {
-            labels[_i - 0] = arguments[_i];
+            labels[_i] = arguments[_i];
         }
         return this.addView.apply(this, ["" + ++this._viewIdSeq].concat(labels));
     };
@@ -757,14 +762,15 @@ var StatusCollector = (function () {
             }
         }
     };
-    StatusCollector = __decorate$1([
-        _angular_core.Injectable(),
-        __param(0, _angular_core.Inject(RikeEventSource)),
-        __param(0, _angular_core.Optional()), 
-        __metadata$1('design:paramtypes', [Array])
-    ], StatusCollector);
     return StatusCollector;
 }());
+StatusCollector.decorators = [
+    { type: _angular_core.Injectable },
+];
+/** @nocollapse */
+StatusCollector.ctorParameters = function () { return [
+    { type: Array, decorators: [{ type: _angular_core.Inject, args: [RikeEventSource,] }, { type: _angular_core.Optional },] },
+]; };
 var StatusViewImpl = (function () {
     function StatusViewImpl(_views, _targetStatuses, _id) {
         this._views = _views;
@@ -810,7 +816,7 @@ var StatusViewImpl = (function () {
     StatusViewImpl.prototype.withLabels = function () {
         var labels = [];
         for (var _i = 0; _i < arguments.length; _i++) {
-            labels[_i - 0] = arguments[_i];
+            labels[_i] = arguments[_i];
         }
         this._combined = undefined;
         (_a = this._labels).unshift.apply(_a, labels);
@@ -827,8 +833,7 @@ var StatusViewImpl = (function () {
             var l = labels_1[_a];
             this.withLabels((_b = {},
                 _b[operation] = l,
-                _b
-            ));
+                _b));
         }
         return this;
         var _b;
@@ -932,11 +937,16 @@ function combineLabels(combined, label) {
     return combined;
 }
 
-var __extends = (undefined && undefined.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (undefined && undefined.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 /**
  * Constructs URL relative to base URL.
  *
@@ -989,27 +999,28 @@ var RikeOptions = (function () {
 var BaseRikeOptions = (function (_super) {
     __extends(BaseRikeOptions, _super);
     function BaseRikeOptions(opts) {
-        _super.call(this);
-        this._defaultProtocol = HTTP_PROTOCOL;
-        this._defaultStatusLabels = [DEFAULT_STATUS_LABELS];
+        var _this = _super.call(this) || this;
+        _this._defaultProtocol = HTTP_PROTOCOL;
+        _this._defaultStatusLabels = [DEFAULT_STATUS_LABELS];
         if (opts) {
-            this._baseUrl = opts.baseUrl;
+            _this._baseUrl = opts.baseUrl;
             if (opts.defaultProtocol) {
-                this._defaultProtocol = opts.defaultProtocol;
+                _this._defaultProtocol = opts.defaultProtocol;
             }
             var defaultStatusLabels = opts.defaultStatusLabels;
             if (defaultStatusLabels) {
                 if (!rxjs_util_isArray.isArray(defaultStatusLabels)) {
-                    this._defaultStatusLabels = [defaultStatusLabels];
+                    _this._defaultStatusLabels = [defaultStatusLabels];
                 }
                 else if (defaultStatusLabels.length) {
-                    this._defaultStatusLabels = defaultStatusLabels;
+                    _this._defaultStatusLabels = defaultStatusLabels;
                 }
                 else {
-                    this._defaultStatusLabels = [DEFAULT_STATUS_LABELS];
+                    _this._defaultStatusLabels = [DEFAULT_STATUS_LABELS];
                 }
             }
         }
+        return _this;
     }
     Object.defineProperty(BaseRikeOptions.prototype, "baseUrl", {
         get: function () {
@@ -1041,23 +1052,16 @@ var BaseRikeOptions = (function (_super) {
  */
 var DEFAULT_RIKE_OPTIONS = new BaseRikeOptions();
 
-var __extends$3 = (undefined && undefined.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-var __decorate$2 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata$2 = (undefined && undefined.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-var __param$1 = (undefined && undefined.__param) || function (paramIndex, decorator) {
-    return function (target, key) { decorator(target, key, paramIndex); }
-};
+var __extends$3 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var REQUEST_METHODS = {
     "GET": _angular_http.RequestMethod.Get,
     "POST": _angular_http.RequestMethod.Post,
@@ -1242,13 +1246,17 @@ var Rike = (function () {
             response.subscribe(function (httpResponse) { return responseObserver.next(httpResponse); }, function (error) { return responseObserver.error(_this.defaultProtocol.handleError(toErrorResponse(error))); }, function () { return responseObserver.complete(); });
         });
     };
-    Rike = __decorate$2([
-        _angular_core.Injectable(),
-        __param$1(2, _angular_core.Optional()), 
-        __metadata$2('design:paramtypes', [_angular_http.Http, _angular_http.RequestOptions, RikeOptions])
-    ], Rike);
     return Rike;
 }());
+Rike.decorators = [
+    { type: _angular_core.Injectable },
+];
+/** @nocollapse */
+Rike.ctorParameters = function () { return [
+    { type: _angular_http.Http, },
+    { type: _angular_http.RequestOptions, },
+    { type: RikeOptions, decorators: [{ type: _angular_core.Optional },] },
+]; };
 function toErrorResponse(error) {
     if (error instanceof _angular_http.Response) {
         return {
@@ -1315,7 +1323,7 @@ var RikeOperation = (function () {
     }
     Object.defineProperty(RikeOperation.prototype, "url", {
         get: function () {
-            return this.options.url;
+            return this.options.url || undefined;
         },
         enumerable: true,
         configurable: true
@@ -1339,13 +1347,14 @@ var RikeOperation = (function () {
 var RikeTargetImpl = (function (_super) {
     __extends$3(RikeTargetImpl, _super);
     function RikeTargetImpl(_rike, _internals, _target, _protocol) {
-        _super.call(this);
-        this._rike = _rike;
-        this._internals = _internals;
-        this._target = _target;
-        this._protocol = _protocol;
-        this._rikeEvents = new _angular_core.EventEmitter();
-        this._uniqueId = _internals.generateUniqueId();
+        var _this = _super.call(this) || this;
+        _this._rike = _rike;
+        _this._internals = _internals;
+        _this._target = _target;
+        _this._protocol = _protocol;
+        _this._rikeEvents = new _angular_core.EventEmitter();
+        _this._uniqueId = _internals.generateUniqueId();
+        return _this;
     }
     Object.defineProperty(RikeTargetImpl.prototype, "rike", {
         get: function () {
@@ -1498,11 +1507,12 @@ var RikeTargetImpl = (function (_super) {
 var RikeOperationImpl = (function (_super) {
     __extends$3(RikeOperationImpl, _super);
     function RikeOperationImpl(_target, _name, _protocol) {
-        _super.call(this);
-        this._target = _target;
-        this._name = _name;
-        this._protocol = _protocol;
-        this._options = _target.internals.defaultHttpOptions.merge();
+        var _this = _super.call(this) || this;
+        _this._target = _target;
+        _this._name = _name;
+        _this._protocol = _protocol;
+        _this._options = _target.internals.defaultHttpOptions.merge();
+        return _this;
     }
     Object.defineProperty(RikeOperationImpl.prototype, "rike", {
         get: function () {
@@ -1680,15 +1690,6 @@ var RikeOperationImpl = (function (_super) {
     return RikeOperationImpl;
 }(RikeOperation));
 
-var __decorate$3 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata$3 = (undefined && undefined.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
 var RikeStatusComponent = (function () {
     function RikeStatusComponent(_collector) {
         this._collector = _collector;
@@ -1815,34 +1816,27 @@ var RikeStatusComponent = (function () {
             }
         }
     };
-    __decorate$3([
-        _angular_core.Input(), 
-        __metadata$3('design:type', Object)
-    ], RikeStatusComponent.prototype, "rikeStatus", null);
-    __decorate$3([
-        _angular_core.Input(), 
-        __metadata$3('design:type', Object)
-    ], RikeStatusComponent.prototype, "rikeStatusLabels", null);
-    __decorate$3([
-        _angular_core.Input(), 
-        __metadata$3('design:type', Function)
-    ], RikeStatusComponent.prototype, "rikeStatusLabelText", null);
-    __decorate$3([
-        _angular_core.Input(), 
-        __metadata$3('design:type', Function)
-    ], RikeStatusComponent.prototype, "rikeStatusLabelClass", null);
-    RikeStatusComponent = __decorate$3([
-        _angular_core.Component({
-            selector: 'rike-status,[rikeStatus],[rikeStatusLabels],[rikeStatusLabelText],[rikeStatusLabelClass]',
-            template: "<span class=\"rike-status-icon\"></span> {{text}}",
-            host: {
-                "[class]": "cssClass",
-            }
-        }), 
-        __metadata$3('design:paramtypes', [StatusCollector])
-    ], RikeStatusComponent);
     return RikeStatusComponent;
 }());
+RikeStatusComponent.decorators = [
+    { type: _angular_core.Component, args: [{
+                selector: 'rike-status,[rikeStatus],[rikeStatusLabels],[rikeStatusLabelText],[rikeStatusLabelClass]',
+                template: "<span class=\"rike-status-icon\"></span> {{text}}",
+                host: {
+                    "[class]": "cssClass",
+                }
+            },] },
+];
+/** @nocollapse */
+RikeStatusComponent.ctorParameters = function () { return [
+    { type: StatusCollector, },
+]; };
+RikeStatusComponent.propDecorators = {
+    'rikeStatus': [{ type: _angular_core.Input },],
+    'rikeStatusLabels': [{ type: _angular_core.Input },],
+    'rikeStatusLabelText': [{ type: _angular_core.Input },],
+    'rikeStatusLabelClass': [{ type: _angular_core.Input },],
+};
 function defaultLabelText(label) {
     if (typeof label === "string") {
         return label;
@@ -1891,7 +1885,8 @@ function processingTypeClass(status) {
 }
 
 function isJsonResponse(httpResponse) {
-    var contentType = httpResponse.headers.get("Content-Type");
+    var headers = httpResponse.headers;
+    var contentType = headers && headers.get("Content-Type");
     if (!contentType) {
         return false;
     }
@@ -2000,18 +1995,6 @@ function notEmptyError(item) {
     return !!item && (!!item.message || !!item.code);
 }
 
-var __decorate$5 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata$5 = (undefined && undefined.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-var __param$3 = (undefined && undefined.__param) || function (paramIndex, decorator) {
-    return function (target, key) { decorator(target, key, paramIndex); }
-};
 /**
  * An error collecting service.
  *
@@ -2147,14 +2130,15 @@ var ErrorCollector = (function () {
             emitter.notify();
         }
     };
-    ErrorCollector = __decorate$5([
-        _angular_core.Injectable(),
-        __param$3(0, _angular_core.Inject(RikeEventSource)),
-        __param$3(0, _angular_core.Optional()), 
-        __metadata$5('design:paramtypes', [Array])
-    ], ErrorCollector);
     return ErrorCollector;
 }());
+ErrorCollector.decorators = [
+    { type: _angular_core.Injectable },
+];
+/** @nocollapse */
+ErrorCollector.ctorParameters = function () { return [
+    { type: Array, decorators: [{ type: _angular_core.Inject, args: [RikeEventSource,] }, { type: _angular_core.Optional },] },
+]; };
 function errorEventMessage(error) {
     if (error.cancel) {
         if (!error.cancelledBy) {
@@ -2288,18 +2272,6 @@ function appendErrorsTo(field, fieldErrors, errors) {
     }
 }
 
-var __decorate$4 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata$4 = (undefined && undefined.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-var __param$2 = (undefined && undefined.__param) || function (paramIndex, decorator) {
-    return function (target, key) { decorator(target, key, paramIndex); }
-};
 var RikeErrorsComponent = (function () {
     function RikeErrorsComponent(_collector) {
         this._collector = _collector;
@@ -2394,69 +2366,27 @@ var RikeErrorsComponent = (function () {
             subscription.unsubscribe();
         }
     };
-    __decorate$4([
-        _angular_core.Input(), 
-        __metadata$4('design:type', Object)
-    ], RikeErrorsComponent.prototype, "rikeErrors", null);
-    __decorate$4([
-        _angular_core.Input(), 
-        __metadata$4('design:type', Object)
-    ], RikeErrorsComponent.prototype, "rikeErrorsOf", null);
-    RikeErrorsComponent = __decorate$4([
-        _angular_core.Component({
-            selector: 'rike-errors,[rikeErrors],[rikeErrorsOf]',
-            template: "\n    <ul class=\"rike-error-list\" *ngIf=\"errors.length\">\n        <li class=\"rike-error\" *ngFor=\"let error of errors\">{{error.message}}</li>\n    </ul>\n    ",
-            host: {
-                "[class.rike-errors]": "true",
-                "[class.rike-no-errors]": "!errors.length"
-            }
-        }),
-        __param$2(0, _angular_core.Optional()), 
-        __metadata$4('design:paramtypes', [ErrorCollector])
-    ], RikeErrorsComponent);
     return RikeErrorsComponent;
 }());
+RikeErrorsComponent.decorators = [
+    { type: _angular_core.Component, args: [{
+                selector: 'rike-errors,[rikeErrors],[rikeErrorsOf]',
+                template: "\n    <ul class=\"rike-error-list\" *ngIf=\"errors.length\">\n        <li class=\"rike-error\" *ngFor=\"let error of errors\">{{error.message}}</li>\n    </ul>\n    ",
+                host: {
+                    "[class.rike-errors]": "true",
+                    "[class.rike-no-errors]": "!errors.length"
+                }
+            },] },
+];
+/** @nocollapse */
+RikeErrorsComponent.ctorParameters = function () { return [
+    { type: ErrorCollector, decorators: [{ type: _angular_core.Optional },] },
+]; };
+RikeErrorsComponent.propDecorators = {
+    'rikeErrors': [{ type: _angular_core.Input },],
+    'rikeErrorsOf': [{ type: _angular_core.Input },],
+};
 
-/**
- * Constructs provider recipe for {{RikeEventSource}}.
- *
- * @param useClass
- * @param useValue
- * @param useExisting
- * @param useFactory
- * @param deps
- *
- * @return new provider recipe.
- */
-function provideEventSource(_a) {
-    var useClass = _a.useClass, useValue = _a.useValue, useExisting = _a.useExisting, useFactory = _a.useFactory, deps = _a.deps;
-    return [
-        StatusCollector,
-        ErrorCollector,
-        {
-            provide: RikeEventSource,
-            multi: true,
-            useClass: useClass,
-            useValue: useValue,
-            useExisting: useExisting,
-            useFactory: useFactory,
-            deps: deps,
-        },
-    ];
-}
-
-var __decorate$6 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata$6 = (undefined && undefined.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-var __param$4 = (undefined && undefined.__param) || function (paramIndex, decorator) {
-    return function (target, key) { decorator(target, key, paramIndex); }
-};
 var RikeDisabledDirective = (function () {
     function RikeDisabledDirective(_rikeDisabledBy) {
         this._rikeDisabledBy = _rikeDisabledBy;
@@ -2486,43 +2416,24 @@ var RikeDisabledDirective = (function () {
         enumerable: true,
         configurable: true
     });
-    __decorate$6([
-        _angular_core.HostBinding("disabled"),
-        _angular_core.HostBinding("class.rike-disabled"), 
-        __metadata$6('design:type', Boolean)
-    ], RikeDisabledDirective.prototype, "disabled", null);
-    __decorate$6([
-        _angular_core.Input(), 
-        __metadata$6('design:type', Object), 
-        __metadata$6('design:paramtypes', [Object])
-    ], RikeDisabledDirective.prototype, "rikeDisabled", null);
-    __decorate$6([
-        _angular_core.Input(), 
-        __metadata$6('design:type', StatusCollector)
-    ], RikeDisabledDirective.prototype, "rikeDisabledBy", null);
-    RikeDisabledDirective = __decorate$6([
-        _angular_core.Directive({
-            selector: '[rikeDisabled],[rikeDisabledBy]',
-            exportAs: 'rikeDisabled',
-        }),
-        __param$4(0, _angular_core.Optional()), 
-        __metadata$6('design:paramtypes', [StatusCollector])
-    ], RikeDisabledDirective);
     return RikeDisabledDirective;
 }());
+RikeDisabledDirective.decorators = [
+    { type: _angular_core.Directive, args: [{
+                selector: '[rikeDisabled],[rikeDisabledBy]',
+                exportAs: 'rikeDisabled',
+            },] },
+];
+/** @nocollapse */
+RikeDisabledDirective.ctorParameters = function () { return [
+    { type: StatusCollector, decorators: [{ type: _angular_core.Optional },] },
+]; };
+RikeDisabledDirective.propDecorators = {
+    'disabled': [{ type: _angular_core.HostBinding, args: ["disabled",] }, { type: _angular_core.HostBinding, args: ["class.rike-disabled",] },],
+    'rikeDisabled': [{ type: _angular_core.Input },],
+    'rikeDisabledBy': [{ type: _angular_core.Input },],
+};
 
-var __decorate$7 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata$7 = (undefined && undefined.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-var __param$5 = (undefined && undefined.__param) || function (paramIndex, decorator) {
-    return function (target, key) { decorator(target, key, paramIndex); }
-};
 var RikeReadonlyDirective = (function () {
     function RikeReadonlyDirective(_rikeReadonlyBy) {
         this._rikeReadonlyBy = _rikeReadonlyBy;
@@ -2552,36 +2463,46 @@ var RikeReadonlyDirective = (function () {
         enumerable: true,
         configurable: true
     });
-    __decorate$7([
-        _angular_core.HostBinding("readonly"),
-        _angular_core.HostBinding("class.rike-readonly"), 
-        __metadata$7('design:type', Boolean)
-    ], RikeReadonlyDirective.prototype, "readonly", null);
-    __decorate$7([
-        _angular_core.Input(), 
-        __metadata$7('design:type', Object), 
-        __metadata$7('design:paramtypes', [Object])
-    ], RikeReadonlyDirective.prototype, "rikeReadonly", null);
-    __decorate$7([
-        _angular_core.Input(), 
-        __metadata$7('design:type', StatusCollector)
-    ], RikeReadonlyDirective.prototype, "rikeReadonlyBy", null);
-    RikeReadonlyDirective = __decorate$7([
-        _angular_core.Directive({
-            selector: '[rikeReadonly],[rikeReadonlyBy]',
-            exportAs: 'rikeReadonly',
-        }),
-        __param$5(0, _angular_core.Optional()), 
-        __metadata$7('design:paramtypes', [StatusCollector])
-    ], RikeReadonlyDirective);
     return RikeReadonlyDirective;
 }());
-
-var __extends$4 = (undefined && undefined.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+RikeReadonlyDirective.decorators = [
+    { type: _angular_core.Directive, args: [{
+                selector: '[rikeReadonly],[rikeReadonlyBy]',
+                exportAs: 'rikeReadonly',
+            },] },
+];
+/** @nocollapse */
+RikeReadonlyDirective.ctorParameters = function () { return [
+    { type: StatusCollector, decorators: [{ type: _angular_core.Optional },] },
+]; };
+RikeReadonlyDirective.propDecorators = {
+    'readonly': [{ type: _angular_core.HostBinding, args: ["readonly",] }, { type: _angular_core.HostBinding, args: ["class.rike-readonly",] },],
+    'rikeReadonly': [{ type: _angular_core.Input },],
+    'rikeReadonlyBy': [{ type: _angular_core.Input },],
 };
+
+/**
+ * Constructs provider recipe for {{RikeEventSource}}.
+ *
+ * @param useClass
+ * @param useValue
+ * @param useExisting
+ * @param useFactory
+ * @param deps
+ *
+ * @return new provider recipe.
+ */
+
+var __extends$4 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 /**
  * Abstract implementation of REST-like resource.
  */
@@ -2644,7 +2565,7 @@ var RikeResource = (function () {
 var LoadableResource = (function (_super) {
     __extends$4(LoadableResource, _super);
     function LoadableResource(rike) {
-        _super.call(this, rike);
+        return _super.call(this, rike) || this;
     }
     Object.defineProperty(LoadableResource.prototype, "rikeTarget", {
         get: function () {
@@ -2716,7 +2637,7 @@ var LoadableResource = (function (_super) {
 var CRUDResource = (function (_super) {
     __extends$4(CRUDResource, _super);
     function CRUDResource(rike) {
-        _super.call(this, rike);
+        return _super.call(this, rike) || this;
     }
     Object.defineProperty(CRUDResource.prototype, "rikeTarget", {
         get: function () {
@@ -2900,21 +2821,20 @@ var CRUDResource = (function (_super) {
      */
     CRUDResource.prototype.objectOptions = function (options, id) {
         return new _angular_http.RequestOptions(options).merge({
-            url: relativeUrl(options.url, encodeURIComponent(id.toString()))
+            url: relativeUrl(options.url || undefined, encodeURIComponent(id.toString()))
         });
     };
     return CRUDResource;
 }(RikeResource));
 
-var __decorate = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (undefined && undefined.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
+/**
+ * Constructs provider recipe for {{Resource}}.
+ *
+ * Also registers the resource as source of Rike operation events.
+ *
+ * @return new provider recipe.
+ */
+
 /**
  * REST-like services module.
  */
@@ -2953,33 +2873,42 @@ var RikeModule = (function () {
             ]
         };
     };
-    RikeModule = __decorate([
-        _angular_core.NgModule({
-            imports: [
-                _angular_common.CommonModule,
-                _angular_http.HttpModule,
-            ],
-            providers: [
-                Rike,
-                provideEventSource({ useExisting: Rike }),
-            ],
-            declarations: [
-                RikeStatusComponent,
-                RikeErrorsComponent,
-                RikeDisabledDirective,
-                RikeReadonlyDirective,
-            ],
-            exports: [
-                RikeStatusComponent,
-                RikeErrorsComponent,
-                RikeDisabledDirective,
-                RikeReadonlyDirective,
-            ],
-        }), 
-        __metadata('design:paramtypes', [])
-    ], RikeModule);
     return RikeModule;
 }());
+RikeModule.decorators = [
+    { type: _angular_core.NgModule, args: [{
+                imports: [
+                    _angular_common.CommonModule,
+                    _angular_http.HttpModule,
+                ],
+                providers: [
+                    Rike,
+                    [
+                        StatusCollector,
+                        ErrorCollector,
+                        {
+                            provide: RikeEventSource,
+                            multi: true,
+                            useExisting: Rike,
+                        },
+                    ],
+                ],
+                declarations: [
+                    RikeStatusComponent,
+                    RikeErrorsComponent,
+                    RikeDisabledDirective,
+                    RikeReadonlyDirective,
+                ],
+                exports: [
+                    RikeStatusComponent,
+                    RikeErrorsComponent,
+                    RikeDisabledDirective,
+                    RikeReadonlyDirective,
+                ],
+            },] },
+];
+/** @nocollapse */
+RikeModule.ctorParameters = function () { return []; };
 
 describe("relativeUrl", function () {
     it("works without base URL", function () {
@@ -3008,15 +2937,20 @@ describe("relativeUrl", function () {
     });
 });
 
-var __extends$5 = (undefined && undefined.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends$5 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var TestProtocol = (function (_super) {
     __extends$5(TestProtocol, _super);
     function TestProtocol() {
-        _super.call(this);
+        return _super.call(this) || this;
     }
     TestProtocol.prototype.prepareRequest = function (options) {
         return new _angular_http.RequestOptions(options).merge({ url: "/request", search: "prepared=true" });

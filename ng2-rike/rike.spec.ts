@@ -1,20 +1,20 @@
 import {Observable} from "rxjs/Rx";
 import {
-    Http,
+    BaseRequestOptions,
     ConnectionBackend,
-    Response,
-    ResponseOptions,
-    RequestOptionsArgs,
-    RequestOptions,
+    Http,
     RequestMethod,
-    BaseRequestOptions
+    RequestOptions,
+    RequestOptionsArgs,
+    Response,
+    ResponseOptions
 } from "@angular/http";
-import {inject, TestBed, fakeAsync, tick} from "@angular/core/testing";
+import {fakeAsync, inject, TestBed, tick} from "@angular/core/testing";
+import {BrowserDynamicTestingModule, platformBrowserDynamicTesting} from "@angular/platform-browser-dynamic/testing";
 import {MockBackend, MockConnection} from "@angular/http/testing";
-import {platformBrowserDynamicTesting, BrowserDynamicTestingModule} from "@angular/platform-browser-dynamic/testing";
-import {Rike, requestMethod} from "./rike";
-import {RikeOptions, BaseRikeOptions} from "./options";
-import {HTTP_PROTOCOL, jsonProtocol, Protocol, ErrorResponse} from "./protocol";
+import {requestMethod, Rike} from "./rike";
+import {BaseRikeOptions, RikeOptions} from "./options";
+import {ErrorResponse, HTTP_PROTOCOL, jsonProtocol, Protocol} from "./protocol";
 
 var testingSetupComplete = false;
 

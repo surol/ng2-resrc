@@ -1,18 +1,6 @@
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-var __param = (this && this.__param) || function (paramIndex, decorator) {
-    return function (target, key) { decorator(target, key, paramIndex); }
-};
 import { Component, Input, Optional } from "@angular/core";
 import { ErrorCollector } from "./error-collector";
-export var RikeErrorsComponent = (function () {
+var RikeErrorsComponent = (function () {
     function RikeErrorsComponent(_collector) {
         this._collector = _collector;
         this._errors = [];
@@ -106,26 +94,25 @@ export var RikeErrorsComponent = (function () {
             subscription.unsubscribe();
         }
     };
-    __decorate([
-        Input(), 
-        __metadata('design:type', Object)
-    ], RikeErrorsComponent.prototype, "rikeErrors", null);
-    __decorate([
-        Input(), 
-        __metadata('design:type', Object)
-    ], RikeErrorsComponent.prototype, "rikeErrorsOf", null);
-    RikeErrorsComponent = __decorate([
-        Component({
-            selector: 'rike-errors,[rikeErrors],[rikeErrorsOf]',
-            template: "\n    <ul class=\"rike-error-list\" *ngIf=\"errors.length\">\n        <li class=\"rike-error\" *ngFor=\"let error of errors\">{{error.message}}</li>\n    </ul>\n    ",
-            host: {
-                "[class.rike-errors]": "true",
-                "[class.rike-no-errors]": "!errors.length"
-            }
-        }),
-        __param(0, Optional()), 
-        __metadata('design:paramtypes', [ErrorCollector])
-    ], RikeErrorsComponent);
     return RikeErrorsComponent;
 }());
+export { RikeErrorsComponent };
+RikeErrorsComponent.decorators = [
+    { type: Component, args: [{
+                selector: 'rike-errors,[rikeErrors],[rikeErrorsOf]',
+                template: "\n    <ul class=\"rike-error-list\" *ngIf=\"errors.length\">\n        <li class=\"rike-error\" *ngFor=\"let error of errors\">{{error.message}}</li>\n    </ul>\n    ",
+                host: {
+                    "[class.rike-errors]": "true",
+                    "[class.rike-no-errors]": "!errors.length"
+                }
+            },] },
+];
+/** @nocollapse */
+RikeErrorsComponent.ctorParameters = function () { return [
+    { type: ErrorCollector, decorators: [{ type: Optional },] },
+]; };
+RikeErrorsComponent.propDecorators = {
+    'rikeErrors': [{ type: Input },],
+    'rikeErrorsOf': [{ type: Input },],
+};
 //# sourceMappingURL=errors.component.js.map

@@ -2,3 +2,10 @@
 node_modules
 *.iml
 *.log
+*.d.ts
+*.js.map
+*.metadata.json
+/index.js
+/src/**/*.js
+/bundles
+/compiled

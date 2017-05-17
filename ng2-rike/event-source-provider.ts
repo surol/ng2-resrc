@@ -1,4 +1,4 @@
-import {Type} from "@angular/core";
+import {Provider, Type} from "@angular/core";
 import {RikeEventSource} from "./event";
 import {StatusCollector} from "./status-collector";
 import {ErrorCollector} from "./error-collector";
@@ -21,7 +21,7 @@ export function provideEventSource({useClass, useValue, useExisting, useFactory,
     useFactory?: Function;
     deps?: Object[];
     multi?: boolean;
-}): any[] {
+}): Provider {
     return [
         StatusCollector,
         ErrorCollector,

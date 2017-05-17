@@ -1,4 +1,4 @@
-import { Type } from "@angular/core";
+import { Provider, Type } from "@angular/core";
 /**
  * Constructs provider recipe for {{Resource}}.
  *
@@ -14,4 +14,4 @@ export declare function provideResource({provide, useClass, useValue, useExistin
     useFactory?: Function;
     deps?: Object[];
     multi?: boolean;
-}): any;
+}): Provider;

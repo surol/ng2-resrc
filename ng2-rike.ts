@@ -1,13 +1,16 @@
 import {NgModule} from "@angular/core";
 import {HttpModule} from "@angular/http";
 import {CommonModule} from "@angular/common";
-import {RikeOptions, BaseRikeOptions, RikeOptionsArgs} from "./ng2-rike/options";
+import {BaseRikeOptions, RikeOptions, RikeOptionsArgs} from "./ng2-rike/options";
 import {Rike} from "./ng2-rike/rike";
 import {RikeStatusComponent} from "./ng2-rike/status.component";
 import {RikeErrorsComponent} from "./ng2-rike/errors.component";
 import {provideEventSource} from "./ng2-rike/event-source-provider";
 import {RikeDisabledDirective} from "./ng2-rike/disabled.directive";
 import {RikeReadonlyDirective} from "./ng2-rike/readonly.directive";
+import {RikeEventSource} from "./ng2-rike/event";
+import {StatusCollector} from "./ng2-rike/status-collector";
+import {ErrorCollector} from "./ng2-rike/error-collector";
 
 export * from "./ng2-rike/disabled.directive";
 export * from "./ng2-rike/error-collector";
@@ -34,7 +37,15 @@ export * from "./ng2-rike/status.component";
     ],
     providers: [
         Rike,
-        provideEventSource({useExisting: Rike}),
+        [
+            StatusCollector,
+            ErrorCollector,
+            {
+                provide: RikeEventSource,
+                multi: true,
+                useExisting: Rike,
+            },
+        ],
     ],
     declarations: [
         RikeStatusComponent,

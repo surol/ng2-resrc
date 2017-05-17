@@ -1,5 +1,6 @@
 function isJsonResponse(httpResponse) {
-    var contentType = httpResponse.headers.get("Content-Type");
+    var headers = httpResponse.headers;
+    var contentType = headers && headers.get("Content-Type");
     if (!contentType) {
         return false;
     }

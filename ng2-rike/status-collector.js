@@ -1,15 +1,3 @@
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-var __param = (this && this.__param) || function (paramIndex, decorator) {
-    return function (target, key) { decorator(target, key, paramIndex); }
-};
 import { Injectable, Optional, Inject } from "@angular/core";
 import { isArray } from "rxjs/util/isArray";
 import { RikeEventSource } from "./event";
@@ -100,7 +88,7 @@ export var DEFAULT_STATUS_LABELS = {
  * It is possible to read statuses and string labels from the service itself. Alternatively a view can be created
  * to read labels of arbitrary type.
  */
-export var StatusCollector = (function () {
+var StatusCollector = (function () {
     function StatusCollector(eventSources) {
         this._views = {};
         this._targetStatuses = {};
@@ -187,7 +175,7 @@ export var StatusCollector = (function () {
     StatusCollector.prototype.view = function () {
         var labels = [];
         for (var _i = 0; _i < arguments.length; _i++) {
-            labels[_i - 0] = arguments[_i];
+            labels[_i] = arguments[_i];
         }
         return this.addView.apply(this, ["" + ++this._viewIdSeq].concat(labels));
     };
@@ -241,14 +229,16 @@ export var StatusCollector = (function () {
             }
         }
     };
-    StatusCollector = __decorate([
-        Injectable(),
-        __param(0, Inject(RikeEventSource)),
-        __param(0, Optional()), 
-        __metadata('design:paramtypes', [Array])
-    ], StatusCollector);
     return StatusCollector;
 }());
+export { StatusCollector };
+StatusCollector.decorators = [
+    { type: Injectable },
+];
+/** @nocollapse */
+StatusCollector.ctorParameters = function () { return [
+    { type: Array, decorators: [{ type: Inject, args: [RikeEventSource,] }, { type: Optional },] },
+]; };
 var StatusViewImpl = (function () {
     function StatusViewImpl(_views, _targetStatuses, _id) {
         this._views = _views;
@@ -294,7 +284,7 @@ var StatusViewImpl = (function () {
     StatusViewImpl.prototype.withLabels = function () {
         var labels = [];
         for (var _i = 0; _i < arguments.length; _i++) {
-            labels[_i - 0] = arguments[_i];
+            labels[_i] = arguments[_i];
         }
         this._combined = undefined;
         (_a = this._labels).unshift.apply(_a, labels);
@@ -311,8 +301,7 @@ var StatusViewImpl = (function () {
             var l = labels_1[_a];
             this.withLabels((_b = {},
                 _b[operation] = l,
-                _b
-            ));
+                _b));
         }
         return this;
         var _b;

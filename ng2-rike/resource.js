@@ -1,8 +1,13 @@
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 import { RequestOptions } from "@angular/http";
 import { Observable } from "rxjs/Rx";
 import { JSON_PROTOCOL, jsonProtocol } from "./protocol";
@@ -15,15 +20,16 @@ import { relativeUrl } from "./options";
  *
  * This class can be used as a token for resources. It can be registered as Angular service with {{provideResource}}.
  */
-export var Resource = (function () {
+var Resource = (function () {
     function Resource() {
     }
     return Resource;
 }());
+export { Resource };
 /**
  * Abstract implementation of REST-like resource.
  */
-export var RikeResource = (function () {
+var RikeResource = (function () {
     function RikeResource(_rike) {
         this._rike = _rike;
     }
@@ -71,6 +77,7 @@ export var RikeResource = (function () {
     };
     return RikeResource;
 }());
+export { RikeResource };
 /**
  * Loadable resource.
  *
@@ -79,10 +86,10 @@ export var RikeResource = (function () {
  *
  * @param <T> loaded data type.
  */
-export var LoadableResource = (function (_super) {
+var LoadableResource = (function (_super) {
     __extends(LoadableResource, _super);
     function LoadableResource(rike) {
-        _super.call(this, rike);
+        return _super.call(this, rike) || this;
     }
     Object.defineProperty(LoadableResource.prototype, "rikeTarget", {
         get: function () {
@@ -145,16 +152,17 @@ export var LoadableResource = (function (_super) {
     };
     return LoadableResource;
 }(RikeResource));
+export { LoadableResource };
 /**
  * CRUD (Create, Load, Update, Delete) resource.
  *
  * It is able to manipulate with server objects. By default it operates over JSON protocol.
  * Override `createRikeTarget()` method to change it.
  */
-export var CRUDResource = (function (_super) {
+var CRUDResource = (function (_super) {
     __extends(CRUDResource, _super);
     function CRUDResource(rike) {
-        _super.call(this, rike);
+        return _super.call(this, rike) || this;
     }
     Object.defineProperty(CRUDResource.prototype, "rikeTarget", {
         get: function () {
@@ -338,9 +346,10 @@ export var CRUDResource = (function (_super) {
      */
     CRUDResource.prototype.objectOptions = function (options, id) {
         return new RequestOptions(options).merge({
-            url: relativeUrl(options.url, encodeURIComponent(id.toString()))
+            url: relativeUrl(options.url || undefined, encodeURIComponent(id.toString()))
         });
     };
     return CRUDResource;
 }(RikeResource));
+export { CRUDResource };
 //# sourceMappingURL=resource.js.map

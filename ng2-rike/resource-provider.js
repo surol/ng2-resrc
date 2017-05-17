@@ -1,4 +1,4 @@
-import { OpaqueToken } from "@angular/core";
+import { InjectionToken } from "@angular/core";
 import { provideEventSource } from "./event-source-provider";
 var resourceIdSeq = 0;
 /**
@@ -10,7 +10,7 @@ var resourceIdSeq = 0;
  */
 export function provideResource(_a) {
     var provide = _a.provide, useClass = _a.useClass, useValue = _a.useValue, useExisting = _a.useExisting, useFactory = _a.useFactory, deps = _a.deps;
-    var token = provide || new OpaqueToken("resource" + ++resourceIdSeq);
+    var token = provide || new InjectionToken("resource" + ++resourceIdSeq);
     return [
         {
             provide: token,

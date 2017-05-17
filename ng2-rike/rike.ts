@@ -431,7 +431,7 @@ export abstract class RikeOperation<IN, OUT> {
     abstract withOptions(options?: RequestOptionsArgs): this;
 
     get url(): string | undefined {
-        return this.options.url;
+        return this.options.url || undefined;
     }
 
     withUrl(url: string): this {

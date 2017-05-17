@@ -1,9 +1,9 @@
-import { Http, ConnectionBackend, Response, ResponseOptions, RequestOptions, RequestMethod, BaseRequestOptions } from "@angular/http";
-import { inject, TestBed, fakeAsync, tick } from "@angular/core/testing";
+import { BaseRequestOptions, ConnectionBackend, Http, RequestMethod, RequestOptions, Response, ResponseOptions } from "@angular/http";
+import { fakeAsync, inject, TestBed, tick } from "@angular/core/testing";
+import { BrowserDynamicTestingModule, platformBrowserDynamicTesting } from "@angular/platform-browser-dynamic/testing";
 import { MockBackend } from "@angular/http/testing";
-import { platformBrowserDynamicTesting, BrowserDynamicTestingModule } from "@angular/platform-browser-dynamic/testing";
-import { Rike, requestMethod } from "./rike";
-import { RikeOptions, BaseRikeOptions } from "./options";
+import { requestMethod, Rike } from "./rike";
+import { BaseRikeOptions, RikeOptions } from "./options";
 import { HTTP_PROTOCOL, jsonProtocol } from "./protocol";
 var testingSetupComplete = false;
 export function setupTesting() {

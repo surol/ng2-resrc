@@ -1,8 +1,13 @@
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 /**
  * REST-like resource access event emitter.
  *
@@ -10,17 +15,18 @@ var __extends = (this && this.__extends) || function (d, b) {
  *
  * Use [provideEventSource] function to register event sources.
  */
-export var RikeEventSource = (function () {
+var RikeEventSource = (function () {
     function RikeEventSource() {
     }
     return RikeEventSource;
 }());
+export { RikeEventSource };
 /**
  * Basic REST-like resource access event.
  *
  * Such events are emitted by [Rike event sources][RikeEventsSource].
  */
-export var RikeEvent = (function () {
+var RikeEvent = (function () {
     function RikeEvent() {
     }
     Object.defineProperty(RikeEvent.prototype, "target", {
@@ -47,14 +53,16 @@ export var RikeEvent = (function () {
     });
     return RikeEvent;
 }());
+export { RikeEvent };
 /**
  * An event emitted when operation on a REST-like resource is started.
  */
-export var RikeOperationEvent = (function (_super) {
+var RikeOperationEvent = (function (_super) {
     __extends(RikeOperationEvent, _super);
     function RikeOperationEvent(_operation) {
-        _super.call(this);
-        this._operation = _operation;
+        var _this = _super.call(this) || this;
+        _this._operation = _operation;
+        return _this;
     }
     Object.defineProperty(RikeOperationEvent.prototype, "operation", {
         get: function () {
@@ -100,15 +108,17 @@ export var RikeOperationEvent = (function (_super) {
     });
     return RikeOperationEvent;
 }(RikeEvent));
+export { RikeOperationEvent };
 /**
  * An event emitted when operation on a REST-like resource is successfully completed.
  */
-export var RikeSuccessEvent = (function (_super) {
+var RikeSuccessEvent = (function (_super) {
     __extends(RikeSuccessEvent, _super);
     function RikeSuccessEvent(_operation, _result) {
-        _super.call(this);
-        this._operation = _operation;
-        this._result = _result;
+        var _this = _super.call(this) || this;
+        _this._operation = _operation;
+        _this._result = _result;
+        return _this;
     }
     Object.defineProperty(RikeSuccessEvent.prototype, "operation", {
         get: function () {
@@ -154,17 +164,19 @@ export var RikeSuccessEvent = (function (_super) {
     });
     return RikeSuccessEvent;
 }(RikeEvent));
+export { RikeSuccessEvent };
 /**
  * An event emitted when operation on a REST-like resource is failed.
  *
  * An object of this type is also reported as an error when some internal exception occurs.
  */
-export var RikeErrorEvent = (function (_super) {
+var RikeErrorEvent = (function (_super) {
     __extends(RikeErrorEvent, _super);
     function RikeErrorEvent(_operation, _error) {
-        _super.call(this);
-        this._operation = _operation;
-        this._error = _error;
+        var _this = _super.call(this) || this;
+        _this._operation = _operation;
+        _this._error = _error;
+        return _this;
     }
     Object.defineProperty(RikeErrorEvent.prototype, "operation", {
         get: function () {
@@ -210,16 +222,18 @@ export var RikeErrorEvent = (function (_super) {
     });
     return RikeErrorEvent;
 }(RikeEvent));
+export { RikeErrorEvent };
 /**
  * An event emitted when operation on a REST-like resource caused an exception.
  *
  * An object of this type is reported as an error.
  */
-export var RikeExceptionEvent = (function (_super) {
+var RikeExceptionEvent = (function (_super) {
     __extends(RikeExceptionEvent, _super);
     function RikeExceptionEvent(operation, error, _errorResponse) {
-        _super.call(this, operation, error);
-        this._errorResponse = _errorResponse;
+        var _this = _super.call(this, operation, error) || this;
+        _this._errorResponse = _errorResponse;
+        return _this;
     }
     Object.defineProperty(RikeExceptionEvent.prototype, "errorResponse", {
         get: function () {
@@ -230,14 +244,16 @@ export var RikeExceptionEvent = (function (_super) {
     });
     return RikeExceptionEvent;
 }(RikeErrorEvent));
+export { RikeExceptionEvent };
 /**
  * An event emitted when operation on a REST-like resource returned error.
  */
-export var RikeErrorResponseEvent = (function (_super) {
+var RikeErrorResponseEvent = (function (_super) {
     __extends(RikeErrorResponseEvent, _super);
     function RikeErrorResponseEvent(operation, _errorResponse) {
-        _super.call(this, operation, _errorResponse.error || _errorResponse);
-        this._errorResponse = _errorResponse;
+        var _this = _super.call(this, operation, _errorResponse.error || _errorResponse) || this;
+        _this._errorResponse = _errorResponse;
+        return _this;
     }
     Object.defineProperty(RikeErrorResponseEvent.prototype, "errorResponse", {
         get: function () {
@@ -248,14 +264,16 @@ export var RikeErrorResponseEvent = (function (_super) {
     });
     return RikeErrorResponseEvent;
 }(RikeErrorEvent));
+export { RikeErrorResponseEvent };
 /**
  * An event emitted when operation on a REST-like resource is cancelled.
  */
-export var RikeCancelEvent = (function (_super) {
+var RikeCancelEvent = (function (_super) {
     __extends(RikeCancelEvent, _super);
     function RikeCancelEvent(operation, _cancelledBy) {
-        _super.call(this, operation, _cancelledBy || "cancel");
-        this._cancelledBy = _cancelledBy;
+        var _this = _super.call(this, operation, _cancelledBy || "cancel") || this;
+        _this._cancelledBy = _cancelledBy;
+        return _this;
     }
     Object.defineProperty(RikeCancelEvent.prototype, "error", {
         get: function () {
@@ -280,4 +298,5 @@ export var RikeCancelEvent = (function (_super) {
     });
     return RikeCancelEvent;
 }(RikeErrorEvent));
+export { RikeCancelEvent };
 //# sourceMappingURL=event.js.map
