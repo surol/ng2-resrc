@@ -1,8 +1,10 @@
+import {EventEmitter} from "@angular/core";
 import {RequestOptions, RequestOptionsArgs} from "@angular/http";
 import {Observable, Observer} from "rxjs/Rx";
 import {Protocol, JSON_PROTOCOL, jsonProtocol} from "./protocol";
 import {relativeUrl} from "./options";
 import {RikeTarget, Rike} from "./rike";
+import {RikeEvent, RikeEventSource} from "./event";
 
 /**
  * An interface of REST-like resources.
@@ -12,7 +14,7 @@ import {RikeTarget, Rike} from "./rike";
  *
  * This class can be used as a token for resources. It can be registered as Angular service with {{provideResource}}.
  */
-export abstract class Resource {
+export abstract class Resource implements RikeEventSource {
 
     /**
      * Rike operations target for this resource.
@@ -21,16 +23,21 @@ export abstract class Resource {
      */
     abstract readonly rikeTarget: RikeTarget<any, any>;
 
+    get rikeEvents(): EventEmitter<RikeEvent> {
+        return this.rikeTarget.rikeEvents;
+    }
+
 }
 
 /**
  * Abstract implementation of REST-like resource.
  */
-export abstract class RikeResource implements Resource {
+export abstract class RikeResource extends Resource {
 
     private _rikeTarget?: RikeTarget<any, any>;
 
     constructor(private _rike: Rike) {
+        super();
     }
 
     /**

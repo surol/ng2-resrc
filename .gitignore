@@ -5,7 +5,7 @@ node_modules
 *.d.ts
 *.js.map
 *.metadata.json
-/index.js
-/src/**/*.js
+/ng2-rike.js
+/ng2-rike/**/*.js
 /bundles
 /compiled

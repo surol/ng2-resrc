@@ -1,5 +1,4 @@
 import {InjectionToken, Provider, Type} from "@angular/core";
-import {Resource} from "./resource";
 import {provideEventSource} from "./event-source-provider";
 
 var resourceIdSeq = 0;
@@ -33,8 +32,7 @@ export function provideResource({provide, useClass, useValue, useExisting, useFa
             deps,
         },
         provideEventSource({
-            useFactory: (resource: Resource) => resource.rikeTarget,
-            deps: [token],
+            useExisting: token,
         })
     ];
 }
