@@ -1,9 +1,8 @@
-import {EventEmitter} from "@angular/core";
 import {RequestOptions, RequestOptionsArgs} from "@angular/http";
 import {Observable, Observer} from "rxjs/Rx";
-import {Protocol, JSON_PROTOCOL, jsonProtocol} from "./protocol";
+import {JSON_PROTOCOL, jsonProtocol, Protocol} from "./protocol";
 import {relativeUrl} from "./options";
-import {RikeTarget, Rike} from "./rike";
+import {Rike, RikeTarget} from "./rike";
 import {RikeEvent, RikeEventSource} from "./event";
 
 /**
@@ -23,7 +22,7 @@ export abstract class Resource implements RikeEventSource {
      */
     abstract readonly rikeTarget: RikeTarget<any, any>;
 
-    get rikeEvents(): EventEmitter<RikeEvent> {
+    get rikeEvents(): Observable<RikeEvent> {
         return this.rikeTarget.rikeEvents;
     }
 
@@ -127,7 +126,8 @@ export abstract class LoadableResource<T> extends RikeResource {
         }
 
         return new Observable<T>((observer: Observer<T>) => {
-            this.rikeTarget
+
+            const subscription = this.rikeTarget
                 .operation("load")
                 .get()
                 .subscribe(
@@ -137,6 +137,8 @@ export abstract class LoadableResource<T> extends RikeResource {
                     },
                     error => observer.error(error),
                     () => observer.complete());
+
+            return () => subscription.unsubscribe();
         });
     }
 

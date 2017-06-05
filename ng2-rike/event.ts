@@ -1,5 +1,5 @@
-import {EventEmitter} from "@angular/core";
-import {RikeTarget, RikeOperation} from "./rike";
+import {Observable} from "rxjs/Observable";
+import {RikeOperation, RikeTarget} from "./rike";
 import {ErrorResponse} from "./protocol";
 
 /**
@@ -14,7 +14,7 @@ export abstract class RikeEventSource {
     /**
      * Rike events emitter.
      */
-    abstract readonly rikeEvents: EventEmitter<RikeEvent>;
+    abstract readonly rikeEvents: Observable<RikeEvent>;
 
 }
 

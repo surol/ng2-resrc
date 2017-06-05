@@ -9,6 +9,10 @@
 * Enable ahead-of-time compilation.
 * Add Yarn support.
 
+### Features
+
+* Use RxJS `Observable` in the API instead of `EventEmitter`. 
+
 
 # 0.2.6 (2016-12-01)
 
