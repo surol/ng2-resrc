@@ -1,7 +1,9 @@
-import {EventEmitter, Injectable, Optional, Inject} from "@angular/core";
+import {Inject, Injectable, Optional} from "@angular/core";
+import {Observable} from "rxjs/Observable";
 import {isArray} from "rxjs/util/isArray";
 import {RikeTarget} from "./rike";
 import {RikeEvent, RikeEventSource} from "./event";
+import {Subscription} from "rxjs/Subscription";
 
 /**
  * Rike operation status labels.
@@ -219,8 +221,8 @@ export class StatusCollector {
      *
      * @param events Rike events emitter to subscribe on.
      */
-    subscribeOn(events: EventEmitter<RikeEvent>) {
-        events.subscribe((event: RikeEvent) => this.applyEvent(event));
+    subscribeOn(events: Observable<RikeEvent>): Subscription {
+        return events.subscribe((event: RikeEvent) => this.applyEvent(event));
     }
 
     /**

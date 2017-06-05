@@ -1,27 +1,20 @@
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-var __param = (this && this.__param) || function (paramIndex, decorator) {
-    return function (target, key) { decorator(target, key, paramIndex); }
-};
-import { Injectable, Optional, EventEmitter } from "@angular/core";
-import { Response, Http, RequestMethod, RequestOptions, ResponseOptions, ResponseType } from "@angular/http";
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+import { Injectable, Optional } from "@angular/core";
+import { Http, RequestMethod, RequestOptions, Response, ResponseOptions, ResponseType } from "@angular/http";
 import { Observable } from "rxjs/Rx";
-import { RikeSuccessEvent, RikeOperationEvent, RikeCancelEvent, RikeErrorResponseEvent } from "./event";
-import { RikeOptions, DEFAULT_RIKE_OPTIONS, relativeUrl } from "./options";
+import { Subject } from "rxjs/Subject";
+import { RikeCancelEvent, RikeErrorResponseEvent, RikeExceptionEvent, RikeOperationEvent, RikeSuccessEvent } from "./event";
+import { DEFAULT_RIKE_OPTIONS, relativeUrl, RikeOptions } from "./options";
 import { HTTP_PROTOCOL, jsonProtocol } from "./protocol";
-import { RikeExceptionEvent } from "./event";
 var REQUEST_METHODS = {
     "GET": RequestMethod.Get,
     "POST": RequestMethod.Post,
@@ -50,11 +43,11 @@ export function requestMethod(method) {
  *
  * It can also be used to perform operations on particular targets.
  */
-export var Rike = (function () {
+var Rike = (function () {
     function Rike(_http, defaultHttpOptions, _options) {
         var _this = this;
         this._http = _http;
-        this._rikeEvents = new EventEmitter();
+        this._rikeEvents = new Subject();
         this._uniqueIdSeq = 0;
         this._options = _options || DEFAULT_RIKE_OPTIONS;
         this._internals = {
@@ -117,7 +110,7 @@ export var Rike = (function () {
         /**
          * All REST-like resource operation events emitter.
          *
-         * @returns {EventEmitter<RikeEvent>}
+         * @returns {Observable<RikeEvent>}
          */
         get: function () {
             return this._rikeEvents;
@@ -150,7 +143,7 @@ export var Rike = (function () {
     Rike.prototype.target = function (target, protocol) {
         var _this = this;
         var rikeTarget = new RikeTargetImpl(this, this._internals, target, protocol ? protocol.prior().apply(this.defaultProtocol) : this.defaultProtocol);
-        rikeTarget.rikeEvents.subscribe(function (event) { return _this._rikeEvents.emit(event); }, function (error) { return _this._rikeEvents.error(error); }, function () { return _this._rikeEvents.complete(); });
+        rikeTarget.rikeEvents.subscribe(function (event) { return _this._rikeEvents.next(event); }, function (error) { return _this._rikeEvents.error(error); }, function () { return _this._rikeEvents.complete(); });
         return rikeTarget;
     };
     /**
@@ -206,13 +199,18 @@ export var Rike = (function () {
             response.subscribe(function (httpResponse) { return responseObserver.next(httpResponse); }, function (error) { return responseObserver.error(_this.defaultProtocol.handleError(toErrorResponse(error))); }, function () { return responseObserver.complete(); });
         });
     };
-    Rike = __decorate([
-        Injectable(),
-        __param(2, Optional()), 
-        __metadata('design:paramtypes', [Http, RequestOptions, RikeOptions])
-    ], Rike);
     return Rike;
 }());
+export { Rike };
+Rike.decorators = [
+    { type: Injectable },
+];
+/** @nocollapse */
+Rike.ctorParameters = function () { return [
+    { type: Http, },
+    { type: RequestOptions, },
+    { type: RikeOptions, decorators: [{ type: Optional },] },
+]; };
 function toErrorResponse(error) {
     if (error instanceof Response) {
         return {
@@ -245,7 +243,7 @@ function syntheticResponse(error) {
  * `IN` is a request type this target's operations accept by default.
  * `OUT` is a response type this target's operations return by default.
  */
-export var RikeTarget = (function () {
+var RikeTarget = (function () {
     function RikeTarget() {
     }
     /**
@@ -262,6 +260,7 @@ export var RikeTarget = (function () {
     };
     return RikeTarget;
 }());
+export { RikeTarget };
 //noinspection ReservedWordAsName
 /**
  * REST-like resource operation.
@@ -274,12 +273,12 @@ export var RikeTarget = (function () {
  * `IN` is a type of requests this operation accepts.
  * `OUT` is a type of responses this operation produces.
  */
-export var RikeOperation = (function () {
+var RikeOperation = (function () {
     function RikeOperation() {
     }
     Object.defineProperty(RikeOperation.prototype, "url", {
         get: function () {
-            return this.options.url;
+            return this.options.url || undefined;
         },
         enumerable: true,
         configurable: true
@@ -300,16 +299,18 @@ export var RikeOperation = (function () {
     };
     return RikeOperation;
 }());
+export { RikeOperation };
 var RikeTargetImpl = (function (_super) {
     __extends(RikeTargetImpl, _super);
     function RikeTargetImpl(_rike, _internals, _target, _protocol) {
-        _super.call(this);
-        this._rike = _rike;
-        this._internals = _internals;
-        this._target = _target;
-        this._protocol = _protocol;
-        this._rikeEvents = new EventEmitter();
-        this._uniqueId = _internals.generateUniqueId();
+        var _this = _super.call(this) || this;
+        _this._rike = _rike;
+        _this._internals = _internals;
+        _this._target = _target;
+        _this._protocol = _protocol;
+        _this._rikeEvents = new Subject();
+        _this._uniqueId = _internals.generateUniqueId();
+        return _this;
     }
     Object.defineProperty(RikeTargetImpl.prototype, "rike", {
         get: function () {
@@ -384,7 +385,7 @@ var RikeTargetImpl = (function (_super) {
                 try {
                     var cancel = new RikeCancelEvent(this._operation.operation, cause);
                     this._observer.error(cancel);
-                    this._rikeEvents.emit(cancel);
+                    this._rikeEvents.next(cancel);
                 }
                 finally {
                     this._operation = undefined;
@@ -411,7 +412,7 @@ var RikeTargetImpl = (function (_super) {
     RikeTargetImpl.prototype.startOperation = function (operation) {
         var event = new RikeOperationEvent(operation);
         this._cancel(event);
-        this._rikeEvents.emit(event);
+        this._rikeEvents.next(event);
         this._operation = event;
     };
     RikeTargetImpl.prototype.wrapResponse = function (operation, response) {
@@ -433,13 +434,13 @@ var RikeTargetImpl = (function (_super) {
             _this._subscr = response.subscribe(function (httpResponse) {
                 var response = operation.protocol.readResponse(httpResponse);
                 responseObserver.next(response);
-                _this._rikeEvents.emit(new RikeSuccessEvent(operation, response));
+                _this._rikeEvents.next(new RikeSuccessEvent(operation, response));
             }, function (error) {
                 var errorResponse = toErrorResponse(error);
                 try {
                     errorResponse = operation.protocol.handleError(errorResponse);
                     responseObserver.error(errorResponse);
-                    _this._rikeEvents.emit(new RikeErrorResponseEvent(operation, errorResponse));
+                    _this._rikeEvents.next(new RikeErrorResponseEvent(operation, errorResponse));
                 }
                 finally {
                     cleanup();
@@ -462,11 +463,12 @@ var RikeTargetImpl = (function (_super) {
 var RikeOperationImpl = (function (_super) {
     __extends(RikeOperationImpl, _super);
     function RikeOperationImpl(_target, _name, _protocol) {
-        _super.call(this);
-        this._target = _target;
-        this._name = _name;
-        this._protocol = _protocol;
-        this._options = _target.internals.defaultHttpOptions.merge();
+        var _this = _super.call(this) || this;
+        _this._target = _target;
+        _this._name = _name;
+        _this._protocol = _protocol;
+        _this._options = _target.internals.defaultHttpOptions.merge();
+        return _this;
     }
     Object.defineProperty(RikeOperationImpl.prototype, "rike", {
         get: function () {
@@ -523,7 +525,7 @@ var RikeOperationImpl = (function (_super) {
             return this.wrapResponse(this.internals.request(this.requestUrl(options), options));
         }
         catch (e) {
-            this.target.rikeEvents.emit(new RikeExceptionEvent(this, e));
+            this.target.rikeEvents.next(new RikeExceptionEvent(this, e));
             throw e;
         }
     };
@@ -534,7 +536,7 @@ var RikeOperationImpl = (function (_super) {
             return this.wrapResponse(this.internals.request(this.requestUrl(options), options));
         }
         catch (e) {
-            this.target.rikeEvents.emit(new RikeExceptionEvent(this, e));
+            this.target.rikeEvents.next(new RikeExceptionEvent(this, e));
             throw e;
         }
     };
@@ -545,7 +547,7 @@ var RikeOperationImpl = (function (_super) {
             return this.wrapResponse(this.internals.get(this.requestUrl(options), options));
         }
         catch (e) {
-            this.target.rikeEvents.emit(new RikeExceptionEvent(this, e));
+            this.target.rikeEvents.next(new RikeExceptionEvent(this, e));
             throw e;
         }
     };
@@ -556,7 +558,7 @@ var RikeOperationImpl = (function (_super) {
             return this.wrapResponse(this.internals.post(this.requestUrl(options), options.body, options));
         }
         catch (e) {
-            this.target.rikeEvents.emit(new RikeExceptionEvent(this, e));
+            this.target.rikeEvents.next(new RikeExceptionEvent(this, e));
             throw e;
         }
     };
@@ -567,7 +569,7 @@ var RikeOperationImpl = (function (_super) {
             return this.wrapResponse(this.internals.put(this.requestUrl(options), options.body, options));
         }
         catch (e) {
-            this.target.rikeEvents.emit(new RikeExceptionEvent(this, e));
+            this.target.rikeEvents.next(new RikeExceptionEvent(this, e));
             throw e;
         }
     };
@@ -579,7 +581,7 @@ var RikeOperationImpl = (function (_super) {
             return this.wrapResponse(this.internals.delete(this.requestUrl(options), options));
         }
         catch (e) {
-            this.target.rikeEvents.emit(new RikeExceptionEvent(this, e));
+            this.target.rikeEvents.next(new RikeExceptionEvent(this, e));
             throw e;
         }
     };
@@ -590,7 +592,7 @@ var RikeOperationImpl = (function (_super) {
             return this.wrapResponse(this.internals.patch(this.requestUrl(options), options.body, options));
         }
         catch (e) {
-            this.target.rikeEvents.emit(new RikeExceptionEvent(this, e));
+            this.target.rikeEvents.next(new RikeExceptionEvent(this, e));
             throw e;
         }
     };
@@ -601,7 +603,7 @@ var RikeOperationImpl = (function (_super) {
             return this.wrapResponse(this.internals.head(this.requestUrl(options), options));
         }
         catch (e) {
-            this.target.rikeEvents.emit(new RikeExceptionEvent(this, e));
+            this.target.rikeEvents.next(new RikeExceptionEvent(this, e));
             throw e;
         }
     };

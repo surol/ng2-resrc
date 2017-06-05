@@ -1,5 +1,6 @@
 import {Component, Input, OnInit, OnDestroy, Optional} from "@angular/core";
-import {ErrorCollector, ErrorSubscription} from "./error-collector";
+import {Subscription} from "rxjs/Subscription";
+import {ErrorCollector} from "./error-collector";
 import {FieldErrors, FieldError} from "./field-error";
 
 @Component({
@@ -20,7 +21,7 @@ export class RikeErrorsComponent implements OnInit, OnDestroy {
     private _field?: string;
     private _errors: FieldError[] = [];
     private _initialized = false;
-    private _subscription?: ErrorSubscription;
+    private _subscription?: Subscription;
 
     constructor(@Optional() private _collector?: ErrorCollector) {
     }
@@ -97,10 +98,10 @@ export class RikeErrorsComponent implements OnInit, OnDestroy {
     private subscribe() {
         if (this._field) {
             this._subscription =
-                this.errorCollector.subscribe(this._field, errors => this.updateErrors(errors)).refresh();
+                this.errorCollector.subscribe(this._field, errors => this.updateErrors(errors));
         } else {
             this._subscription =
-                this.errorCollector.subscribeForRest(errors => this.updateErrors(errors)).refresh();
+                this.errorCollector.subscribeForRest(errors => this.updateErrors(errors));
         }
     }
 

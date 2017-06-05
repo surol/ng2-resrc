@@ -1,3 +1,19 @@
+# 0.4.0 (2017-06-05)
+
+### Dependencies
+
+* Switch to Angular 4.x.
+
+### Packaging
+
+* Enable ahead-of-time compilation.
+* Add Yarn support.
+
+### Features
+
+* Use RxJS `Observable` in the API instead of `EventEmitter`. 
+
+
 # 0.2.6 (2016-12-01)
 
 ### Bugs

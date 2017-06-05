@@ -1,5 +1,5 @@
-import { EventEmitter } from "@angular/core";
-import { RikeTarget, RikeOperation } from "./rike";
+import { Observable } from "rxjs/Observable";
+import { RikeOperation, RikeTarget } from "./rike";
 import { ErrorResponse } from "./protocol";
 /**
  * REST-like resource access event emitter.
@@ -12,7 +12,7 @@ export declare abstract class RikeEventSource {
     /**
      * Rike events emitter.
      */
-    readonly abstract rikeEvents: EventEmitter<RikeEvent>;
+    readonly abstract rikeEvents: Observable<RikeEvent>;
 }
 /**
  * Basic REST-like resource access event.

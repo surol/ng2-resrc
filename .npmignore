@@ -4,4 +4,8 @@ node_modules
 *.log
 *.ts
 !*.d.ts
-/bundles/ng2-rike-spec.*
+!*.js.map
+!*.js
+!*.metadata.json
+!/bundles
+/compiled

@@ -1,26 +1,7 @@
-import { EventEmitter } from "@angular/core";
-import { AnonymousSubscription } from "rxjs/Subscription";
+import { Observable } from "rxjs/Observable";
+import { Subscription } from "rxjs/Subscription";
 import { FieldErrors } from "./field-error";
-import { RikeEventSource, RikeEvent, RikeErrorEvent } from "./event";
-/**
- * Field errors subscription.
- *
- * The `unsubscribe()` method should be called to stop receiving error notifications.
- */
-export interface ErrorSubscription {
-    /**
-     * After this method called the error notifications won't be sent to subscriber.
-     *
-     * This method should be called in order to release all resources associated with subscription.
-     */
-    unsubscribe(): void;
-    /**
-     * Request field errors to be updated by notifying the subscriber.
-     *
-     * Does nothing after `unsubscribe()` method called.
-     */
-    refresh(): this;
-}
+import { RikeErrorEvent, RikeEvent, RikeEventSource } from "./event";
 /**
  * An error collecting service.
  *
@@ -45,7 +26,7 @@ export declare class ErrorCollector {
      *
      * @param events Rike events emitter to subscribe on.
      */
-    subscribeOn(events: EventEmitter<RikeEvent>): AnonymousSubscription;
+    subscribeOn(events: Observable<RikeEvent>): Subscription;
     /**
      * Adds subscription for errors corresponding to the given field.
      *
@@ -59,7 +40,7 @@ export declare class ErrorCollector {
      *
      * @return {ErrorSubscription} subscription.
      */
-    subscribe(field: string, next: ((errors: FieldErrors) => void), error?: (error: any) => void, complete?: () => void): ErrorSubscription;
+    subscribe(field: string, next: ((errors: FieldErrors) => void), error?: (error: any) => void, complete?: () => void): Subscription;
     /**
      * Adds subscription for errors corresponding to all fields except those ones with existing subscriptions.
      *
@@ -71,7 +52,7 @@ export declare class ErrorCollector {
      *
      * @return {ErrorSubscription} subscription.
      */
-    subscribeForRest(next: ((errors: FieldErrors) => void), error?: (error: any) => void, complete?: () => void): ErrorSubscription;
+    subscribeForRest(next: ((errors: FieldErrors) => void), error?: (error: any) => void, complete?: () => void): Subscription;
     /**
      * Converts error to `FieldErrors`.
      *

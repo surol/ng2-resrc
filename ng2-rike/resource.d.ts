@@ -1,7 +1,8 @@
 import { RequestOptionsArgs } from "@angular/http";
 import { Observable } from "rxjs/Rx";
 import { Protocol } from "./protocol";
-import { RikeTarget, Rike } from "./rike";
+import { Rike, RikeTarget } from "./rike";
+import { RikeEvent, RikeEventSource } from "./event";
 /**
  * An interface of REST-like resources.
  *
@@ -10,18 +11,19 @@ import { RikeTarget, Rike } from "./rike";
  *
  * This class can be used as a token for resources. It can be registered as Angular service with {{provideResource}}.
  */
-export declare abstract class Resource {
+export declare abstract class Resource implements RikeEventSource {
     /**
      * Rike operations target for this resource.
      *
      * @return {RikeTarget<any, any>}
      */
     readonly abstract rikeTarget: RikeTarget<any, any>;
+    readonly rikeEvents: Observable<RikeEvent>;
 }
 /**
  * Abstract implementation of REST-like resource.
  */
-export declare abstract class RikeResource implements Resource {
+export declare abstract class RikeResource extends Resource {
     private _rike;
     private _rikeTarget?;
     constructor(_rike: Rike);

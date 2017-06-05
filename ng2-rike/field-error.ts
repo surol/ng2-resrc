@@ -45,7 +45,8 @@ export interface FieldError {
 
 function isJsonResponse(httpResponse: Response): boolean {
 
-    let contentType = httpResponse.headers.get("Content-Type");
+    const headers = httpResponse.headers;
+    let contentType = headers && headers.get("Content-Type");
 
     if (!contentType) {
         return false;

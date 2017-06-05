@@ -1,8 +1,13 @@
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 import { RequestOptions, Headers } from "@angular/http";
 /**
  * REST-like operations protocol.
@@ -13,7 +18,7 @@ import { RequestOptions, Headers } from "@angular/http";
  * `IN` is operation request type.
  * `OUT` is operation response type.
  */
-export var Protocol = (function () {
+var Protocol = (function () {
     function Protocol() {
     }
     //noinspection JSMethodCanBeStatic
@@ -72,6 +77,7 @@ export var Protocol = (function () {
     };
     return Protocol;
 }());
+export { Protocol };
 var CustomProtocolAddon = (function () {
     function CustomProtocolAddon(_protocol, _prior) {
         this._protocol = _protocol;
@@ -107,7 +113,7 @@ var CustomProtocolAddon = (function () {
 var CustomProtocolPre = (function (_super) {
     __extends(CustomProtocolPre, _super);
     function CustomProtocolPre(protocol) {
-        _super.call(this, protocol, true);
+        return _super.call(this, protocol, true) || this;
     }
     CustomProtocolPre.prototype.input = function (convert) {
         var _this = this;
@@ -118,7 +124,7 @@ var CustomProtocolPre = (function (_super) {
 var CustomProtocolPost = (function (_super) {
     __extends(CustomProtocolPost, _super);
     function CustomProtocolPost(protocol) {
-        _super.call(this, protocol, false);
+        return _super.call(this, protocol, false) || this;
     }
     CustomProtocolPost.prototype.output = function (convert) {
         var _this = this;
@@ -151,11 +157,12 @@ var CustomProtocolMod = (function () {
 var CustomProtocol = (function (_super) {
     __extends(CustomProtocol, _super);
     function CustomProtocol(_prepareRequest, _writeRequest, _readResponse, _handleError) {
-        _super.call(this);
-        this._prepareRequest = _prepareRequest;
-        this._writeRequest = _writeRequest;
-        this._readResponse = _readResponse;
-        this._handleError = _handleError;
+        var _this = _super.call(this) || this;
+        _this._prepareRequest = _prepareRequest;
+        _this._writeRequest = _writeRequest;
+        _this._readResponse = _readResponse;
+        _this._handleError = _handleError;
+        return _this;
     }
     CustomProtocol.prototype.prepareRequest = function (options) {
         return this._prepareRequest(options);
@@ -174,7 +181,7 @@ var CustomProtocol = (function (_super) {
 var JsonProtocol = (function (_super) {
     __extends(JsonProtocol, _super);
     function JsonProtocol() {
-        _super.apply(this, arguments);
+        return _super !== null && _super.apply(this, arguments) || this;
     }
     JsonProtocol.prototype.writeRequest = function (request, options) {
         var opts = new RequestOptions(options).merge({ body: JSON.stringify(request) });
@@ -210,7 +217,7 @@ export var jsonProtocol = function () { return JSON_PROTOCOL; };
 var HttpProtocol = (function (_super) {
     __extends(HttpProtocol, _super);
     function HttpProtocol() {
-        _super.apply(this, arguments);
+        return _super !== null && _super.apply(this, arguments) || this;
     }
     HttpProtocol.prototype.writeRequest = function (request, options) {
         return new RequestOptions(options).merge({ body: request });

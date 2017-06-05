@@ -1,6 +1,7 @@
-import { EventEmitter } from "@angular/core";
+import { Observable } from "rxjs/Observable";
 import { RikeTarget } from "./rike";
 import { RikeEvent, RikeEventSource } from "./event";
+import { Subscription } from "rxjs/Subscription";
 /**
  * Rike operation status labels.
  *
@@ -112,7 +113,7 @@ export declare class StatusCollector {
      *
      * @param events Rike events emitter to subscribe on.
      */
-    subscribeOn(events: EventEmitter<RikeEvent>): void;
+    subscribeOn(events: Observable<RikeEvent>): Subscription;
     /**
      * Constructs a Rike operations status view.
      *

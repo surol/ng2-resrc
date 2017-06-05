@@ -13,14 +13,15 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "strictNullChecks": true,
-    "skipLibCheck": true,
+    "alwaysStrict": true,
     "forceConsistentCasingInFileNames": true,
     "newLine": "LF",
     "lib": [
       "dom",
       "es5",
-      "es2015.promise",
-      "es2015.collection"
+      "es2015.collection",
+      "es2015.iterable",
+      "es2015.promise"
     ],
     "types": [
       "jasmine"
@@ -29,5 +30,8 @@
   "include": [
     "ng2-rike.ts",
     "ng2-rike/**/*.ts"
-  ]
+  ],
+  "angularCompilerOptions": {
+    "genDir": "compiled"
+  }
 }

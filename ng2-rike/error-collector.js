@@ -1,16 +1,5 @@
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-var __param = (this && this.__param) || function (paramIndex, decorator) {
-    return function (target, key) { decorator(target, key, paramIndex); }
-};
-import { Injectable, EventEmitter, Optional, Inject } from "@angular/core";
+import { Inject, Injectable, Optional } from "@angular/core";
+import { ReplaySubject } from "rxjs/ReplaySubject";
 import { addFieldErrors } from "./field-error";
 import { RikeEventSource } from "./event";
 /**
@@ -26,7 +15,7 @@ import { RikeEventSource } from "./event";
  * An instance of this class could be created on its own. Then it is necessary to subscribe it on Rike events with
  * `subscribeOn` method.
  */
-export var ErrorCollector = (function () {
+var ErrorCollector = (function () {
     function ErrorCollector(_eventSources) {
         this._eventSources = _eventSources;
         this._emitters = {};
@@ -148,14 +137,16 @@ export var ErrorCollector = (function () {
             emitter.notify();
         }
     };
-    ErrorCollector = __decorate([
-        Injectable(),
-        __param(0, Inject(RikeEventSource)),
-        __param(0, Optional()), 
-        __metadata('design:paramtypes', [Array])
-    ], ErrorCollector);
     return ErrorCollector;
 }());
+export { ErrorCollector };
+ErrorCollector.decorators = [
+    { type: Injectable },
+];
+/** @nocollapse */
+ErrorCollector.ctorParameters = function () { return [
+    { type: Array, decorators: [{ type: Inject, args: [RikeEventSource,] }, { type: Optional },] },
+]; };
 function errorEventMessage(error) {
     if (error.cancel) {
         if (!error.cancelledBy) {
@@ -170,22 +161,24 @@ var FieldEmitter = (function () {
         this._field = _field;
         this._emitters = _emitters;
         this._targetErrors = _targetErrors;
-        this._emitter = new EventEmitter();
+        this._emitter = new ReplaySubject(1);
         this._counter = 0;
     }
     FieldEmitter.prototype.subscribe = function (next, error, complete) {
-        var subscr = this._emitter.subscribe(next, error, complete);
+        var _this = this;
+        var subscr = this._emitter.subscribe(next, error, complete)
+            .add(function () { return _this.unsubscribed(); });
         this._counter++;
-        return new ErrorSubscr(this, subscr).subscribe(next, error, complete);
+        return subscr;
     };
-    FieldEmitter.prototype.notify = function (emitter) {
+    FieldEmitter.prototype.notify = function () {
         var errors = {};
         for (var id in this._targetErrors) {
             if (this._targetErrors.hasOwnProperty(id)) {
                 this._targetErrors[id].appendTo(this._field, errors);
             }
         }
-        (emitter || this._emitter).emit(errors);
+        this._emitter.next(errors);
     };
     FieldEmitter.prototype.unsubscribed = function () {
         if (!--this._counter) {
@@ -193,38 +186,6 @@ var FieldEmitter = (function () {
         }
     };
     return FieldEmitter;
-}());
-var ErrorSubscr = (function () {
-    function ErrorSubscr(_fieldEmitter, _subscription) {
-        this._fieldEmitter = _fieldEmitter;
-        this._subscription = _subscription;
-        this._refreshEmitter = new EventEmitter();
-    }
-    ErrorSubscr.prototype.subscribe = function (next, error, complete) {
-        this._refreshSubscription = this._refreshEmitter.subscribe(next, error, complete);
-        return this;
-    };
-    ErrorSubscr.prototype.unsubscribe = function () {
-        if (!this._subscription) {
-            return;
-        }
-        try {
-            this._subscription.unsubscribe();
-            this._refreshSubscription.unsubscribe();
-        }
-        finally {
-            delete this._subscription;
-            this._fieldEmitter.unsubscribed();
-        }
-    };
-    ErrorSubscr.prototype.refresh = function () {
-        if (!this._subscription) {
-            return this;
-        }
-        this._fieldEmitter.notify(this._refreshEmitter);
-        return this;
-    };
-    return ErrorSubscr;
 }());
 var TargetErrors = (function () {
     function TargetErrors(target, _emitters, errors) {

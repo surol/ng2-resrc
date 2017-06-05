@@ -1,5 +1,4 @@
-import { EventEmitter } from "@angular/core";
-import { Request, RequestOptionsArgs, Response, Http, RequestMethod, RequestOptions } from "@angular/http";
+import { Http, Request, RequestMethod, RequestOptions, RequestOptionsArgs, Response } from "@angular/http";
 import { Observable } from "rxjs/Rx";
 import { RikeEvent, RikeEventSource } from "./event";
 import { RikeOptions } from "./options";
@@ -36,9 +35,9 @@ export declare class Rike implements RikeEventSource {
     /**
      * All REST-like resource operation events emitter.
      *
-     * @returns {EventEmitter<RikeEvent>}
+     * @returns {Observable<RikeEvent>}
      */
-    readonly rikeEvents: EventEmitter<RikeEvent>;
+    readonly rikeEvents: Observable<RikeEvent>;
     request(request: string | Request, options?: RequestOptionsArgs): Observable<Response>;
     get(url: string, options?: RequestOptionsArgs): Observable<Response>;
     post(url: string, body: any, options?: RequestOptionsArgs): Observable<Response>;
@@ -129,7 +128,7 @@ export declare abstract class RikeTarget<IN, OUT> implements RikeEventSource {
     /**
      * An emitter of events for operations performed on this target.
      */
-    readonly abstract rikeEvents: EventEmitter<RikeEvent>;
+    readonly abstract rikeEvents: Observable<RikeEvent>;
     /**
      * An operations protocol to use by default.
      *
