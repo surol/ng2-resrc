@@ -6,6 +6,20 @@ import {ErrorCollector} from "./error-collector";
 /**
  * Constructs provider recipe for {{RikeEventSource}}.
  *
+ * This function can not be used with AoT compilation. Specify providers explicitly instead, like this:
+ * ```TypeScript
+ * providers: [
+ *   MyEventSource,
+ *   StatusCollector,
+ *   ErrorCollector,
+ *   {
+ *     provide: RikeEventSource,
+ *     useExisting: MyEventSource,
+ *     multi: true,
+ *   }
+ * ]
+ * ```
+ *
  * @param useClass
  * @param useValue
  * @param useExisting

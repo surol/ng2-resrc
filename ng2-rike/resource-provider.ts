@@ -6,6 +6,20 @@ var resourceIdSeq = 0;
 /**
  * Constructs provider recipe for {{Resource}}.
  *
+ * This function can not be used with AoT compilation. Specify providers explicitly instead, like this:
+ * ```TypeScript
+ * providers: [
+ *   MyResource,
+ *   StatusCollector,
+ *   ErrorCollector,
+ *   {
+ *     provide: RikeEventSource,
+ *     useExisting: MyResource,
+ *     multi: true,
+ *   }
+ * ]
+ * ```
+ *
  * Also registers the resource as source of Rike operation events.
  *
  * @return new provider recipe.
