@@ -1,4 +1,4 @@
-import {NgModule} from "@angular/core";
+import {InjectionToken, NgModule} from "@angular/core";
 import {HttpModule} from "@angular/http";
 import {CommonModule} from "@angular/common";
 import {BaseRikeOptions, RikeOptions, RikeOptionsArgs} from "./ng2-rike/options";
@@ -88,11 +88,22 @@ export class RikeModule {
             ngModule: RikeModule,
             providers: [
                 {
+                    provide: RIKE_CONFIGURATION,
+                    useValue: options,
+                },
+                {
                     provide: RikeOptions,
-                    useValue: new BaseRikeOptions(options),
+                    useFactory: provideRikeOptions,
+                    deps: [RIKE_CONFIGURATION]
                 }
             ]
         }
     }
 
+}
+
+export const RIKE_CONFIGURATION = new InjectionToken<RikeOptionsArgs>('RIKE_CONFIGURATION');
+
+export function provideRikeOptions(options?: RikeOptionsArgs) {
+    return new BaseRikeOptions(options);
 }

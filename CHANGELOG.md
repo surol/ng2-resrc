@@ -1,3 +1,10 @@
+# 0.4.1 (2017-06-07)
+
+### Fixes
+
+* Better work with AoT compilation
+
+
 # 0.4.0 (2017-06-05)
 
 ### Dependencies
